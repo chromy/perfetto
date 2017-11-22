@@ -35,6 +35,7 @@ executable("producer") {
     "//tracing",
     "//tracing:ipc",
     "//protos:zero",
+    "//ftrace_reader",
   ]
   sources = [ "producer.cc" ]
 }

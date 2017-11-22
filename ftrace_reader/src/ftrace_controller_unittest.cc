@@ -229,6 +229,7 @@ TEST(FtraceControllerTest, StartStop) {
   // Double start does nothing.
   controller.Start();
 
+  EXPECT_CALL(*raw_ftrace_procfs, WriteToFile("/root/tracing_on", "0"));
   EXPECT_CALL(task_runner, RemoveFileDescriptorWatch(_));
   controller.Stop();
   // Double stop does nothing.

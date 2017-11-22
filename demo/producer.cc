@@ -26,84 +26,121 @@
 #include "tracing/core/trace_packet.h"
 #include "tracing/core/trace_writer.h"
 #include "tracing/ipc/producer_ipc_client.h"
+#include "ftrace_reader/ftrace_controller.h"
 
+#include "protos/ftrace/ftrace_event_bundle.pbzero.h"
 #include "protos/trace_packet.pbzero.h"
 
 namespace perfetto {
 
 namespace {
 
-class TestProducer : public Producer {
+using BundleHandle =
+    protozero::ProtoZeroMessageHandle<protos::pbzero::FtraceEventBundle>;
+
+class FtraceProducer : public Producer, FtraceSink::Delegate {
  public:
-  void OnConnect() override {
-    if (on_connect)
-      on_connect();
-  }
+  ~FtraceProducer() override;
 
-  void OnDisconnect() override {
-    PERFETTO_DLOG("Disconnected from tracing service");
-    exit(1);
-  }
+  // Producer Impl:
+  void OnConnect() override;
+  void OnDisconnect() override;
+  void CreateDataSourceInstance(DataSourceInstanceID,
+                                const DataSourceConfig&) override;
+  void TearDownDataSourceInstance(DataSourceInstanceID) override;
 
-  void CreateDataSourceInstance(DataSourceInstanceID dsid,
-                                const DataSourceConfig& cfg) override {
-    if (on_create_ds)
-      on_create_ds(cfg);
-  }
+  // FtraceDelegateImpl
+  BundleHandle GetBundleForCpu(size_t cpu) override;
+  void OnBundleComplete(size_t cpu, BundleHandle bundle) override;
 
-  void TearDownDataSourceInstance(DataSourceInstanceID instance_id) override {
-    PERFETTO_DLOG(
-        "The tracing service requested us to shutdown the data source %" PRIu64,
-        instance_id);
-  }
+  // Our Impl
+  void Run();
 
-  std::function<void()> on_connect;
-  std::function<void(const DataSourceConfig&)> on_create_ds;
+ private:
+  std::unique_ptr<Service::ProducerEndpoint> endpoint_ = nullptr;
+  std::unique_ptr<FtraceController> ftrace_ = nullptr;
+  std::unique_ptr<TraceWriter> trace_writer_ = nullptr;
+  TraceWriter::TracePacketHandle trace_packet_;
+  DataSourceID data_source_id_;
+  std::map<DataSourceInstanceID, std::unique_ptr<FtraceSink>> sinks_;
 };
 
-void ProducerMain() {
-  base::UnixTaskRunner task_runner;
-  TestProducer producer;
-  std::unique_ptr<Service::ProducerEndpoint> endpoint =
-      ProducerIPCClient::Connect(kProducerSocketName, &producer, &task_runner);
+FtraceProducer::~FtraceProducer() = default;
+
+void FtraceProducer::OnConnect() {
+  PERFETTO_DLOG("Connected to the service\n");
+
+  trace_writer_ = endpoint_->CreateTraceWriter();
 
   DataSourceDescriptor descriptor;
+  // TODO(hjd): Update name.
   descriptor.name = "perfetto.test.data_source";
+  endpoint_->RegisterDataSource(descriptor, [this](DataSourceID id) {
+    data_source_id_ = id;
+  });
+}
 
-  auto on_register = [](DataSourceID id) {
-    printf("Service acked RegisterDataSource() with ID %" PRIu64 "\n", id);
-    PERFETTO_DCHECK(id);
-  };
+void FtraceProducer::OnDisconnect() {
+  PERFETTO_DLOG("Disconnected from tracing service");
+  exit(1);
+}
 
-  producer.on_connect = [&endpoint, &descriptor, &on_register] {
-    printf("Connected to the service\n");
-    endpoint->RegisterDataSource(descriptor, on_register);
-  };
+void FtraceProducer::CreateDataSourceInstance(
+    DataSourceInstanceID id,
+    const DataSourceConfig& source_config) {
 
-  producer.on_create_ds = [&endpoint](const DataSourceConfig& cfg) {
-    printf("Service asked to start data source\n");
+  PERFETTO_DLOG("Service asked to start data source\n");
 
-    auto trace_writer1 = endpoint->CreateTraceWriter();
-    auto trace_writer2 = endpoint->CreateTraceWriter();
-    for (int j = 0; j < 240; j++) {
-      auto event = trace_writer1->NewTracePacket();
-      char content[64];
-      sprintf(content, "Stream 1 - %3d .................", j);
-      event->set_test(content);
-      event = trace_writer2->NewTracePacket();
-      sprintf(content, "Stream 2 - %3d ++++++++++++++++++++++++++++++++++++",
-              j);
-      event->set_test(content);
+  const std::string& categories = source_config.trace_category_filters;
+  FtraceConfig config;
+  size_t last = 0;
+  for (size_t i = 0; i <= categories.size(); i++) {
+    if (i == categories.size() || categories[i] == ',') {
+      std::string category = categories.substr(last, i - last).c_str();
+      last = i + 1;
+      if (!category.size())
+        continue;
+      config.AddEvent(category);
     }
-  };
+  }
+  auto sink = ftrace_->CreateSink(config, this);
+  PERFETTO_CHECK(sink);
+  sinks_.emplace(id, std::move(sink));
+}
 
-  task_runner.Run();
+void FtraceProducer::TearDownDataSourceInstance(DataSourceInstanceID id) {
+  PERFETTO_DLOG(
+      "The tracing service requested us to shutdown the data source %" PRIu64,
+      id);
+}
+
+BundleHandle FtraceProducer::GetBundleForCpu(size_t cpu) {
+  trace_packet_ = trace_writer_->NewTracePacket();
+  trace_packet_->set_test("Foo!");
+  return BundleHandle(trace_packet_->set_ftrace_events());
+}
+
+void FtraceProducer::OnBundleComplete(size_t cpu, BundleHandle bundle) {
+  trace_packet_.Finalize();
+}
+
+void FtraceProducer::Run() {
+  base::UnixTaskRunner runner;
+  ftrace_ = FtraceController::Create(&runner);
+  endpoint_ = ProducerIPCClient::Connect(kProducerSocketName, this, &runner);
+  ftrace_->DisableAllEvents();
+  ftrace_->ClearTrace();
+  ftrace_->WriteTraceMarker("Hello, world!");
+  ftrace_->Start();
+  runner.Run();
+  ftrace_->Stop();
 }
 
 }  // namespace.
 }  // namespace perfetto
 
 int main(int argc, char** argv) {
-  perfetto::ProducerMain();
+  perfetto::FtraceProducer producer;
+  producer.Run();
   return 0;
 }

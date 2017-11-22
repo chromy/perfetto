@@ -57,6 +57,7 @@ const uint32_t kTypeTimeStamp = 31;
 
 const size_t kPageSize = 4096;
 
+// TODO(hjd): Check 32bit phone.
 struct PageHeader {
   uint64_t timestamp;
   uint32_t size;
@@ -152,6 +153,8 @@ bool CpuReader::ParsePage(size_t cpu,
   PageHeader page_header;
   if (!ReadAndAdvance(&ptr, end_of_page, &page_header))
     return false;
+  // TODO(hjd): There is something wrong with the page header struct.
+  page_header.size = page_header.size & 0xfffful;
 
   const uint8_t* const end = ptr + page_header.size;
   if (end > end_of_page)
@@ -193,7 +196,7 @@ bool CpuReader::ParsePage(size_t cpu,
         TimeStamp time_stamp;
         if (!ReadAndAdvance<TimeStamp>(&ptr, end, &time_stamp))
           return false;
-        // TODO(hjd): Handle.
+        PERFETTO_CHECK(false);  // TODO(hjd): Handle
         break;
       }
       // Data record:
