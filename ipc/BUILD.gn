@@ -20,7 +20,7 @@ config("config") {
 }
 
 source_set("ipc") {
-  public_configs = [ ":config" ]
+  all_dependent_configs = [ ":config" ]
   deps += [
     ":wire_protocol",
     "//base",

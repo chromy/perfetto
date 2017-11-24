@@ -14,21 +14,29 @@
  * limitations under the License.
  */
 
-#ifndef TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
-#define TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+#include "tracing/core/trace_packet.h"
 
-#include <stdint.h>
+#include "protos/trace_packet.pb.h"
 
 namespace perfetto {
 
-using ProducerID = uint64_t;
-using DataSourceID = uint64_t;
-using DataSourceInstanceID = uint64_t;
-using WriterID = uint16_t;
+TracePacket::TracePacket(const void* start, size_t size)
+    : start_(start), size_(size) {}
 
-// Keep this in sync with SharedMemoryABI::PageHeader::target_buffer.
-static constexpr unsigned kMaxTraceBuffers = 1 << 16;
+TracePacket::~TracePacket() = default;
+
+TracePacket::TracePacket(TracePacket&&) noexcept = default;
+TracePacket& TracePacket::operator=(TracePacket&&) = default;
+
+bool TracePacket::Decode() {
+  if (decoded_packet_)
+    return true;
+  decoded_packet_.reset(new DecodedTracePacket());
+  if (!decoded_packet_->ParseFromArray(start_, static_cast<int>(size_))) {
+    decoded_packet_.reset();
+    return false;
+  }
+  return true;
+}
 
 }  // namespace perfetto
-
-#endif  // TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_

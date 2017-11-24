@@ -20,10 +20,12 @@
 #include <stdint.h>
 
 #include <functional>
+#include <list>
 #include <memory>
 #include <vector>
 
 #include "tracing/core/basic_types.h"
+#include "tracing/core/data_source_config.h"
 #include "tracing/core/shared_memory.h"
 
 namespace perfetto {
@@ -32,9 +34,11 @@ namespace base {
 class TaskRunner;
 }  // namespace base
 
-class DataSourceConfig;
+class Consumer;
 class DataSourceDescriptor;
 class Producer;
+struct TraceConfig;
+class TraceWriter;
 
 // TODO: for the moment this assumes that all the calls hapen on the same
 // thread/sequence. Not sure this will be the case long term in Chrome.
@@ -77,7 +81,33 @@ class Service {
 
     // Returns the SharedMemory buffer for this Producer.
     virtual SharedMemory* shared_memory() const = 0;
+
+    // Returns a TraceWriter interface that allows to write protobufs directly
+    // into the shared memory buffer. The returned TraceWriter will deal under
+    // the hoods with splitting protobufs into chunks and with
+    // acquiring/releasing chunks from the shared memory buffer. The returned
+    // writer is *not* thread safe. The intended design is that each data source
+    // creates one TraceWriter for each thread (or more, if necessary).
+    virtual std::unique_ptr<TraceWriter> CreateTraceWriter(
+        size_t target_buffer = 0) = 0;
   };  // class ProducerEndpoint.
+
+  // The API for the Consumer port of the Service.
+  // Subclassed by:
+  // 1. The service_impl.cc business logic when returning it in response to
+  //    the ConnectConsumer() method.
+  // 2. The transport layer (e.g., src/ipc) when the consumer and
+  //    the service don't talk locally but via some IPC mechanism.
+  class ConsumerEndpoint {
+   public:
+    virtual ~ConsumerEndpoint() = default;
+
+    virtual void StartTracing(const TraceConfig&) = 0;
+
+    // Tracing data will be delivered invoking the Consumer::OnData() method.
+    virtual void StopTracing() = 0;
+
+  };  // class ConsumerEndpoint.
 
   // Implemented in src/core/service_impl.cc .
   static std::unique_ptr<Service> CreateInstance(
@@ -92,12 +122,19 @@ class Service {
   // the returned ProducerEndpoint is alive.
   // To disconnect just destroy the returned ProducerEndpoint object. It is safe
   // to destroy the Producer once the Producer::OnDisconnect() has been invoked.
+  // |shared_buffer_page_size_bytes| is an optional argument to define the
+  // size of tracing pages. It has to be an integer multiple of 4KB. See
+  // comments in shared_memory_abi.h for tradeoffs. The service will refuse
+  // to connect the Producer if this value is too big or malformed.
   // |shared_buffer_size_hint_bytes| is an optional hint on the size of the
   // shared memory buffer. The service can ignore the hint (e.g., if the hint
   // is unreasonably large).
   virtual std::unique_ptr<ProducerEndpoint> ConnectProducer(
       Producer*,
+      size_t shared_buffer_page_size_bytes = 4096,
       size_t shared_buffer_size_hint_bytes = 0) = 0;
+
+  virtual std::unique_ptr<ConsumerEndpoint> ConnectConsumer(Consumer*) = 0;
 
  public:  // Testing-only
   class ObserverForTesting {

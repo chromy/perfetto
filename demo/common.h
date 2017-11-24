@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
-#define TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+#ifndef DEMO_COMMON_H_
+#define DEMO_COMMON_H_
 
-#include <stdint.h>
+#include "base/build_config.h"
 
 namespace perfetto {
 
-using ProducerID = uint64_t;
-using DataSourceID = uint64_t;
-using DataSourceInstanceID = uint64_t;
-using WriterID = uint16_t;
-
-// Keep this in sync with SharedMemoryABI::PageHeader::target_buffer.
-static constexpr unsigned kMaxTraceBuffers = 1 << 16;
+#if BUILDFLAG(OS_ANDROID)
+const char kProducerSocketName[] = "@perfetto-ipc-test-producer.sock";
+const char kConsumerSocketName[] = "@perfetto-ipc-test-consumer.sock";
+#else
+const char kProducerSocketName[] = "/tmp/perfetto-ipc-test-producer.sock";
+const char kConsumerSocketName[] = "/tmp/perfetto-ipc-test-consumer.sock";
+#endif
 
 }  // namespace perfetto
 
-#endif  // TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+#endif  // DEMO_COMMON_H_

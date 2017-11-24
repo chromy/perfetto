@@ -14,21 +14,31 @@
  * limitations under the License.
  */
 
-#ifndef TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
-#define TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+#include <unistd.h>
 
-#include <stdint.h>
+#include "base/logging.h"
+#include "base/unix_task_runner.h"
+#include "demo/common.h"
+#include "tracing/ipc/service_ipc_host.h"
+
 
 namespace perfetto {
+namespace {
 
-using ProducerID = uint64_t;
-using DataSourceID = uint64_t;
-using DataSourceInstanceID = uint64_t;
-using WriterID = uint16_t;
+void ServiceMain() {
+  unlink(perfetto::kProducerSocketName);
+  unlink(perfetto::kConsumerSocketName);
+  perfetto::base::UnixTaskRunner task_runner;
+  std::unique_ptr<perfetto::ServiceIPCHost> host =
+      perfetto::ServiceIPCHost::CreateInstance(&task_runner);
+  host->Start(perfetto::kProducerSocketName, perfetto::kConsumerSocketName);
+  task_runner.Run();
+}
 
-// Keep this in sync with SharedMemoryABI::PageHeader::target_buffer.
-static constexpr unsigned kMaxTraceBuffers = 1 << 16;
-
+}  // namespace.
 }  // namespace perfetto
 
-#endif  // TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+int main(int argc, char** argv) {
+  perfetto::ServiceMain();
+  return 0;
+}

@@ -24,6 +24,8 @@
 #include "tracing/core/data_source_config.h"
 #include "tracing/core/data_source_descriptor.h"
 #include "tracing/core/producer.h"
+#include "tracing/core/trace_writer.h"
+#include "tracing/src/core/producer_shared_memory_arbiter.h"
 #include "tracing/src/ipc/posix_shared_memory.h"
 
 // TODO think to what happens when ProducerIPCClientImpl gets destroyed
@@ -31,6 +33,12 @@
 // the callbacks.
 
 namespace perfetto {
+
+namespace {
+// TODO: this should be configurable by the library client. Hardcoding for the
+// moment.
+constexpr uint32_t kTracingPageSize = 4096;
+}  // namespace
 
 // static. (Declared in include/tracing/ipc/producer_ipc_client.h).
 std::unique_ptr<Service::ProducerEndpoint> ProducerIPCClient::Connect(
@@ -47,7 +55,8 @@ ProducerIPCClientImpl::ProducerIPCClientImpl(const char* service_sock_name,
     : producer_(producer),
       task_runner_(task_runner),
       ipc_channel_(ipc::Client::CreateInstance(service_sock_name, task_runner)),
-      producer_port_(this /* event_listener */) {
+      producer_port_(this /* event_listener */),
+      weak_ptr_factory_(this) {
   ipc_channel_->BindService(producer_port_.GetWeakPtr());
 }
 
@@ -64,8 +73,9 @@ void ProducerIPCClientImpl::OnConnect() {
   on_init.Bind([this](ipc::AsyncResult<InitializeConnectionResponse> resp) {
     OnConnectionInitialized(resp.success());
   });
-  producer_port_.InitializeConnection(InitializeConnectionRequest(),
-                                      std::move(on_init));
+  InitializeConnectionRequest init_req;
+  init_req.set_shared_buffer_page_size_bytes(kTracingPageSize);
+  producer_port_.InitializeConnection(init_req, std::move(on_init));
 
   // Create the back channel to receive commands from the Service.
   ipc::Deferred<GetAsyncCommandResponse> on_cmd;
@@ -92,6 +102,16 @@ void ProducerIPCClientImpl::OnConnectionInitialized(bool connection_succeeded) {
   base::ScopedFile shmem_fd = ipc_channel_->TakeReceivedFD();
   PERFETTO_CHECK(shmem_fd);
   shared_memory_ = PosixSharedMemory::AttachToFd(std::move(shmem_fd));
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  auto on_page_complete_callback =
+      [weak_this](const std::vector<uint32_t>& changed_pages) {
+        if (!weak_this)
+          return;
+        weak_this->NotifySharedMemoryUpdate(changed_pages);
+      };
+  shared_memory_arbiter_.reset(new ProducerSharedMemoryArbiter(
+      shared_memory_->start(), shared_memory_->size(), kTracingPageSize,
+      on_page_complete_callback, task_runner_));
   producer_->OnConnect();
 }
 
@@ -170,10 +190,17 @@ void ProducerIPCClientImpl::NotifySharedMemoryUpdate(
     return;
   }
   NotifySharedMemoryUpdateRequest req;
+  req.mutable_changed_pages()->Reserve(static_cast<int>(changed_pages.size()));
   for (uint32_t changed_page : changed_pages)
     req.add_changed_pages(changed_page);
   producer_port_.NotifySharedMemoryUpdate(
       req, ipc::Deferred<NotifySharedMemoryUpdateResponse>());
+  PERFETTO_DLOG("NotifySharedMemoryUpdate %zu", changed_pages.size());
+}
+
+std::unique_ptr<TraceWriter> ProducerIPCClientImpl::CreateTraceWriter(
+    size_t target_buffer) {
+  return shared_memory_arbiter_->CreateTraceWriter(target_buffer);
 }
 
 SharedMemory* ProducerIPCClientImpl::shared_memory() const {

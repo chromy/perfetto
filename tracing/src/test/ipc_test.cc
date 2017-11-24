@@ -21,22 +21,31 @@
 
 #include "base/logging.h"
 #include "base/test/test_task_runner.h"
+#include "tracing/core/consumer.h"
 #include "tracing/core/data_source_config.h"
 #include "tracing/core/data_source_descriptor.h"
 #include "tracing/core/producer.h"
 #include "tracing/core/service.h"
+#include "tracing/core/trace_config.h"
+#include "tracing/core/trace_packet.h"
+#include "tracing/core/trace_writer.h"
 #include "tracing/ipc/producer_ipc_client.h"
 #include "tracing/ipc/service_ipc_host.h"
 #include "tracing/src/core/service_impl.h"
+#include "tracing/src/ipc/consumer/consumer_ipc_client_impl.h"
 #include "tracing/src/ipc/posix_shared_memory.h"
 #include "tracing/src/ipc/producer/producer_ipc_client_impl.h"
 #include "tracing/src/ipc/service/service_ipc_host_impl.h"
+
+#include "protos/trace_packet.pbzero.h"
+#include "protos/trace_packet.pb.h"
 
 namespace perfetto {
 
 namespace {
 
-const char kSocketName[] = "/tmp/perfetto-ipc-test.sock";
+const char kProducerSocketName[] = "/tmp/perfetto-ipc-test-producer.sock";
+const char kConsumerSocketName[] = "/tmp/perfetto-ipc-test-consumer.sock";
 
 class TestProducer : public Producer {
  public:
@@ -56,6 +65,8 @@ class TestProducer : public Producer {
         "The tracing service requested us to start a new data source %" PRIu64
         ", config: %s",
         dsid, cfg.trace_category_filters.c_str());
+    if (on_create_ds)
+      on_create_ds(cfg);
   }
 
   void TearDownDataSourceInstance(DataSourceInstanceID instance_id) override {
@@ -65,40 +76,103 @@ class TestProducer : public Producer {
   }
 
   std::function<void()> on_connect;
+  std::function<void(const DataSourceConfig&)> on_create_ds;
+};
+
+class TestConsumer : public Consumer {
+ public:
+  void OnConnect() override {
+    PERFETTO_DLOG("Connected as Consumer");
+    if (on_connect)
+      on_connect();
+  }
+
+  void OnDisconnect() override {
+    PERFETTO_DLOG("Disconnected from tracing service");
+  }
+
+  void OnTraceData(const std::vector<TracePacket>& trace_packets) override {
+    if (on_trace_data)
+      on_trace_data(trace_packets);
+  }
+
+  std::function<void()> on_connect;
+  std::function<void(const std::vector<TracePacket>&)> on_trace_data;
 };
 
 void __attribute__((noreturn)) ProducerMain() {
   base::TestTaskRunner task_runner;
   TestProducer producer;
   std::unique_ptr<Service::ProducerEndpoint> endpoint =
-      ProducerIPCClient::Connect(kSocketName, &producer, &task_runner);
+      ProducerIPCClient::Connect(kProducerSocketName, &producer, &task_runner);
   producer.on_connect = task_runner.CreateCheckpoint("connect");
   task_runner.RunUntilCheckpoint("connect");
 
-  for (int i = 0; i < 3; i++) {
-    DataSourceDescriptor descriptor;
-    descriptor.name = "perfetto.test.data_source";
-    auto reg_checkpoint =
-        task_runner.CreateCheckpoint("register" + std::to_string(i));
-    auto on_register = [reg_checkpoint](DataSourceID id) {
-      printf("Service acked RegisterDataSource() with ID %" PRIu64 "\n", id);
-      reg_checkpoint();
-    };
-    endpoint->RegisterDataSource(descriptor, on_register);
-    task_runner.RunUntilCheckpoint("register" + std::to_string(i));
+  DataSourceDescriptor descriptor;
+  descriptor.name = "perfetto.test.data_source";
+  auto reg_checkpoint = task_runner.CreateCheckpoint("register");
+  auto on_register = [reg_checkpoint](DataSourceID id) {
+    printf("Service acked RegisterDataSource() with ID %" PRIu64 "\n", id);
+    reg_checkpoint();
+  };
+  endpoint->RegisterDataSource(descriptor, on_register);
+  task_runner.RunUntilCheckpoint("register");
 
-    auto* ipc_client = static_cast<ProducerIPCClientImpl*>(endpoint.get());
-    void* shm = ipc_client->shared_memory()->start();
-    char buf[32];
-    memcpy(buf, shm, sizeof(buf));
-    buf[sizeof(buf) - 1] = '\0';
-    printf("Shared Memory contents: \"%s\"\n", buf);
-  }
+  producer.on_create_ds = [&endpoint](const DataSourceConfig& cfg) {
+    auto trace_writer1 = endpoint->CreateTraceWriter();
+    auto trace_writer2 = endpoint->CreateTraceWriter();
+    for (int j = 0; j < 240; j++) {
+      auto event = trace_writer1->NewTracePacket();
+      char content[64];
+      sprintf(content, "Stream 1 - %3d .................", j);
+      event->set_test(content);
+      event = trace_writer2->NewTracePacket();
+      sprintf(content, "Stream 2 - %3d ++++++++++++++++++++++++++++++++++++",
+              j);
+      event->set_test(content);
+    }
+  };
+  task_runner.Run();
+}
+
+void __attribute__((noreturn)) ConsumerMain() {
+  base::TestTaskRunner task_runner;
+  TestConsumer consumer;
+  std::unique_ptr<Service::ConsumerEndpoint> endpoint =
+      ConsumerIPCClient::Connect(kConsumerSocketName, &consumer, &task_runner);
+  consumer.on_connect = task_runner.CreateCheckpoint("connect");
+  task_runner.RunUntilCheckpoint("connect");
+
+  TraceConfig trace_config;
+  trace_config.buffers.emplace_back();
+  trace_config.buffers.back().size_kb = 1024;
+  trace_config.data_sources.emplace_back();
+  trace_config.data_sources.back().config.name = "perfetto.test.data_source";
+  trace_config.data_sources.back().config.target_buffer = 0;
+  trace_config.data_sources.back().config.trace_category_filters = "aa,bb";
+
+  endpoint->StartTracing(trace_config);
+  task_runner.RunUntilIdle();
+
+  printf("Press a key to stop tracing...\n");
+  getchar();
+
+  consumer.on_trace_data = [](const std::vector<TracePacket>& trace_packets) {
+    printf("OnTraceData()\n");
+    for (const TracePacket& const_packet : trace_packets) {
+      TracePacket& packet = const_cast<TracePacket&>(const_packet);
+      bool decoded = packet.Decode();
+      printf(" %d %s\n", decoded,
+             decoded ? packet->test().c_str() : "[Decode fail]");
+    }
+  };
+  endpoint->StopTracing();
   task_runner.Run();
 }
 
 void __attribute__((noreturn)) ServiceMain() {
-  unlink(kSocketName);
+  unlink(kProducerSocketName);
+  unlink(kConsumerSocketName);
   base::TestTaskRunner task_runner;
   std::unique_ptr<ServiceIPCHostImpl> host(static_cast<ServiceIPCHostImpl*>(
       ServiceIPCHost::CreateInstance(&task_runner).release()));
@@ -118,13 +192,9 @@ void __attribute__((noreturn)) ServiceMain() {
       printf("Data source registered, Producer=%" PRIu64 " DataSource=%" PRIu64
              "\n",
              prid, dsid);
-      DataSourceConfig cfg;
-      cfg.trace_category_filters = "foo,bar";
-      SharedMemory* shm = svc_->GetProducer(prid)->shared_memory();
-      char shm_contents[32];
-      sprintf(shm_contents, "shmem @ iteration %" PRIu64, dsid);
-      memcpy(shm->start(), shm_contents, sizeof(shm_contents));
-      svc_->GetProducer(prid)->producer()->CreateDataSourceInstance(42, cfg);
+      // DataSourceConfig cfg;
+      // cfg.trace_category_filters = "foo,bar";
+      // svc_->GetProducer(prid)->producer()->CreateDataSourceInstance(42, cfg);
     }
 
     void OnDataSourceUnregistered(ProducerID prid, DataSourceID dsid) override {
@@ -136,7 +206,7 @@ void __attribute__((noreturn)) ServiceMain() {
     ServiceImpl* svc_;
   };
 
-  host->Start(kSocketName);
+  host->Start(kProducerSocketName, kConsumerSocketName);
   Observer observer(static_cast<ServiceImpl*>(host->service_for_testing()));
   host->service_for_testing()->set_observer_for_testing(&observer);
   task_runner.Run();
@@ -148,6 +218,8 @@ void __attribute__((noreturn)) ServiceMain() {
 int main(int argc, char** argv) {
   if (argc == 2 && !strcmp(argv[1], "producer"))
     perfetto::ProducerMain();
+  if (argc == 2 && !strcmp(argv[1], "consumer"))
+    perfetto::ConsumerMain();
   if (argc == 2 && !strcmp(argv[1], "service"))
     perfetto::ServiceMain();
 

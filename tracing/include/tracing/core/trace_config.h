@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
-#define TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+#ifndef TRACING_INCLUDE_TRACING_TRACE_CONFIG_H_
+#define TRACING_INCLUDE_TRACING_TRACE_CONFIG_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
+#include <list>
+#include <string>
+
+#include "tracing/core/data_source_config.h"
 
 namespace perfetto {
 
-using ProducerID = uint64_t;
-using DataSourceID = uint64_t;
-using DataSourceInstanceID = uint64_t;
-using WriterID = uint16_t;
+struct TraceConfig {
+  struct BufferConfig {
+    uint32_t size_kb = 0;
+  };
+  struct DataSource {
+    std::list<std::string> producer_name_filter;
+    DataSourceConfig config;
+  };
 
-// Keep this in sync with SharedMemoryABI::PageHeader::target_buffer.
-static constexpr unsigned kMaxTraceBuffers = 1 << 16;
+  std::list<BufferConfig> buffers;
+  std::list<DataSource> data_sources;
+};
 
 }  // namespace perfetto
 
-#endif  // TRACING_INCLUDE_TRACING_CORE_BASIC_TYPES_H_
+#endif  // TRACING_INCLUDE_TRACING_TRACE_CONFIG_H_
