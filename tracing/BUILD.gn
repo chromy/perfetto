@@ -104,22 +104,6 @@ executable("tracing_unittests") {
   ]
 }
 
-executable("tracing_test") {
-  testonly = true
-  deps += [
-    ":ipc",
-    ":ipc_protos",
-    ":tracing",
-    "//base",
-    "//base:test_support",
-    "//ipc",
-    "//protos:zero",
-  ]
-  sources = [
-    "src/test/ipc_test.cc",
-  ]
-}
-
 executable("tracing_benchmarks") {
   testonly = true
   deps += [ "//buildtools:benchmark" ]
