@@ -238,6 +238,7 @@ TEST(CpuReaderTest, ParseSimpleEvent) {
   ASSERT_EQ(proto_bundle.event().size(), 1);
   const protos::FtraceEvent& proto_event = proto_bundle.event().Get(0);
   EXPECT_EQ(proto_event.pid(), 72);
+  EXPECT_EQ(proto_event.timestamp(), 1000);
   EXPECT_TRUE(proto_event.has_print());
   // TODO(hjd): Check if this is the correct format.
   EXPECT_EQ(proto_event.print().buf(), "Hello, world!\n");

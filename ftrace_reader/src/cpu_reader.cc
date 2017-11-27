@@ -157,10 +157,15 @@ bool CpuReader::ParsePage(size_t cpu,
   if (end > end_of_page)
     return false;
 
+  uint64_t timestamp = page_header.timestamp;
+
   while (ptr < end) {
     EventHeader event_header;
     if (!ReadAndAdvance(&ptr, end, &event_header))
       return false;
+
+    timestamp += event_header.time_delta;
+
     switch (event_header.type_or_length) {
       case kTypePadding: {
         // Left over page padding or discarded event.
@@ -225,6 +230,7 @@ bool CpuReader::ParsePage(size_t cpu,
 
         protos::pbzero::FtraceEvent* event = bundle->add_event();
         event->set_pid(pid);
+        event->set_timestamp(timestamp);
 
         // TODO(hjd): Replace this handrolled code with generic parsing code.
         if (ftrace_event_id == print_id) {
