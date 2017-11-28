@@ -167,6 +167,8 @@ class UnixSocket {
     return peer_uid_;
   }
 
+  void SetBlockingIO(bool is_blocking);
+
  private:
   UnixSocket(EventListener*, base::TaskRunner*);
   UnixSocket(EventListener*, base::TaskRunner*, base::ScopedFile);

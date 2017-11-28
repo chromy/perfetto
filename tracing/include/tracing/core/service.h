@@ -106,7 +106,7 @@ class Service {
     virtual void EnableTracing(const TraceConfig&) = 0;
     virtual void DisableTracing() = 0;
 
-    // Tracing data will be delivered invoking the Consumer::OnData() method.
+    // Tracing data will be delivered invoking Consumer::OnTraceData().
     virtual void ReadBuffers() = 0;
 
     virtual void FreeBuffers() = 0;

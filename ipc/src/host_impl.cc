@@ -197,7 +197,12 @@ void HostImpl::ReplyToMethodInvocation(ClientID client_id,
       reply_frame_data->set_success(true);
     }
   }
+
+  // TODO: this SetBlockingIO() is a hack to work around exposing backpressure
+  // back to the caller.
+  client->sock->SetBlockingIO(true);
   SendFrame(client, reply_frame, reply.fd());
+  client->sock->SetBlockingIO(false);
 }
 
 // static
