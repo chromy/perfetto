@@ -149,15 +149,16 @@ config("default") {
 }
 
 config("debug_symbols") {
-  if (is_android) {
-    cflags = [
-      "-funwind-tables",
-      "-g",
-    ]
-  } else {
-    cflags = [ "-g2" ]
+  cflags = [
+    "-g",
+    "-O0",
+  ]
+  if (is_android || is_linux) {
+    cflags += [ "-funwind-tables" ]
+    ldflags = [ "-rdynamic" ]
   }
 }
+
 
 config("release") {
   cflags = [
