@@ -108,6 +108,8 @@ void ConsumerMain() {
       bool decoded = packet.Decode();
       printf(" %d %s\n", decoded,
              decoded ? packet->test().c_str() : "[Decode fail]");
+      if (!decoded)
+        continue;
       if (!packet->has_ftrace_events())
         continue;
       const FtraceEventBundle& bundle = packet->ftrace_events();
