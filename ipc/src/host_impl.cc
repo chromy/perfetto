@@ -207,8 +207,24 @@ void HostImpl::SendFrame(ClientConnection* client, const Frame& frame, int fd) {
   // TODO(primiano): remember that this is doing non-blocking I/O. What if the
   // socket buffer is full? Maybe we just want to drop this on the floor? Or
   // maybe throttle the send and PostTask the reply later?
-  bool res = client->sock->Send(buf.data(), buf.size(), fd);
-  PERFETTO_CHECK(!client->sock->is_connected() || res);
+  if (client->sock->Send(buf.data(), buf.size(), fd))
+    return;
+
+  // Send() failed. There are mainly two reasons for this:
+  // 1. The other peer disconnected, in which case the caller will soon be
+  //    notified about that with an OnDisconnect().
+  // 2. The output buffer is full. In this case either the caller is declaring
+  //    to handle backpressure via ScopedAllowBackpressure() or we bail.
+
+  if (!client->sock->is_connected())
+    return;  // Case 1.
+
+  // if (backpressure_handler_) {
+    // backpressure_handler_->set_last_send_did_fail(true);
+  // } else {
+    // TODO: gracefully shutdown the IPC channel.
+    PERFETTO_CHECK(false);
+  // }
 }
 
 void HostImpl::OnDisconnect(UnixSocket* sock) {

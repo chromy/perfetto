@@ -55,8 +55,8 @@ void ConsumerIPCService::OnClientDisconnected() {
 }
 
 // Called by the IPC layer.
-void ConsumerIPCService::StartTracing(const StartTracingRequest& req,
-                                      DeferredStartTracingResponse resp) {
+void ConsumerIPCService::EnableTracing(const EnableTracingRequest& req,
+                                       DeferredEnableTracingResponse resp) {
   TraceConfig trace_config;
   for (const auto& proto_buf_cfg : req.buffers()) {
     trace_config.buffers.emplace_back();
@@ -73,15 +73,27 @@ void ConsumerIPCService::StartTracing(const StartTracingRequest& req,
     ds.config.trace_category_filters =
         proto_ds.config().trace_category_filters();
   }
-  GetConsumerForCurrentRequest()->service_endpoint->StartTracing(trace_config);
-  resp.Resolve(ipc::AsyncResult<StartTracingResponse>::Create());
+  GetConsumerForCurrentRequest()->service_endpoint->EnableTracing(trace_config);
+  resp.Resolve(ipc::AsyncResult<EnableTracingResponse>::Create());
 }
 
-void ConsumerIPCService::StopTracing(const StopTracingRequest& req,
-                                     DeferredStopTracingResponse resp) {
+void ConsumerIPCService::DisableTracing(const DisableTracingRequest& req,
+                                        DeferredDisableTracingResponse resp) {
+  GetConsumerForCurrentRequest()->service_endpoint->DisableTracing();
+  resp.Resolve(ipc::AsyncResult<DisableTracingResponse>::Create());
+}
+
+void ConsumerIPCService::ReadBuffers(const ReadBuffersRequest& req,
+                                     DeferredReadBuffersResponse resp) {
   RemoteConsumer* remote_consumer = GetConsumerForCurrentRequest();
-  remote_consumer->service_endpoint->StopTracing();
-  remote_consumer->stop_tracing_response = std::move(resp);
+  remote_consumer->read_buffers_response = std::move(resp);
+  remote_consumer->service_endpoint->ReadBuffers();
+}
+
+void ConsumerIPCService::FreeBuffers(const FreeBuffersRequest& req,
+                                     DeferredFreeBuffersResponse resp) {
+  GetConsumerForCurrentRequest()->service_endpoint->FreeBuffers();
+  resp.Resolve(ipc::AsyncResult<FreeBuffersResponse>::Create());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,19 +115,18 @@ void ConsumerIPCService::RemoteConsumer::OnDisconnect() {}
 void ConsumerIPCService::RemoteConsumer::OnTraceData(
     const std::vector<TracePacket>& trace_packets,
     bool has_more) {
-  if (!stop_tracing_response.IsBound())
+  if (!read_buffers_response.IsBound())
     return;
 
-  auto result = ipc::AsyncResult<StopTracingResponse>::Create();
+  auto result = ipc::AsyncResult<ReadBuffersResponse>::Create();
   result.set_has_more(has_more);
   for (const TracePacket& trace_packet : trace_packets)
     result->add_trace_packets(trace_packet.start(), trace_packet.size());
 
-
   // TODO lifetime: does the IPC layer guarantee that the arguments of the
   // resolved responses are used inline and not kept around? If not, the
   // start() trace_packet pointers will become invalid.
-  stop_tracing_response.Resolve(std::move(result));
+  read_buffers_response.Resolve(std::move(result));
 }
 
 }  // namespace perfetto

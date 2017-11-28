@@ -57,8 +57,10 @@ class ConsumerIPCClientImpl : public Service::ConsumerEndpoint,
   // Service::ConsumerEndpoint implementation.
   // These methods are invoked by the actual Consumer(s) code by clients of the
   // tracing library, which know nothing about the IPC transport.
-  void StartTracing(const TraceConfig&) override;
-  void StopTracing() override;
+  void EnableTracing(const TraceConfig&) override;
+  void DisableTracing() override;
+  void ReadBuffers() override;
+  void FreeBuffers() override;
 
   // ipc::ServiceProxy::EventListener implementation.
   // These methods are invoked by the IPC layer, which knows nothing about
@@ -67,7 +69,7 @@ class ConsumerIPCClientImpl : public Service::ConsumerEndpoint,
   void OnDisconnect() override;
 
  private:
-  void OnStopTracingResponse(ipc::AsyncResult<StopTracingResponse>);
+  void OnReadBuffersResponse(ipc::AsyncResult<ReadBuffersResponse>);
 
   // TODO think to destruction order, do we rely on any specific dtor sequence?
   Consumer* const consumer_;

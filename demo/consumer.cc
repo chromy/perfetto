@@ -75,14 +75,15 @@ void ConsumerMain() {
   trace_config.data_sources.back().config.trace_category_filters = "aa,bb";
 
   consumer.on_connect = [&endpoint, &trace_config] {
-    printf("Connected, sending StartTracing() request\n");
-    endpoint->StartTracing(trace_config);
+    printf("Connected, sending EnableTracing() request\n");
+    endpoint->EnableTracing(trace_config);
   };
 
   task_runner.PostDelayedTask(
       [&endpoint] {
-        printf("Sending StopTracing() request\n");
-        endpoint->StopTracing();
+        printf("Sending DisableTracing() + ReadBuffers() request\n");
+        endpoint->DisableTracing();
+        endpoint->ReadBuffers();
       },
       2000);
 

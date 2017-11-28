@@ -64,15 +64,15 @@ void ConsumerIPCClientImpl::OnDisconnect() {
   consumer_->OnDisconnect();
 }
 
-void ConsumerIPCClientImpl::StartTracing(const TraceConfig& trace_config) {
+void ConsumerIPCClientImpl::EnableTracing(const TraceConfig& trace_config) {
   if (!connected_) {
-    PERFETTO_DLOG("Cannot StartTracing(), not connected to tracing service");
+    PERFETTO_DLOG("Cannot EnableTracing(), not connected to tracing service");
     return;
   }
 
-  // Serialize the |trace_config| into a StartTracingRequest protobuf.
+  // Serialize the |trace_config| into a EnableTracingRequest protobuf.
   // Keep this in sync with changes in consumer_port.proto.
-  StartTracingRequest req;
+  EnableTracingRequest req;
   for (const TraceConfig::BufferConfig& buf_cfg : trace_config.buffers)
     req.add_buffers()->set_size_kb(buf_cfg.size_kb);
 
@@ -85,37 +85,50 @@ void ConsumerIPCClientImpl::StartTracing(const TraceConfig& trace_config) {
     proto_cfg->set_target_buffer(ds_cfg.config.target_buffer);
     proto_cfg->set_trace_category_filters(ds_cfg.config.trace_category_filters);
   }
-  ipc::Deferred<StartTracingResponse> async_response;
-  async_response.Bind([](ipc::AsyncResult<StartTracingResponse> response) {
+  ipc::Deferred<EnableTracingResponse> async_response;
+  async_response.Bind([](ipc::AsyncResult<EnableTracingResponse> response) {
     if (!response)
-      PERFETTO_DLOG("StartTracing() failed: connection reset");
+      PERFETTO_DLOG("EnableTracing() failed");
   });
-  consumer_port_.StartTracing(req, std::move(async_response));
+  consumer_port_.EnableTracing(req, std::move(async_response));
 }
 
-void ConsumerIPCClientImpl::StopTracing() {
+void ConsumerIPCClientImpl::DisableTracing() {
   if (!connected_) {
-    PERFETTO_DLOG("Cannot StopTracing(), not connected to tracing service");
+    PERFETTO_DLOG("Cannot DisableTracing(), not connected to tracing service");
     return;
   }
 
-  StopTracingRequest req;
-  ipc::Deferred<StopTracingResponse> async_response;
+  ipc::Deferred<DisableTracingResponse> async_response;
+  async_response.Bind([](ipc::AsyncResult<DisableTracingResponse> response) {
+    if (!response)
+      PERFETTO_DLOG("DisableTracing() failed");
+  });
+}
+
+void ConsumerIPCClientImpl::ReadBuffers() {
+  if (!connected_) {
+    PERFETTO_DLOG("Cannot ReadBuffers(), not connected to tracing service");
+    return;
+  }
+
+  ReadBuffersRequest req;
+  ipc::Deferred<ReadBuffersResponse> async_response;
 
   // The IPC layer guarantees that callbacks are destroyed after this object
   // is destroyed (by virtue of destroying the |consumer_port_|). In turn the
   // contract of this class expects the caller to not destroy the Consumer class
   // before having destroyed this class. Hence binding consumer here is safe.
-  async_response.Bind([this](ipc::AsyncResult<StopTracingResponse> response) {
-    OnStopTracingResponse(std::move(response));
+  async_response.Bind([this](ipc::AsyncResult<ReadBuffersResponse> response) {
+    OnReadBuffersResponse(std::move(response));
   });
-  consumer_port_.StopTracing(req, std::move(async_response));
+  consumer_port_.ReadBuffers(req, std::move(async_response));
 }
 
-void ConsumerIPCClientImpl::OnStopTracingResponse(
-    ipc::AsyncResult<StopTracingResponse> response) {
+void ConsumerIPCClientImpl::OnReadBuffersResponse(
+    ipc::AsyncResult<ReadBuffersResponse> response) {
   if (!response) {
-    PERFETTO_DLOG("StopTracing() failed: connection reset");
+    PERFETTO_DLOG("ReadBuffers() failed");
     return;
   }
   std::vector<TracePacket> trace_packets;
@@ -124,6 +137,26 @@ void ConsumerIPCClientImpl::OnStopTracingResponse(
     trace_packets.emplace_back(reinterpret_cast<const void*>(bytes.data()),
                                bytes.size());
   consumer_->OnTraceData(trace_packets, response.has_more());
+}
+
+void ConsumerIPCClientImpl::FreeBuffers() {
+  if (!connected_) {
+    PERFETTO_DLOG("Cannot FreeBuffers(), not connected to tracing service");
+    return;
+  }
+
+  FreeBuffersRequest req;
+  ipc::Deferred<FreeBuffersResponse> async_response;
+
+  // The IPC layer guarantees that callbacks are destroyed after this object
+  // is destroyed (by virtue of destroying the |consumer_port_|). In turn the
+  // contract of this class expects the caller to not destroy the Consumer class
+  // before having destroyed this class. Hence binding consumer here is safe.
+  async_response.Bind([](ipc::AsyncResult<FreeBuffersResponse> response) {
+    if (!response)
+      PERFETTO_DLOG("FreeBuffers() failed");
+  });
+  consumer_port_.FreeBuffers(req, std::move(async_response));
 }
 
 }  // namespace perfetto

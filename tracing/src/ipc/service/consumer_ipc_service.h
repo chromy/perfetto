@@ -44,10 +44,14 @@ class ConsumerIPCService : public ConsumerPort /* from consumer_port.proto */ {
   ~ConsumerIPCService() override;
 
   // ConsumerPort implementation (from .proto IPC definition).
-  void StartTracing(const StartTracingRequest&,
-                    DeferredStartTracingResponse) override;
-  void StopTracing(const StopTracingRequest&,
-                   DeferredStopTracingResponse) override;
+  void EnableTracing(const EnableTracingRequest&,
+                     DeferredEnableTracingResponse) override;
+  void DisableTracing(const DisableTracingRequest&,
+                      DeferredDisableTracingResponse) override;
+  void ReadBuffers(const ReadBuffersRequest&,
+                   DeferredReadBuffersResponse) override;
+  void FreeBuffers(const FreeBuffersRequest&,
+                   DeferredFreeBuffersResponse) override;
   void OnClientDisconnected() override;
 
  private:
@@ -70,9 +74,9 @@ class ConsumerIPCService : public ConsumerPort /* from consumer_port.proto */ {
     // specific Consumer on the Service business logic.
     std::unique_ptr<Service::ConsumerEndpoint> service_endpoint;
 
-    // After StopTracing() is invoked, this binds the async callback that allows
-    // to stream trace packets back to the client.
-    DeferredStopTracingResponse stop_tracing_response;
+    // After DisableTracing() is invoked, this binds the async callback that
+    // allows to stream trace packets back to the client.
+    DeferredReadBuffersResponse read_buffers_response;
   };
 
   ConsumerIPCService(const ConsumerIPCService&) = delete;

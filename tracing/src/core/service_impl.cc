@@ -106,7 +106,7 @@ void ServiceImpl::DisconnectConsumer(ConsumerEndpointImpl* consumer) {
   PERFETTO_DCHECK(consumers_.count(consumer));
   auto tracing_session_it = tracing_sessions_.find(consumer);
   if (tracing_session_it != tracing_sessions_.end())
-    StopTracing(tracing_session_it->first);
+    DisableTracing(tracing_session_it->first);
   consumers_.erase(consumer);
   // TODO: notfy observer.
 }
@@ -118,8 +118,8 @@ Service::ProducerEndpoint* ServiceImpl::GetProducer(ProducerID id) const {
   return it->second;
 }
 
-void ServiceImpl::StartTracing(ConsumerEndpointImpl* initiator,
-                               const TraceConfig& cfg) {
+void ServiceImpl::EnableTracing(ConsumerEndpointImpl* initiator,
+                                const TraceConfig& cfg) {
   auto it_and_inserted = tracing_sessions_.emplace(initiator, TracingSession());
   if (!it_and_inserted.second) {
     PERFETTO_DLOG("The Consumer has already started a tracing session");
@@ -174,7 +174,7 @@ void ServiceImpl::StartTracing(ConsumerEndpointImpl* initiator,
   }
 }
 
-void ServiceImpl::StopTracing(ConsumerEndpointImpl* initiator) {
+void ServiceImpl::DisableTracing(ConsumerEndpointImpl* initiator) {
   auto it = tracing_sessions_.find(initiator);
   if (it == tracing_sessions_.end()) {
     PERFETTO_DLOG("No active tracing session found for the Consumer");
@@ -188,6 +188,15 @@ void ServiceImpl::StopTracing(ConsumerEndpointImpl* initiator) {
     producer_it->second->producer()->TearDownDataSourceInstance(
         data_source_inst.second);
   }
+}
+
+void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {
+  auto it = tracing_sessions_.find(initiator);
+  if (it == tracing_sessions_.end()) {
+    PERFETTO_DLOG("No active tracing session found for the Consumer");
+    return;
+  }
+  TracingSession& tracing_session = it->second;
   auto weak_consumer = initiator->GetWeakPtr();
 
   for (size_t buf_idx : tracing_session.trace_buffers) {
@@ -248,9 +257,15 @@ void ServiceImpl::StopTracing(ConsumerEndpointImpl* initiator) {
     if (weak_consumer)
       weak_consumer->consumer()->OnTraceData(std::vector<TracePacket>(), false);
   });
+}
 
+void ServiceImpl::FreeBuffers(ConsumerEndpointImpl* initiator) {
+  auto it = tracing_sessions_.find(initiator);
+  if (it == tracing_sessions_.end()) {
+    PERFETTO_DLOG("No active tracing session found for the Consumer");
+    return;
+  }
   tracing_sessions_.erase(it);
-
   // TODO this needs to be more graceful. This will destroy the |trace_buffers|,
   // which will cause some UAF. Refcount the log buffers or similar.
   // TODO: destroy the buffer in log_buffers_.
@@ -270,12 +285,20 @@ ServiceImpl::ConsumerEndpointImpl::~ConsumerEndpointImpl() {
   service_->DisconnectConsumer(this);
 }
 
-void ServiceImpl::ConsumerEndpointImpl::StartTracing(const TraceConfig& cfg) {
-  service_->StartTracing(this, cfg);
+void ServiceImpl::ConsumerEndpointImpl::EnableTracing(const TraceConfig& cfg) {
+  service_->EnableTracing(this, cfg);
 }
 
-void ServiceImpl::ConsumerEndpointImpl::StopTracing() {
-  service_->StopTracing(this);
+void ServiceImpl::ConsumerEndpointImpl::DisableTracing() {
+  service_->DisableTracing(this);
+}
+
+void ServiceImpl::ConsumerEndpointImpl::ReadBuffers() {
+  service_->ReadBuffers(this);
+}
+
+void ServiceImpl::ConsumerEndpointImpl::FreeBuffers() {
+  service_->FreeBuffers(this);
 }
 
 base::WeakPtr<ServiceImpl::ConsumerEndpointImpl>

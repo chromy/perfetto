@@ -23,16 +23,65 @@ package perfetto;
 
 // IPC interface definition for the consumer port of the tracing service.
 service ConsumerPort {
-  rpc StartTracing(StartTracingRequest) returns (StartTracingResponse) {}
-  rpc StopTracing(StopTracingRequest) returns (stream StopTracingResponse) {}
+  // Creates the ring buffers that will be used for the tracing session.
+  // rpc CreateBuffers(CreateBuffersRequest) returns (CreateBuffersResponse) {}
+
+  // Enables tracing for one or more data sources. At least one buffer must have
+  // been previously created.
+  rpc EnableTracing(EnableTracingRequest) returns (EnableTracingResponse) {}
+
+  // Disables tracing for one or more data sources.
+  rpc DisableTracing(DisableTracingRequest) returns (DisableTracingResponse) {}
+
+  // Streams back the contents of one or more buffers.
+  // TODO: add the ability to pass a FD and just let the service write into
+  // that.
+  rpc ReadBuffers(ReadBuffersRequest) returns (stream ReadBuffersResponse) {}
+
+  // Destroys the buffers previously created. Note: all buffers are destroyed
+  // implicitly if the Consumer disconnects.
+  rpc FreeBuffers(FreeBuffersRequest) returns (FreeBuffersResponse) {}
+
   // TODO rpc ListDataSources(), for the UI.
 }
 
-// Arguments for rpc StartTracing().
-message StartTracingRequest {
+// Arguments for rpc CreateBuffers().
+// message CreateBuffersRequest {}
+// message CreateBuffersResponse {}
+
+// Arguments for rpc EnableTracing().
+message EnableTracingRequest {
   message BufferConfig {
-    uint32 size_kb = 1;
-    // TODO: enum Policy { RING_BUFFER, STOP_WHEN_FULL }
+    uint32 size_kb = 2;
+
+    enum OptimizeFor {
+      // The log buffer is drained spordadically (typically only once after
+      // DisableTracing()). This mode minimizes the Service overhead when moving
+      // the pages from the Producer(s) shared staging buffers into the central
+      // log buffer, at the cost of doing some extra memory moves to reorder and
+      // reassemble the logged TracePacket(s).
+      ONE_SHOT_READ = 0;
+
+      // The log buffer is streamed continuously to the Consumer.
+      // Advantages:
+      // - It allows to use a smaller log buffer size, as the buffer is only
+      //   needed to cover the pipe latency between Service and Consumer.
+      // - It reduces the total cpu cost of tracing, as TracePackets are
+      //   reshuffled only once when collected from the Producers shmem buffers.
+      // Disadvantage:
+      // - More scheduling intrusive, as will periodically wake up the Consumer
+      //   to stream data.
+      // TODO: Not implemented yet.
+      // CONTINUOUS_STREAMING = 1;
+    }
+    OptimizeFor optimize_for = 3;
+
+    enum FillPolicy {
+      RING_BUFFER = 0;
+      // TODO: not implemented yet.
+      //STOP_WHEN_FULL = 1;
+    }
+    FillPolicy fill_policy = 4;
   }
   repeated BufferConfig buffers = 1;
 
@@ -49,35 +98,30 @@ message StartTracingRequest {
     repeated string producer_name_filter = 2;
   }
   repeated DataSource data_sources = 2;
-
-  enum DrainMode {
-    // The log buffer is sent to the Consumer only after the StopTracing()
-    // command. This mode minimizes the Service overhead when moving the pages
-    // from the Producer(s) shared staging buffers into the central log buffer,
-    // at the cost of doing some extra memory moves to reorder and reassemble
-    // the logged TracePacket(s).
-    COLLECT_ON_STOP = 0;
-
-    // The log buffer is streamed continuously to the Consumer.
-    // Advantages:
-    // - It allows to use a smaller log buffer size, as the buffer is only
-    //   needed to cover piping latency of the Consumer.
-    // - It reduce the total cpu cost of tracing, as TracePackets are reshuffled
-    //   only once when collected from the Produer(s) staging buffers.
-    // Disadvantage:
-    // - More scheduling intrusive, as will periodically wake up the Consumer
-    //   to stream data.
-    // TODO: Not implemented yet.
-    // STREAM_IN_REAL_TIME = 1;
-  }
-  DrainMode drain_mode = 3;
 }
 
-message StartTracingResponse {}
+message EnableTracingResponse {}
 
-message StopTracingRequest {}
+// Arguments for rpc DisableTracing().
+message DisableTracingRequest {
+  // When set, all active data source are disabled.
+  bool disable_all = 1;
 
-message StopTracingResponse {
+  // TODO: not supported yet.
+  // repeated string data_source_name;
+}
+
+message DisableTracingResponse {}
+
+// Arguments for rpc ReadBuffers().
+message ReadBuffersRequest {
+  // The |id|s of the buffer, as passed to CreateBuffers().
+  // TODO: repeated uint32 buffer_ids = 1;
+}
+
+message ReadBuffersResponse {
+  // TODO: uint32 buffer_id = 1;
+
   // Each streaming reply returns one or more trace packets (see
   // trace_packet.proto).
   // Why "bytes" here? If we just return the full TracePacket object, that will
@@ -93,5 +137,13 @@ message StopTracingResponse {
   // stored in the log buffer. On the other side, this will likely just move
   // the problem on the consumer, that will need larger buffers for reassembly.
   // Perhaps we should just cap the size of a TracePacket to a lower size?
-  repeated bytes trace_packets = 1;
+  repeated bytes trace_packets = 2;
 }
+
+// Arguments for rpc FreeBuffers().
+message FreeBuffersRequest {
+  // The |id|s of the buffer, as passed to CreateBuffers().
+  repeated uint32 buffer_ids = 1;
+}
+
+message FreeBuffersResponse {}

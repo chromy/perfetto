@@ -102,11 +102,14 @@ class Service {
    public:
     virtual ~ConsumerEndpoint() = default;
 
-    virtual void StartTracing(const TraceConfig&) = 0;
+
+    virtual void EnableTracing(const TraceConfig&) = 0;
+    virtual void DisableTracing() = 0;
 
     // Tracing data will be delivered invoking the Consumer::OnData() method.
-    virtual void StopTracing() = 0;
+    virtual void ReadBuffers() = 0;
 
+    virtual void FreeBuffers() = 0;
   };  // class ConsumerEndpoint.
 
   // Implemented in src/core/service_impl.cc .

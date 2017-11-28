@@ -120,8 +120,10 @@ class ServiceImpl : public Service {
     base::WeakPtr<ConsumerEndpointImpl> GetWeakPtr();
 
     // Service::ConsumerEndpoint implementation.
-    void StartTracing(const TraceConfig&) override;
-    void StopTracing() override;
+    void EnableTracing(const TraceConfig&) override;
+    void DisableTracing() override;
+    void ReadBuffers() override;
+    void FreeBuffers() override;
 
    private:
     ConsumerEndpointImpl(const ConsumerEndpointImpl&) = delete;
@@ -186,8 +188,10 @@ class ServiceImpl : public Service {
   void DisconnectConsumer(ConsumerEndpointImpl*);
 
   // Called by the ConsumerEndpointImpl.
-  void StartTracing(ConsumerEndpointImpl*, const TraceConfig& cfg);
-  void StopTracing(ConsumerEndpointImpl*);
+  void EnableTracing(ConsumerEndpointImpl*, const TraceConfig& cfg);
+  void DisableTracing(ConsumerEndpointImpl*);
+  void ReadBuffers(ConsumerEndpointImpl*);
+  void FreeBuffers(ConsumerEndpointImpl*);
 
   std::unique_ptr<SharedMemory::Factory> shm_factory_;
   base::TaskRunner* const task_runner_;
