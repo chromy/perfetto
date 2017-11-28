@@ -1,0 +1,194 @@
+/*
+ * Copyright (C) 2017 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+cc_defaults {
+  name: "perfetto_defaults",
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// base
+///////////////////////////////////////////////////////////////////////////////
+
+filegroup {
+  name: "perfetto_base",
+  srcs: [
+    "base/android_task_runner.cc",
+    "base/thread_checker.cc",
+    "base/unix_task_runner.cc",
+  ]
+}
+
+filegroup {
+  name: "perfetto_base_test_support",
+  // deps += [ ":base" ]
+  srcs: [
+    "base/test/test_task_runner.cc",
+  ]
+}
+
+cc_test {
+  name: "perfetto_base_unittests",
+  defaults: ["perfetto_defaults"],
+  srcs: [
+    ":perfetto_base",
+    ":perfetto_base_test_support",
+    "base/scoped_file_unittest.cc",
+    "base/task_runner_unittest.cc",
+    "base/thread_checker_unittest.cc",
+    "base/utils_unittest.cc",
+    "base/weak_ptr_unittest.cc",
+  ],
+  shared_libs: [
+    "libandroid"
+  ],
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// protozero
+///////////////////////////////////////////////////////////////////////////////
+
+cc_defaults {
+  name: "protozero_defaults",
+  local_include_dirs: [ "protozero/include" ],
+  cflags: [
+    "-Wno-sign-compare",
+    "-Wno-unused-parameter",
+    "-Wno-sign-promo",
+    "-Wno-error=return-type",
+  ]
+}
+
+filegroup {
+  name: "protozero",
+  srcs:  [
+    "protozero/src/proto_utils.cc",
+    "protozero/src/protozero_message.cc",
+    "protozero/src/protozero_message_handle.cc",
+    "protozero/src/scattered_stream_writer.cc",
+  ]
+}
+
+cc_binary_host {
+  name: "protozero_protoc_plugin",
+  defaults: [ "protozero_defaults" ],
+  srcs: [
+    "protozero/src/protoc_plugin/protozero_generator.cc",
+    "protozero/src/protoc_plugin/protozero_plugin.cc",
+  ],
+  shared_libs: [ "libprotoc" ],
+}
+
+filegroup {
+  name: "protozero_testing_messages",
+  srcs:  [
+    "protozero/src/test/example_proto/library.proto",
+    "protozero/src/test/example_proto/library_internals/galaxies.proto",
+    "protozero/src/test/example_proto/test_messages.proto",
+    "protozero/src/test/example_proto/upper_import.proto",
+  ]
+}
+
+// Each proto set gets a pair of genrules: one of the sources and one for the
+// headers. This is because a "srcs" entry which depends on a genrule that
+// generates .h causes an error.
+// TODO(skyostil): End this insanity.
+cc_genrule {
+  name: "protozero_testing_messages_lite",
+  tools: [ "aprotoc" ],
+  srcs: [
+    ":protozero_testing_messages",
+  ],
+  // TODO(skyostil): Don't hardcode proto_path.
+  cmd: "mkdir -p $(genDir)/external/perfetto && $(location) --cpp_out=$(genDir)/external/perfetto $(in) --proto_path=external/perfetto",
+  out: [
+    "external/perfetto/protozero/src/test/example_proto/library.pb.cc",
+    "external/perfetto/protozero/src/test/example_proto/library_internals/galaxies.pb.cc",
+    "external/perfetto/protozero/src/test/example_proto/test_messages.pb.cc",
+    "external/perfetto/protozero/src/test/example_proto/upper_import.pb.cc",
+  ]
+}
+
+cc_genrule {
+  name: "protozero_testing_messages_lite_headers",
+  tools: [ "aprotoc" ],
+  srcs: [
+    ":protozero_testing_messages",
+  ],
+  // TODO(skyostil): Don't hardcode proto_path.
+  cmd: "mkdir -p $(genDir)/external/perfetto && $(location) --cpp_out=$(genDir)/external/perfetto $(in) --proto_path=external/perfetto",
+  export_include_dirs: [ "." ],
+  out: [
+    "external/perfetto/protozero/src/test/example_proto/library.pb.h",
+    "external/perfetto/protozero/src/test/example_proto/library_internals/galaxies.pb.h",
+    "external/perfetto/protozero/src/test/example_proto/test_messages.pb.h",
+    "external/perfetto/protozero/src/test/example_proto/upper_import.pb.h",
+  ]
+}
+
+cc_genrule {
+  name: "protozero_testing_messages_zero",
+  tools: [ "aprotoc", "protozero_protoc_plugin" ],
+  srcs: [
+    ":protozero_testing_messages",
+  ],
+  // TODO(skyostil): Don't hardcode proto_path.
+  cmd: "mkdir -p $(genDir)/external/perfetto && $(location) --plugin=protoc-gen-plugin=$(location protozero_protoc_plugin) --plugin_out=wrapper_namespace=pbzero:$(genDir)/external/perfetto $(in) --proto_path=external/perfetto",
+  out: [
+    "external/perfetto/protozero/src/test/example_proto/library.pbzero.cc",
+    "external/perfetto/protozero/src/test/example_proto/library_internals/galaxies.pbzero.cc",
+    "external/perfetto/protozero/src/test/example_proto/test_messages.pbzero.cc",
+    "external/perfetto/protozero/src/test/example_proto/upper_import.pbzero.cc",
+  ]
+}
+
+cc_genrule {
+  name: "protozero_testing_messages_zero_headers",
+  tools: [ "aprotoc", "protozero_protoc_plugin" ],
+  srcs: [
+    ":protozero_testing_messages",
+  ],
+  // TODO(skyostil): Don't hardcode proto_path.
+  cmd: "mkdir -p $(genDir)/external/perfetto && $(location) --plugin=protoc-gen-plugin=$(location protozero_protoc_plugin) --plugin_out=wrapper_namespace=pbzero:$(genDir)/external/perfetto $(in) --proto_path=external/perfetto",
+  export_include_dirs: [ "." ],
+  out: [
+    "external/perfetto/protozero/src/test/example_proto/library.pbzero.h",
+    "external/perfetto/protozero/src/test/example_proto/library_internals/galaxies.pbzero.h",
+    "external/perfetto/protozero/src/test/example_proto/test_messages.pbzero.h",
+    "external/perfetto/protozero/src/test/example_proto/upper_import.pbzero.h",
+  ]
+}
+
+cc_test {
+  name: "protozero_unittests",
+  defaults: [ "protozero_defaults" ],
+  generated_headers: [
+    "protozero_testing_messages_lite_headers",
+    "protozero_testing_messages_zero_headers",
+  ],
+  shared_libs: [
+    "libprotobuf-cpp-lite"
+  ],
+  srcs: [
+    ":protozero",
+    ":protozero_testing_messages_lite",
+    ":protozero_testing_messages_zero",
+    "protozero/src/proto_utils_unittest.cc",
+    "protozero/src/protozero_message_unittest.cc",
+    "protozero/src/scattered_stream_writer_unittest.cc",
+    "protozero/src/test/fake_scattered_buffer.cc",
+    "protozero/src/test/protozero_conformance_unittest.cc",
+  ]
+}
