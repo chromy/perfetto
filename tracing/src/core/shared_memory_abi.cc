@@ -80,7 +80,7 @@ SharedMemoryABI::SharedMemoryABI(void* start, size_t size, size_t page_size)
 
   PageHeader phdr;
   phdr.target_buffer.store(-1);
-  PERFETTO_CHECK(phdr.target_buffer.load() == kMaxTraceBuffers - 1);
+  PERFETTO_CHECK(phdr.target_buffer.load() >= kMaxTraceBuffers - 1);
 
   PERFETTO_CHECK(page_size >= 4096);
   PERFETTO_CHECK(page_size % 4096 == 0);

@@ -27,7 +27,7 @@ using DataSourceInstanceID = uint64_t;
 using WriterID = uint16_t;
 
 // Keep this in sync with SharedMemoryABI::PageHeader::target_buffer.
-static constexpr unsigned kMaxTraceBuffers = 1 << 16;
+static constexpr unsigned kMaxTraceBuffers = 256; // 1 << 16;
 
 }  // namespace perfetto
 

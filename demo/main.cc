@@ -17,10 +17,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <unistd.h>
 
+#include "base/logging.h"
 #include "demo/common.h"
 
+
 int main(int argc, char** argv) {
+  signal(SIGINT, [] (int) {
+    exit(2);
+  });
+
   if (argc > 1 && !strcmp(argv[1], "producer"))
     return perfetto::ProducerMain(argc, argv);
 

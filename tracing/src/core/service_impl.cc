@@ -210,20 +210,20 @@ void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {
          page_idx != trace_buffer.cur_page();
          page_idx = (page_idx + 1) % trace_buffer.num_pages()) {
       bool is_free = abi.is_page_free(page_idx);
-      printf("Dumping page: %zu (Free: %d)\n", page_idx, is_free);
+      // printf("Dumping page: %zu (Free: %d)\n", page_idx, is_free);
       if (is_free)
         continue;
       uint32_t layout = abi.page_layout(page_idx);
       size_t num_chunks = abi.GetNumChunksForLayout(layout);
-      printf("Num chunks: %zu, header: %s\n", num_chunks,
-             abi.page_header_dbg(page_idx).c_str());
+      // printf("Num chunks: %zu, header: %s\n", num_chunks,
+      //        abi.page_header_dbg(page_idx).c_str());
 
       for (size_t chunk_idx = 0; chunk_idx < num_chunks; chunk_idx++) {
         if (abi.GetChunkState(page_idx, chunk_idx) ==
             SharedMemoryABI::kChunkFree) {
           continue;
         }
-        printf("  Chunk %zu\n", chunk_idx);
+        // printf("  Chunk %zu\n", chunk_idx);
         auto chunk = abi.GetChunkUnchecked(page_idx, layout, chunk_idx);
         uint16_t num_packets;
         uint8_t flags;
@@ -247,9 +247,9 @@ void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {
                        flags & SharedMemoryABI::ChunkHeader::
                                    kLastPacketContinuesOnNextChunk);
 
-          printf("      #%-3zu len:%u skip: %d\n", pack_idx, pack_size, skip);
+          // printf("      #%-3zu len:%u skip: %d\n", pack_idx, pack_size, skip);
           if (ptr > chunk.end_addr() - pack_size) {
-            printf("out of bounds!\n");
+            // printf("out of bounds!\n");
             break;
           }
           if (!skip)
@@ -379,9 +379,9 @@ void ServiceImpl::ProducerEndpointImpl::UnregisterDataSource(
 void ServiceImpl::ProducerEndpointImpl::NotifySharedMemoryUpdate(
     const std::vector<uint32_t>& changed_pages) {
   for (uint32_t page_idx : changed_pages) {
-    printf(
-        "  Page header: %s\n",
-        std::bitset<32>(shmem_abi_.page_layout(page_idx)).to_string().c_str());
+    // printf(
+    //     "  Page header: %s\n",
+    //     std::bitset<32>(shmem_abi_.page_layout(page_idx)).to_string().c_str());
 
     if (page_idx >= shmem_abi_.num_pages())
       continue;  // The Producer is playing dirty.
@@ -408,13 +408,13 @@ void ServiceImpl::ProducerEndpointImpl::NotifySharedMemoryUpdate(
       // TODO right now the page_size in the SMB and the trace_buffers_ can
       // mismatch Remove the ability to decide the page size on the Producer.
       uint8_t* dst = service_->trace_buffers_[target_buffer].get_next_page();
-      printf("  Moving page: %u, into buffer: %zu, %zx.\n", page_idx,
-             target_buffer,
-             dst - service_->trace_buffers_[target_buffer].get_page(0));
-      printf("  Page header: %s\n",
-             std::bitset<32>(shmem_abi_.page_layout(page_idx))
-                 .to_string()
-                 .c_str());
+      // printf("  Moving page: %u, into buffer: %zu, %zx.\n", page_idx,
+      //        target_buffer,
+      //        dst - service_->trace_buffers_[target_buffer].get_page(0));
+      // printf("  Page header: %s\n",
+      //        std::bitset<32>(shmem_abi_.page_layout(page_idx))
+      //            .to_string()
+      //            .c_str());
 
       memcpy(dst, shmem_abi_.page_start(page_idx), shmem_abi_.page_size());
     }
