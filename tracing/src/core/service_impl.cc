@@ -335,7 +335,7 @@ void ServiceImpl::ProducerEndpointImpl::RegisterDataSource(
     const DataSourceDescriptor& desc,
     RegisterDataSourceCallback callback) {
   const DataSourceID dsid = ++last_data_source_id_;
-  PERFETTO_DLOG("Register %llu", dsid);
+  PERFETTO_DLOG("Register %" PRIu64, dsid);
   auto it = service_->data_sources_.emplace(desc.name, RegisteredDataSource());
   it->second.descriptor = desc;
   it->second.producer_id = id_;
