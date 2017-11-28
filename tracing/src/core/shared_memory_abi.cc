@@ -75,8 +75,8 @@ SharedMemoryABI::SharedMemoryABI(void* start, size_t size, size_t page_size)
                 "Incompatible STL atomic implementation");
 
   // Sanity check the consistency of the kMax... constants.
-  ChunkHeader::Identifier chunk_id;
-  PERFETTO_CHECK((chunk_id.writer_id = -1) == kMaxWriterID);
+  ChunkHeader::Identifier chunk_id = {};
+  PERFETTO_CHECK((chunk_id.writer_id -= 1) == kMaxWriterID);
 
   PageHeader phdr;
   phdr.target_buffer.store(-1);
