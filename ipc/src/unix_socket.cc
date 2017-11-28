@@ -280,7 +280,7 @@ bool UnixSocket::Send(const std::string& msg) {
   return Send(msg.c_str(), msg.size() + 1);
 }
 
-bool UnixSocket::Send(const void* msg, size_t len, int send_fd) {
+bool UnixSocket::Send(const void* msg, size_t len, int send_fd, bool blocking) {
   if (state_ != State::kConnected) {
     errno = last_error_ = ENOTCONN;
     return false;
@@ -307,7 +307,12 @@ bool UnixSocket::Send(const void* msg, size_t len, int send_fd) {
     msg_hdr.msg_controllen = cmsg->cmsg_len;
   }
 
+  if (blocking)
+    SetBlockingIO(true);
   const ssize_t sz = PERFETTO_EINTR(sendmsg(*fd_, &msg_hdr, kNoSigPipe));
+  if (blocking)
+    SetBlockingIO(false);
+
   if (sz >= 0) {
     // There should be no way a non-blocking socket returns < |len|.
     // If the queueing fails, sendmsg() must return -1 + errno = EWOULDBLOCK.

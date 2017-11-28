@@ -30,6 +30,9 @@
 
 // TODO(primiano): put limits on #connections/uid and req. queue (b/69093705).
 
+// TODO(primiano): set socket buffers to some reasonable amount as we don't do
+// any other tx buffering here.
+
 namespace perfetto {
 namespace ipc {
 
@@ -198,11 +201,7 @@ void HostImpl::ReplyToMethodInvocation(ClientID client_id,
     }
   }
 
-  // TODO: this SetBlockingIO() is a hack to work around exposing backpressure
-  // back to the caller.
-  client->sock->SetBlockingIO(true);
   SendFrame(client, reply_frame, reply.fd());
-  client->sock->SetBlockingIO(false);
 }
 
 // static
@@ -212,7 +211,9 @@ void HostImpl::SendFrame(ClientConnection* client, const Frame& frame, int fd) {
   // TODO(primiano): remember that this is doing non-blocking I/O. What if the
   // socket buffer is full? Maybe we just want to drop this on the floor? Or
   // maybe throttle the send and PostTask the reply later?
-  if (client->sock->Send(buf.data(), buf.size(), fd))
+  // TODO: hack: right we are making it blocking. Propagate bakpressure to the
+  // caller instead.
+  if (client->sock->Send(buf.data(), buf.size(), fd, true /* blocking */))
     return;
 
   // Send() failed. There are mainly two reasons for this:
@@ -224,12 +225,8 @@ void HostImpl::SendFrame(ClientConnection* client, const Frame& frame, int fd) {
   if (!client->sock->is_connected())
     return;  // Case 1.
 
-  // if (backpressure_handler_) {
-    // backpressure_handler_->set_last_send_did_fail(true);
-  // } else {
-    // TODO: gracefully shutdown the IPC channel.
-    PERFETTO_CHECK(false);
-  // }
+  // TODO: gracefully shutdown the IPC channel.
+  PERFETTO_CHECK(false);
 }
 
 void HostImpl::OnDisconnect(UnixSocket* sock) {
