@@ -107,6 +107,7 @@ class MockFtraceProcfs : public FtraceProcfs {
     EXPECT_CALL(*this, NumberOfCpus()).Times(AnyNumber());
   }
 
+  MOCK_METHOD0(ClearTrace, void());
   MOCK_METHOD2(WriteToFile,
                bool(const std::string& path, const std::string& str));
   MOCK_CONST_METHOD0(NumberOfCpus, size_t());

@@ -33,9 +33,18 @@
 #include "tracing/src/core/service_impl.h"
 
 #include "protos/trace_packet.pb.h"
+#include "protos/ftrace/ftrace_event_bundle.pb.h"
+#include "protos/ftrace/ftrace_event.pb.h"
+#include "protos/ftrace/sched_switch.pb.h"
+#include "protos/ftrace/print.pb.h"
 
 namespace perfetto {
 namespace {
+
+using protos::FtraceEventBundle;
+using protos::FtraceEvent;
+using protos::SchedSwitchFtraceEvent;
+using protos::PrintFtraceEvent;
 
 class TestConsumer : public Consumer {
  public:
@@ -72,7 +81,11 @@ void ConsumerMain() {
   trace_config.data_sources.emplace_back();
   trace_config.data_sources.back().config.name = "perfetto.test.data_source";
   trace_config.data_sources.back().config.target_buffer = 0;
-  trace_config.data_sources.back().config.trace_category_filters = "aa,bb";
+
+  std::string* filter = &trace_config.data_sources.back().config.trace_category_filters;
+  *filter += "print,";
+  *filter += "sched_switch,";
+//  *filter += "atrace_cat.res,";
 
   consumer.on_connect = [&endpoint, &trace_config] {
     printf("Connected, sending EnableTracing() request\n");
@@ -89,12 +102,31 @@ void ConsumerMain() {
 
   consumer.on_trace_data = [](const std::vector<TracePacket>& trace_packets,
                               bool has_more) {
-    printf("OnTraceData()\n");
+    printf("OnTraceData() num packets = %zu\n", trace_packets.size());
     for (const TracePacket& const_packet : trace_packets) {
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
       bool decoded = packet.Decode();
       printf(" %d %s\n", decoded,
              decoded ? packet->test().c_str() : "[Decode fail]");
+      if (!packet->has_ftrace_events())
+        continue;
+      const FtraceEventBundle& bundle = packet->ftrace_events();
+      for (const FtraceEvent& event : bundle.event()) {
+        if (event.has_sched_switch()) {
+          const SchedSwitchFtraceEvent& sched_switch = event.sched_switch();
+          printf("%llu %8s: %s -> %s\n",
+                 event.timestamp(),
+                 "switch",
+                 sched_switch.prev_comm().c_str(),
+                 sched_switch.next_comm().c_str());
+        } else if (event.has_print()) {
+          const PrintFtraceEvent& print = event.print();
+          printf("%llu %8s: %s\n",
+                 event.timestamp(),
+                 "print",
+                 print.buf().c_str());
+        }
+      }
     }
     if (!has_more)
       exit(0);

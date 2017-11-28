@@ -48,7 +48,7 @@ class FtraceProcfs {
   size_t virtual NumberOfCpus() const;
 
   // Clears the trace buffers for all CPUs. Blocks until this is done.
-  void ClearTrace();
+  void virtual ClearTrace();
 
   // Writes the string |str| as an event into the trace buffer.
   bool WriteTraceMarker(const std::string& str);

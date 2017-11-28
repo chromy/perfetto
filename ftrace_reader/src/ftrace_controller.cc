@@ -42,6 +42,12 @@ const char kTracingPath[] = "/sys/kernel/debug/tracing/";
 
 #if defined(ANDROID)
 bool RunAtrace(const std::vector<std::string>& args) {
+  std::string cmd = "atrace";
+  for (const std::string& arg : args) {
+    cmd += " ";
+    cmd += arg;
+  }
+  PERFETTO_DLOG("%s", cmd.c_str());
   int status = 1;
   char* const envp[1] = {nullptr};
   pid_t pid = fork();
@@ -111,6 +117,7 @@ void FtraceController::Start() {
     return;
   }
   listening_for_raw_trace_data_ = true;
+  ftrace_procfs_->ClearTrace();
   ftrace_procfs_->EnableTracing();
   for (size_t cpu = 0; cpu < ftrace_procfs_->NumberOfCpus(); cpu++) {
     CpuReader* reader = GetCpuReader(cpu);
@@ -141,7 +148,6 @@ void FtraceController::Stop() {
 }
 
 void FtraceController::OnRawFtraceDataAvailable(size_t cpu) {
-  usleep(100);
   CpuReader* reader = GetCpuReader(cpu);
   using BundleHandle =
       protozero::ProtoZeroMessageHandle<protos::pbzero::FtraceEventBundle>;

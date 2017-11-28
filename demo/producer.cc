@@ -35,6 +35,16 @@ namespace perfetto {
 
 namespace {
 
+bool StartsWith(const std::string& str, const std::string& prefix) {
+  return str.compare(0, prefix.length(), prefix) == 0;
+}
+
+std::string RemovePrefix(const std::string& str, const std::string& prefix) {
+  if (!StartsWith(str, prefix))
+    return str;
+  return str.substr(prefix.length());
+}
+
 using BundleHandle =
     protozero::ProtoZeroMessageHandle<protos::pbzero::FtraceEventBundle>;
 
@@ -100,7 +110,13 @@ void FtraceProducer::CreateDataSourceInstance(
       last = i + 1;
       if (!category.size())
         continue;
-      config.AddEvent(category);
+      if (StartsWith(category, "atrace_cat.")) {
+        config.AddAtraceCategory(RemovePrefix(category, "atrace_cat."));
+      } else if (StartsWith(category, "atrace_app.")) {
+        config.AddAtraceApp(RemovePrefix(category, "atrace_app."));
+      } else {
+        config.AddEvent(category);
+      }
     }
   }
   auto sink = ftrace_->CreateSink(config, this);
