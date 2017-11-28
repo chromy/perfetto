@@ -135,6 +135,9 @@ void UnixTaskRunner::RunImmediateAndDelayedTask() {
       }
     }
   }
+#if PERFETTO_DCHECK_IS_ON()
+  errno = errno == EAGAIN ? 0 : errno;
+#endif
   if (immediate_task)
     immediate_task();
   if (delayed_task)

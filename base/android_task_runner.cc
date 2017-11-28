@@ -102,6 +102,9 @@ void AndroidTaskRunner::RunImmediateTask() {
   // run for fairness.
   if (has_next)
     ScheduleImmediateWakeUp();
+#if PERFETTO_DCHECK_IS_ON()
+  errno = errno == EAGAIN ? 0 : errno;
+#endif
   immediate_task();
 }
 

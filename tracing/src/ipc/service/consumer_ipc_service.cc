@@ -101,15 +101,16 @@ void ConsumerIPCService::RemoteConsumer::OnConnect() {}
 void ConsumerIPCService::RemoteConsumer::OnDisconnect() {}
 
 void ConsumerIPCService::RemoteConsumer::OnTraceData(
-    const std::vector<TracePacket>& trace_packets) {
+    const std::vector<TracePacket>& trace_packets,
+    bool has_more) {
   if (!stop_tracing_response.IsBound())
     return;
+
   auto result = ipc::AsyncResult<StopTracingResponse>::Create();
+  result.set_has_more(has_more);
   for (const TracePacket& trace_packet : trace_packets)
     result->add_trace_packets(trace_packet.start(), trace_packet.size());
 
-  // TODO: |has_more| EOF logic.
-  result.set_has_more(true);
 
   // TODO lifetime: does the IPC layer guarantee that the arguments of the
   // resolved responses are used inline and not kept around? If not, the

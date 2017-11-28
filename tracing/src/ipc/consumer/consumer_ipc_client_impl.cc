@@ -123,7 +123,7 @@ void ConsumerIPCClientImpl::OnStopTracingResponse(
   for (const std::string& bytes : response->trace_packets())
     trace_packets.emplace_back(reinterpret_cast<const void*>(bytes.data()),
                                bytes.size());
-  consumer_->OnTraceData(trace_packets);
+  consumer_->OnTraceData(trace_packets, response.has_more());
 }
 
 }  // namespace perfetto

@@ -63,7 +63,7 @@ class ConsumerIPCService : public ConsumerPort /* from consumer_port.proto */ {
     // no connection here, these methods are posted straight away.
     void OnConnect() override;
     void OnDisconnect() override;
-    void OnTraceData(const std::vector<TracePacket>&) override;
+    void OnTraceData(const std::vector<TracePacket>&, bool has_more) override;
 
     // The interface obtained from the core service business logic through
     // Service::ConnectConsumer(this). This allows to invoke methods for a

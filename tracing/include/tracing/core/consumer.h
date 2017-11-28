@@ -42,7 +42,7 @@ class Consumer {
   // Service process crashes).
   virtual void OnDisconnect() = 0;
 
-  virtual void OnTraceData(const std::vector<TracePacket>&) = 0;
+  virtual void OnTraceData(const std::vector<TracePacket>&, bool has_more) = 0;
 };
 
 }  // namespace perfetto

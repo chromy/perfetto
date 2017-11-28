@@ -42,6 +42,7 @@ class TestProducer : public Producer {
 
   void OnDisconnect() override {
     PERFETTO_DLOG("Disconnected from tracing service");
+    exit(1);
   }
 
   void CreateDataSourceInstance(DataSourceInstanceID dsid,

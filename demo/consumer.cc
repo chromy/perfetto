@@ -47,15 +47,17 @@ class TestConsumer : public Consumer {
 
   void OnDisconnect() override {
     PERFETTO_DLOG("Disconnected from tracing service");
+    exit(1);
   }
 
-  void OnTraceData(const std::vector<TracePacket>& trace_packets) override {
+  void OnTraceData(const std::vector<TracePacket>& trace_packets,
+                   bool has_more) override {
     if (on_trace_data)
-      on_trace_data(trace_packets);
+      on_trace_data(trace_packets, has_more);
   }
 
   std::function<void()> on_connect;
-  std::function<void(const std::vector<TracePacket>&)> on_trace_data;
+  std::function<void(const std::vector<TracePacket>&, bool)> on_trace_data;
 };
 
 void ConsumerMain() {
@@ -77,12 +79,15 @@ void ConsumerMain() {
     endpoint->StartTracing(trace_config);
   };
 
-  task_runner.PostDelayedTask([&endpoint] {
-    printf("Sending StopTracing() request\n");
-    endpoint->StopTracing();
-  }, 2000);
+  task_runner.PostDelayedTask(
+      [&endpoint] {
+        printf("Sending StopTracing() request\n");
+        endpoint->StopTracing();
+      },
+      2000);
 
-  consumer.on_trace_data = [](const std::vector<TracePacket>& trace_packets) {
+  consumer.on_trace_data = [](const std::vector<TracePacket>& trace_packets,
+                              bool has_more) {
     printf("OnTraceData()\n");
     for (const TracePacket& const_packet : trace_packets) {
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
@@ -90,6 +95,8 @@ void ConsumerMain() {
       printf(" %d %s\n", decoded,
              decoded ? packet->test().c_str() : "[Decode fail]");
     }
+    if (!has_more)
+      exit(0);
   };
 
   task_runner.Run();

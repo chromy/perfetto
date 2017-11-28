@@ -238,11 +238,16 @@ void ServiceImpl::StopTracing(ConsumerEndpointImpl* initiator) {
         }  // for(packet)
         task_runner_->PostTask([weak_consumer, packets]() {
           if (weak_consumer)
-            weak_consumer->consumer()->OnTraceData(*packets);
+            weak_consumer->consumer()->OnTraceData(*packets, true /*has_more*/);
         });
       }  // for(chunk)
     }    // for(page)
-  }
+  }      // for(buffer)
+
+  task_runner_->PostTask([weak_consumer]() {
+    if (weak_consumer)
+      weak_consumer->consumer()->OnTraceData(std::vector<TracePacket>(), false);
+  });
 
   tracing_sessions_.erase(it);
 
