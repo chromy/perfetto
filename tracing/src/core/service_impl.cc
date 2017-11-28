@@ -232,17 +232,27 @@ void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {
         std::shared_ptr<std::vector<TracePacket>> packets(
             new std::vector<TracePacket>());
         packets->reserve(num_packets);
+
         for (size_t pack_idx = 0; pack_idx < num_packets; pack_idx++) {
           SharedMemoryABI::PacketHeaderType pack_size;
           memcpy(&pack_size, reinterpret_cast<void*>(ptr), sizeof(pack_size));
           ptr += sizeof(pack_size);
           // TODO stiching, looks at the flags.
-          printf("      #%-3zu len:%u \n", pack_idx, pack_size);
+
+          bool skip = (pack_idx == 0 &&
+                       flags & SharedMemoryABI::ChunkHeader::
+                                   kFirstPacketContinuesFromPrevChunk) ||
+                      (pack_idx == num_packets - 1 &&
+                       flags & SharedMemoryABI::ChunkHeader::
+                                   kLastPacketContinuesOnNextChunk);
+
+          printf("      #%-3zu len:%u skip: %d\n", pack_idx, pack_size, skip);
           if (ptr > chunk.end_addr() - pack_size) {
             printf("out of bounds!\n");
             break;
           }
-          packets->emplace_back(reinterpret_cast<void*>(ptr), pack_size);
+          if (!skip)
+            packets->emplace_back(reinterpret_cast<void*>(ptr), pack_size);
           ptr += pack_size;
         }  // for(packet)
         task_runner_->PostTask([weak_consumer, packets]() {
