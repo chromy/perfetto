@@ -188,6 +188,7 @@ void ServiceImpl::DisableTracing(ConsumerEndpointImpl* initiator) {
     producer_it->second->producer()->TearDownDataSourceInstance(
         data_source_inst.second);
   }
+  tracing_session.data_source_instances.clear();
 }
 
 void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {

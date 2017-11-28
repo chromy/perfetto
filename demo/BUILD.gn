@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-group("demo") {
-  deps = [
+executable("perfetto") {
+  deps += [
+    "//base",
     ":service",
     ":producer",
     ":consumer"
   ]
+  sources = [ "main.cc" ]
 }
 
-executable("service") {
+source_set("service") {
   deps += [
     "//base",
     "//tracing",
@@ -30,7 +32,7 @@ executable("service") {
   sources = [ "service.cc" ]
 }
 
-executable("producer") {
+source_set("producer") {
   deps += [
     "//base",
     "//ftrace_reader",
@@ -43,7 +45,7 @@ executable("producer") {
 }
 
 
-executable("consumer") {
+source_set("consumer") {
   deps += [
     "//base",
     "//tracing",

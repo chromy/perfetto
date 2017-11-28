@@ -69,7 +69,9 @@ class TestConsumer : public Consumer {
   std::function<void(const std::vector<TracePacket>&, bool)> on_trace_data;
 };
 
-void ConsumerMain() {
+}  // namespace.
+
+int ConsumerMain(int argc, char** argv) {
   base::UnixTaskRunner task_runner;
   TestConsumer consumer;
   std::unique_ptr<Service::ConsumerEndpoint> endpoint =
@@ -133,12 +135,7 @@ void ConsumerMain() {
   };
 
   task_runner.Run();
-}
-
-}  // namespace.
-}  // namespace perfetto
-
-int main(int argc, char** argv) {
-  perfetto::ConsumerMain();
   return 0;
 }
+
+}  // namespace perfetto

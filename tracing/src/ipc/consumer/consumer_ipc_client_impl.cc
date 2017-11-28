@@ -104,6 +104,7 @@ void ConsumerIPCClientImpl::DisableTracing() {
     if (!response)
       PERFETTO_DLOG("DisableTracing() failed");
   });
+  consumer_port_.DisableTracing(DisableTracingRequest(), std::move(async_response));
 }
 
 void ConsumerIPCClientImpl::ReadBuffers() {
@@ -112,7 +113,6 @@ void ConsumerIPCClientImpl::ReadBuffers() {
     return;
   }
 
-  ReadBuffersRequest req;
   ipc::Deferred<ReadBuffersResponse> async_response;
 
   // The IPC layer guarantees that callbacks are destroyed after this object
@@ -122,7 +122,7 @@ void ConsumerIPCClientImpl::ReadBuffers() {
   async_response.Bind([this](ipc::AsyncResult<ReadBuffersResponse> response) {
     OnReadBuffersResponse(std::move(response));
   });
-  consumer_port_.ReadBuffers(req, std::move(async_response));
+  consumer_port_.ReadBuffers(ReadBuffersRequest(), std::move(async_response));
 }
 
 void ConsumerIPCClientImpl::OnReadBuffersResponse(

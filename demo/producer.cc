@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/unix_task_runner.h"
 #include "demo/common.h"
+#include "ftrace_reader/ftrace_controller.h"
 #include "tracing/core/data_source_config.h"
 #include "tracing/core/data_source_descriptor.h"
 #include "tracing/core/producer.h"
@@ -26,7 +27,6 @@
 #include "tracing/core/trace_packet.h"
 #include "tracing/core/trace_writer.h"
 #include "tracing/ipc/producer_ipc_client.h"
-#include "ftrace_reader/ftrace_controller.h"
 
 #include "protos/ftrace/ftrace_event_bundle.pbzero.h"
 #include "protos/trace_packet.pbzero.h"
@@ -85,9 +85,8 @@ void FtraceProducer::OnConnect() {
   DataSourceDescriptor descriptor;
   // TODO(hjd): Update name.
   descriptor.name = "perfetto.test.data_source";
-  endpoint_->RegisterDataSource(descriptor, [this](DataSourceID id) {
-    data_source_id_ = id;
-  });
+  endpoint_->RegisterDataSource(
+      descriptor, [this](DataSourceID id) { data_source_id_ = id; });
 }
 
 void FtraceProducer::OnDisconnect() {
@@ -98,7 +97,6 @@ void FtraceProducer::OnDisconnect() {
 void FtraceProducer::CreateDataSourceInstance(
     DataSourceInstanceID id,
     const DataSourceConfig& source_config) {
-
   PERFETTO_DLOG("Service asked to start data source\n");
 
   const std::string& categories = source_config.trace_category_filters;
@@ -128,6 +126,8 @@ void FtraceProducer::TearDownDataSourceInstance(DataSourceInstanceID id) {
   PERFETTO_DLOG(
       "The tracing service requested us to shutdown the data source %" PRIu64,
       id);
+  sinks_.erase(id);
+  ftrace_->Stop();  // TODO: here?
 }
 
 BundleHandle FtraceProducer::GetBundleForCpu(size_t cpu) {
@@ -152,14 +152,14 @@ void FtraceProducer::Run() {
   ftrace_->WriteTraceMarker("Hello, world!");
   ftrace_->Start();
   runner.Run();
-  ftrace_->Stop();
 }
 
 }  // namespace.
-}  // namespace perfetto
 
-int main(int argc, char** argv) {
+int ProducerMain(int argc, char** argv) {
   perfetto::FtraceProducer producer;
   producer.Run();
   return 0;
 }
+
+}  // namespace perfetto

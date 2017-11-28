@@ -21,11 +21,9 @@
 #include "demo/common.h"
 #include "tracing/ipc/service_ipc_host.h"
 
-
 namespace perfetto {
-namespace {
 
-void ServiceMain() {
+int ServiceMain(int argc, char** argv) {
   unlink(perfetto::kProducerSocketName);
   unlink(perfetto::kConsumerSocketName);
   perfetto::base::UnixTaskRunner task_runner;
@@ -37,12 +35,7 @@ void ServiceMain() {
   SetUidAndGid("nobody");
 
   task_runner.Run();
-}
-
-}  // namespace.
-}  // namespace perfetto
-
-int main(int argc, char** argv) {
-  perfetto::ServiceMain();
   return 0;
 }
+
+}  // namespace perfetto

@@ -6,9 +6,7 @@ outdir=out/android_debug_arm64
 
 ninja -C $outdir
 
-adb push $outdir/producer /data/local/tmp/producer
-adb push $outdir/service /data/local/tmp/service
-adb push $outdir/consumer /data/local/tmp/consumer
+adb push $outdir/perfetto /data/local/tmp/perfetto
 
 if tmux has-session -t demo; then
   tmux kill-session -t demo
@@ -43,15 +41,15 @@ sleep 3
 
 tmux select-pane -t 0
 tmux send-keys "echo Producer" C-m
-tmux send-keys "/data/local/tmp/producer"
+tmux send-keys "/data/local/tmp/perfetto producer"
 
 tmux select-pane -t 1
 tmux send-keys "echo Service" C-m
-tmux send-keys "/data/local/tmp/service"
+tmux send-keys "/data/local/tmp/perfetto service"
 
 tmux select-pane -t 2
 tmux send-keys "echo Consumer" C-m
-tmux send-keys "/data/local/tmp/consumer"
+tmux send-keys "/data/local/tmp/perfetto consumer"
 
 # Select consumer pane.
 tmux select-pane -t 1
