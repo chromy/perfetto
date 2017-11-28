@@ -15,7 +15,10 @@
 import("//protozero//protozero_library.gni")
 import("//build/proto_library.gni")
 
-proto_sources = [ "trace_packet.proto" ]
+proto_sources = [
+  "trace.proto",
+  "trace_packet.proto",
+]
 
 # Protozero generated stubs, for writers.
 protozero_library("zero") {
@@ -34,4 +37,42 @@ proto_library("lite") {
   ]
   sources = proto_sources
   proto_out_dir = "protos_lite"
+}
+
+# Awful hacks to build full protos:
+full_protos_base_dir2 = "${root_gen_dir}/protos_full"
+full_protos_target_dir2 =
+    "$full_protos_base_dir2/" + rebase_path(target_gen_dir, root_gen_dir)
+
+action_foreach("generate_full_protos") {
+  visibility = [ ":*" ]
+  script = "//build/generate_full_protos.py"
+  sources = proto_sources
+
+  # TODO(hjd): Add support for subdirectories.
+  output_directory = full_protos_target_dir2
+  outputs = [
+    "$output_directory/{{source_name_part}}.proto",
+  ]
+
+  args = [
+    "{{source}}",
+    rebase_path(output_directory, root_build_dir) +
+        "/{{source_name_part}}.proto",
+  ]
+}
+
+# Protobuf Full stubs, for readers.
+proto_library("full") {
+  deps = [
+    ":generate_full_protos",
+    "ftrace:full",
+  ]
+  sources = []
+  use_protobuf_full = true
+  proto_out_dir = "protos_full"
+  proto_in_dir = full_protos_base_dir2
+  foreach(proto, proto_sources) {
+    sources += [ "$full_protos_target_dir2/$proto" ]
+  }
 }

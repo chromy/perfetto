@@ -14,51 +14,68 @@
 
 executable("perfetto") {
   deps += [
-    "//base",
-    ":service",
+    ":consumer",
     ":producer",
-    ":consumer"
+    ":service",
+    "//base",
   ]
-  sources = [ "main.cc" ]
+  sources = [
+    "main.cc",
+  ]
 }
 
 source_set("service") {
   deps += [
+    ":common",
     "//base",
     "//tracing",
     "//tracing:ipc",
-    ":common",
   ]
-  sources = [ "service.cc" ]
+  sources = [
+    "service.cc",
+  ]
 }
 
 source_set("producer") {
   deps += [
+    ":common",
     "//base",
     "//ftrace_reader",
+    "//protos:zero",
     "//tracing",
     "//tracing:ipc",
-    "//protos:zero",
-    ":common",
   ]
-  sources = [ "producer.cc" ]
+  sources = [
+    "producer.cc",
+  ]
 }
-
 
 source_set("consumer") {
   deps += [
+    ":common",
     "//base",
+    "//protos:lite",
     "//tracing",
     "//tracing:ipc",
-    "//protos:lite",
-    ":common",
   ]
-  sources = [ "consumer.cc" ]
+  sources = [
+    "consumer.cc",
+  ]
+}
+
+executable("proto_to_text") {
+  deps += [
+    "//base",
+    "//protos:full",
+  ]
+  sources = [
+    "proto_to_text.cc",
+  ]
 }
 
 source_set("common") {
-  deps += [
-    "//base",
+  deps += [ "//base" ]
+  sources = [
+    "common.cc",
   ]
-  sources = [ "common.cc" ]
 }

@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
+#include <fcntl.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/unix_task_runner.h"
 #include "demo/common.h"
+#include "protozero/proto_utils.h"
 #include "tracing/core/consumer.h"
 #include "tracing/core/data_source_config.h"
 #include "tracing/core/data_source_descriptor.h"
@@ -32,11 +36,12 @@
 #include "tracing/ipc/consumer_ipc_client.h"
 #include "tracing/src/core/service_impl.h"
 
-#include "protos/trace_packet.pb.h"
-#include "protos/ftrace/ftrace_event_bundle.pb.h"
 #include "protos/ftrace/ftrace_event.pb.h"
-#include "protos/ftrace/sched_switch.pb.h"
+#include "protos/ftrace/ftrace_event_bundle.pb.h"
 #include "protos/ftrace/print.pb.h"
+#include "protos/ftrace/sched_switch.pb.h"
+#include "protos/trace.pb.h"
+#include "protos/trace_packet.pb.h"
 
 namespace perfetto {
 namespace {
@@ -45,6 +50,8 @@ using protos::FtraceEventBundle;
 using protos::FtraceEvent;
 using protos::SchedSwitchFtraceEvent;
 using protos::PrintFtraceEvent;
+using protozero::proto_utils::WriteVarInt;
+using protozero::proto_utils::MakeTagLengthDelimited;
 
 class TestConsumer : public Consumer {
  public:
@@ -102,8 +109,11 @@ int ConsumerMain(int argc, char** argv) {
       },
       2000);
 
-  consumer.on_trace_data = [](const std::vector<TracePacket>& trace_packets,
-                              bool has_more) {
+  printf("Writing trace output to /data/local/tmp/trace.output\n");
+  int fd = open("/data/local/tmp/trace.protobuf", O_WRONLY | O_CREAT);
+
+  consumer.on_trace_data = [&fd](const std::vector<TracePacket>& trace_packets,
+                                 bool has_more) {
     printf("OnTraceData() num packets = %zu\n", trace_packets.size());
     for (const TracePacket& const_packet : trace_packets) {
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
@@ -112,6 +122,16 @@ int ConsumerMain(int argc, char** argv) {
              decoded ? packet->test().c_str() : "[Decode fail]");
       if (!decoded || !packet->has_ftrace_events())
         continue;
+
+      uint8_t buffer[1024];
+      uint32_t field_id = 1;
+      uint32_t tag = MakeTagLengthDelimited(field_id);
+      uint8_t* pos = buffer;
+      pos = WriteVarInt(tag, pos);
+      pos = WriteVarInt(static_cast<uint32_t>(packet.size()), pos);
+      write(fd, buffer, pos - buffer);
+      write(fd, packet.start(), packet.size());
+
       const FtraceEventBundle& bundle = packet->ftrace_events();
       for (const FtraceEvent& event : bundle.event()) {
         if (event.has_sched_switch()) {
@@ -130,11 +150,15 @@ int ConsumerMain(int argc, char** argv) {
         }
       }
     }
-    if (!has_more)
+
+    if (!has_more) {
+      close(fd);
       exit(0);
+    }
   };
 
   task_runner.Run();
+
   return 0;
 }
 
