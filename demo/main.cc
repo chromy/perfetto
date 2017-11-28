@@ -25,10 +25,9 @@
 
 
 int main(int argc, char** argv) {
-  signal(SIGINT, [] (int) {
-    exit(2);
-  });
+  signal(SIGINT, [] (int) { exit(2); });
 
+  printf("PID: %d\n", getpid());
   if (argc > 1 && !strcmp(argv[1], "producer"))
     return perfetto::ProducerMain(argc, argv);
 
