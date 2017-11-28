@@ -24,6 +24,7 @@
 namespace perfetto {
 
 void SetUidAndGid(const char* username) {
+
   if (getuid() != 0) {
     PERFETTO_DLOG("Cannot setuid() without being root");
     return;

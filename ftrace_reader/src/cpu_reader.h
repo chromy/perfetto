@@ -82,6 +82,7 @@ class CpuReader {
   FRIEND_TEST(CpuReaderTest, ReadAndAdvanceUnderruns);
   FRIEND_TEST(CpuReaderTest, ReadAndAdvanceAtEnd);
   FRIEND_TEST(CpuReaderTest, ReadAndAdvanceOverruns);
+  FRIEND_TEST(CpuReaderTest, ParsePageHeader);
   FRIEND_TEST(CpuReaderTest, ParseSimpleEvent);
 
   template <typename T>

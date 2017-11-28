@@ -33,6 +33,7 @@ executable("service") {
 executable("producer") {
   deps += [
     "//base",
+    "//ftrace_reader",
     "//tracing",
     "//tracing:ipc",
     "//protos:zero",

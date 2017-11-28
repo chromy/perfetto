@@ -6,10 +6,6 @@ outdir=out/android_debug_arm64
 
 ninja -C $outdir
 
-eu-strip $outdir/producer 
-eu-strip $outdir/service 
-eu-strip $outdir/consumer
-
 adb push $outdir/producer /data/local/tmp/producer
 adb push $outdir/service /data/local/tmp/service
 adb push $outdir/consumer /data/local/tmp/consumer

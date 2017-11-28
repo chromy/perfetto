@@ -34,6 +34,8 @@ class FtraceProcfs {
   // Disable the event under with the given |group| and |name|.
   bool DisableEvent(const std::string& group, const std::string& name);
 
+  bool DisableAllEvents();
+
   // Read the format for event with the given |group| and |name|.
   std::string ReadEventFormat(const std::string& group,
                               const std::string& name) const;
@@ -46,7 +48,7 @@ class FtraceProcfs {
   size_t virtual NumberOfCpus() const;
 
   // Clears the trace buffers for all CPUs. Blocks until this is done.
-  void ClearTrace();
+  void virtual ClearTrace();
 
   // Writes the string |str| as an event into the trace buffer.
   bool WriteTraceMarker(const std::string& str);
