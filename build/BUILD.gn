@@ -91,6 +91,8 @@ config("default") {
       "-mfpmath=sse",
     ]
     ldflags += [ "-m32" ]
+  } else if (current_cpu == "arm64") {
+    cflags += [ "-fno-omit-frame-pointer" ]
   }
 
   if (is_linux) {
@@ -149,8 +151,8 @@ config("default") {
 config("debug_symbols") {
   if (is_android) {
     cflags = [
-      "-gline-tables-only",
       "-funwind-tables",
+      "-g",
     ]
   } else {
     cflags = [ "-g2" ]

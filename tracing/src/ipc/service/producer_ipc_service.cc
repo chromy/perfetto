@@ -127,7 +127,7 @@ void ProducerIPCService::OnDataSourceRegistered(ipc::ClientID ipc_client_id,
   auto it = producer->pending_data_sources.find(data_source_name);
   PERFETTO_CHECK(it != producer->pending_data_sources.end());
 
-  PERFETTO_DLOG("Data source %s registered, Client:%" PRIu64 " ID: %" PRIu64,
+  PERFETTO_DLOG("Data source %s registered, Producer:%" PRIu64 " ID: %" PRIu64,
                 data_source_name.c_str(), ipc_client_id, id);
 
   DeferredRegisterDataSourceResponse ipc_response = std::move(it->second);
@@ -140,7 +140,7 @@ void ProducerIPCService::OnDataSourceRegistered(ipc::ClientID ipc_client_id,
 // Called by the IPC layer.
 void ProducerIPCService::OnClientDisconnected() {
   ipc::ClientID client_id = ipc::Service::client_info().client_id();
-  PERFETTO_DLOG("Client %" PRIu64 " disconnected", client_id);
+  PERFETTO_DLOG("Producer %" PRIu64 " disconnected", client_id);
   producers_.erase(client_id);
 }
 

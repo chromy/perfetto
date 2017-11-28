@@ -82,8 +82,6 @@ void FtraceProducer::OnConnect() {
 
   trace_writer_ = endpoint_->CreateTraceWriter();
 
-  // SetUidAndGid("shell");
-
   DataSourceDescriptor descriptor;
   // TODO(hjd): Update name.
   descriptor.name = "perfetto.test.data_source";
@@ -143,6 +141,9 @@ void FtraceProducer::OnBundleComplete(size_t cpu, BundleHandle bundle) {
 }
 
 void FtraceProducer::Run() {
+  // Shell has recently lost access to tracingfs. http://b/69839129.
+  // SetUidAndGid("shell");
+
   base::UnixTaskRunner runner;
   ftrace_ = FtraceController::Create(&runner);
   endpoint_ = ProducerIPCClient::Connect(kProducerSocketName, this, &runner);

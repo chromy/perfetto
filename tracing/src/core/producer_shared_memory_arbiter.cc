@@ -131,6 +131,7 @@ void ProducerSharedMemoryArbiter::InvokeOnPageCompleteCallback() {
     std::lock_guard<std::mutex> scoped_lock(lock_);
     pages_to_notify = std::move(pages_to_notify_);
     pages_to_notify_.clear();
+    scheduled_notification_ = false;
   }
   on_page_complete_callback_(pages_to_notify);
 }
