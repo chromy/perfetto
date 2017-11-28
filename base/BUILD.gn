@@ -31,14 +31,9 @@ source_set("base") {
       ":debug_crash_stack_trace",
     ]
   }
-}
 
-if (target_os == "android") {
-  source_set("android") {
-    deps += [
-      ":base",
-    ]
-    sources = [
+  if (is_android) {
+    sources += [
       "android_task_runner.cc",
       "android_task_runner.h",
     ]
@@ -60,10 +55,7 @@ if (is_debug) {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":android",
-    ":base",
-  ]
+  deps += [ ":base" ]
   sources = [
     "test/test_task_runner.cc",
     "test/test_task_runner.h",
