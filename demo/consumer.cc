@@ -93,8 +93,7 @@ void ConsumerMain() {
     for (const TracePacket& const_packet : trace_packets) {
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
       bool decoded = packet.Decode();
-      printf(" %d %s\n", decoded,
-             decoded ? packet->test().c_str() : "[Decode fail]");
+      printf("%s\n", decoded ? packet->test().c_str() : "[Decode fail]");
     }
     if (!has_more)
       exit(0);

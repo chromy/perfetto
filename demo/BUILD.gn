@@ -25,6 +25,7 @@ executable("service") {
     "//base",
     "//tracing",
     "//tracing:ipc",
+    ":common",
   ]
   sources = [ "service.cc" ]
 }
@@ -35,6 +36,7 @@ executable("producer") {
     "//tracing",
     "//tracing:ipc",
     "//protos:zero",
+    ":common",
   ]
   sources = [ "producer.cc" ]
 }
@@ -46,6 +48,14 @@ executable("consumer") {
     "//tracing",
     "//tracing:ipc",
     "//protos:lite",
+    ":common",
   ]
   sources = [ "consumer.cc" ]
+}
+
+source_set("common") {
+  deps += [
+    "//base",
+  ]
+  sources = [ "common.cc" ]
 }

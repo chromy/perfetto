@@ -67,6 +67,8 @@ void ProducerMain() {
   std::unique_ptr<Service::ProducerEndpoint> endpoint =
       ProducerIPCClient::Connect(kProducerSocketName, &producer, &task_runner);
 
+  SetUidAndGid("shell");
+
   DataSourceDescriptor descriptor;
   descriptor.name = "perfetto.test.data_source";
 

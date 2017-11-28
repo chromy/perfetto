@@ -33,6 +33,9 @@ void ServiceMain() {
       perfetto::ServiceIPCHost::CreateInstance(&task_runner);
   host->Start(perfetto::kProducerSocketName, perfetto::kConsumerSocketName);
   task_runner.PostTask([] { printf("Service started\n"); });
+
+  SetUidAndGid("nobody");
+
   task_runner.Run();
 }
 

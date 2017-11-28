@@ -29,6 +29,9 @@ const char kProducerSocketName[] = "/tmp/perfetto-ipc-test-producer.sock";
 const char kConsumerSocketName[] = "/tmp/perfetto-ipc-test-consumer.sock";
 #endif
 
+// Can be called only by root.
+void SetUidAndGid(const char* username);
+
 }  // namespace perfetto
 
 #endif  // DEMO_COMMON_H_
