@@ -53,4 +53,7 @@ tmux select-pane -t 2
 tmux send-keys "echo Consumer" C-m
 tmux send-keys "/data/local/tmp/consumer"
 
+# Select consumer pane.
+tmux select-pane -t 1
+
 tmux -2 attach-session -t demo
