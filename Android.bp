@@ -154,7 +154,7 @@ cc_genrule {
   name: "protozero_testing_messages_zero_headers",
   tools: [ "aprotoc", "protozero_protoc_plugin" ],
   srcs: [ ":protozero_testing_messages" ],
-  cmd: protoc_cmd,
+  cmd: protozeroc_cmd,
   export_include_dirs: [ "." ],
   out: [
     "external/perfetto/protozero/src/test/example_proto/library.pbzero.h",
@@ -306,9 +306,12 @@ cc_test {
   ]
 }
 
-cc_binary {
+cc_test {
   name: "perfetto_ftrace_reader_integrationtests",
-  defaults: [ "perfetto_ftrace_defaults" ],
+  defaults: [
+    "perfetto_ftrace_defaults",
+    "protozero_defaults"
+  ],
   generated_headers: [
     "perfetto_messages_lite_headers",
     "perfetto_messages_zero_headers",
@@ -335,9 +338,20 @@ cc_test {
     "perfetto_ftrace_defaults",
     "protozero_defaults",
   ],
+  generated_headers: [
+    "perfetto_messages_zero_headers",
+    "perfetto_messages_lite_headers",
+  ],
+  shared_libs: [
+    "libprotobuf-cpp-lite"
+  ],
   srcs: [
     ":protozero",
+    ":perfetto_base",
+    ":perfetto_base_test_support",
     ":perfetto_ftrace_reader",
+    ":perfetto_messages_lite",
+    ":perfetto_messages_zero",
     "ftrace_reader/src/main.cc",
   ]
 }
@@ -572,21 +586,32 @@ filegroup {
 
 cc_test {
   name: "perfetto_tracing_unittests",
-  defaults: [ "perfetto_tracing_defaults" ],
+  defaults: [
+    "perfetto_tracing_defaults",
+    "perfetto_ipc_defaults",
+    "perfetto_ftrace_defaults",
+    "protozero_defaults",
+  ],
   generated_headers: [
+    "perfetto_messages_lite_headers",
+    "perfetto_messages_zero_headers",
     "perfetto_tracing_messages_lite_headers",
   ],
   shared_libs: [
-    "libprotobuf-cpp-lite"
+    "libprotobuf-cpp-lite",
+    "libandroid"
   ],
   static_libs: [
     "libgmock"
   ],
   srcs: [
+    ":protozero",
     ":perfetto_base",
     ":perfetto_base_test_support",
     ":perfetto_tracing",
     ":perfetto_tracing_ipc",
+    ":perfetto_messages_lite",
+    ":perfetto_messages_zero",
     ":perfetto_tracing_messages_lite",
     "tracing/src/core/service_impl_unittest.cc",
     "tracing/src/ipc/posix_shared_memory_unittest.cc",
