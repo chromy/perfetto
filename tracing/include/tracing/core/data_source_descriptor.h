@@ -17,22 +17,34 @@
 #ifndef TRACING_INCLUDE_TRACING_CORE_DATA_SOURCE_DESCRIPTOR_H_
 #define TRACING_INCLUDE_TRACING_CORE_DATA_SOURCE_DESCRIPTOR_H_
 
+#include <stdint.h>
+
 #include <string>
+
+#include "tracing/core/proto_pimpl_macros.h"
 
 namespace perfetto {
 
-// This class contains the details of the DataSource that Producer(s) advertise
-// to the Service through Service::ProducerEndpoint::RegisterDataSource().
-// This is to pass information such as exposed field, supported filters etc.
+namespace proto {
+class DataSourceDescriptor;  // From data_source_descriptor.proto .
+}  // namespace proto
 
-// This has to be kept in sync with src/ipc/data_source_descriptor.proto .
-// TODO(primiano): find a way to auto-generate this and the glue code that
-// converts DataSourceDescriptor <> proto::DataSourceDescriptor.
+// See src/ipc/data_source_descriptor.proto for comments.
 class DataSourceDescriptor {
  public:
-  std::string name;  // e.g., org.chromium.trace_events.
+  DataSourceDescriptor();
+  explicit DataSourceDescriptor(proto::DataSourceDescriptor*);
+  DataSourceDescriptor(DataSourceDescriptor&&) noexcept;
+  ~DataSourceDescriptor();
 
-  // TODO(primiano): fill this in next CLs.
+  void set_name(const std::string&);
+  const std::string& name() const;
+
+  void CopyFrom(const proto::DataSourceDescriptor&);
+  const proto::DataSourceDescriptor& proto() const { return *impl_; }
+
+  PERFETTO_DECLARE_PROTO_PIMPL(DataSourceDescriptor,
+                               proto::DataSourceDescriptor)
 };
 
 }  // namespace perfetto

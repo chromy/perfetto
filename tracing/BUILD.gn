@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//ipc//ipc_library.gni")
-
 config("tracing_config") {
   include_dirs = [ "include" ]
 }
@@ -31,30 +29,24 @@ source_set("tracing") {
     "include/tracing/core/data_source_config.h",
     "include/tracing/core/data_source_descriptor.h",
     "include/tracing/core/producer.h",
+    "include/tracing/core/proto_pimpl_macros.h",
     "include/tracing/core/service.h",
     "include/tracing/core/shared_memory.h",
     "include/tracing/core/shared_memory_abi.h",
     "include/tracing/core/trace_config.h",
     "include/tracing/core/trace_packet.h",
     "include/tracing/core/trace_writer.h",
+    "src/core/data_source_config.cc",
+    "src/core/data_source_descriptor.cc",
     "src/core/producer_shared_memory_arbiter.cc",
     "src/core/producer_shared_memory_arbiter.h",
     "src/core/service_impl.cc",
     "src/core/service_impl.h",
     "src/core/shared_memory_abi.cc",
+    "src/core/trace_config.cc",
     "src/core/trace_packet.cc",
     "src/core/trace_writer_impl.cc",
     "src/core/trace_writer_impl.h",
-  ]
-}
-
-# IPC service definitions.
-ipc_library("ipc_protos") {
-  sources = [
-    "src/ipc/consumer_port.proto",
-    "src/ipc/data_source_config.proto",
-    "src/ipc/data_source_descriptor.proto",
-    "src/ipc/producer_port.proto",
   ]
 }
 
@@ -79,9 +71,9 @@ source_set("ipc") {
     "src/ipc/service/service_ipc_host_impl.h",
   ]
   deps = [
-    ":ipc_protos",
     ":tracing",
     "//base",
+    "//protos/ipc:tracing_service",
   ]
 }
 

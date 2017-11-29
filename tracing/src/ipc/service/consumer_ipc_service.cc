@@ -57,22 +57,10 @@ void ConsumerIPCService::OnClientDisconnected() {
 // Called by the IPC layer.
 void ConsumerIPCService::EnableTracing(const EnableTracingRequest& req,
                                        DeferredEnableTracingResponse resp) {
-  TraceConfig trace_config;
-  for (const auto& proto_buf_cfg : req.buffers()) {
-    trace_config.buffers.emplace_back();
-    trace_config.buffers.back().size_kb = proto_buf_cfg.size_kb();
-  }
-
-  for (const auto& proto_ds : req.data_sources()) {
-    trace_config.data_sources.emplace_back();
-    TraceConfig::DataSource& ds = trace_config.data_sources.back();
-    for (const std::string& pnf : proto_ds.producer_name_filter())
-      ds.producer_name_filter.emplace_back(pnf);
-    ds.config.name = proto_ds.config().name();
-    ds.config.target_buffer = proto_ds.config().target_buffer();
-    ds.config.trace_category_filters =
-        proto_ds.config().trace_category_filters();
-  }
+  // TODO: fix const correctness by adding a ctor that takes a const& ref to
+  // TraceConfig.
+  const TraceConfig trace_config(
+      const_cast<EnableTracingRequest&>(req).mutable_trace_config());
   GetConsumerForCurrentRequest()->service_endpoint->EnableTracing(trace_config);
   resp.Resolve(ipc::AsyncResult<EnableTracingResponse>::Create());
 }

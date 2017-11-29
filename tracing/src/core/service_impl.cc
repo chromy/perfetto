@@ -128,15 +128,16 @@ void ServiceImpl::EnableTracing(ConsumerEndpointImpl* initiator,
   TracingSession& tracing_session = it_and_inserted.first->second;
 
   // Initialize the log buffers.
-  tracing_session.trace_buffers.reserve(cfg.buffers.size());
+  tracing_session.trace_buffers.reserve(cfg.buffers_size());
   bool did_allocate_all_buffers = false;
-  for (const auto& buffer_cfg : cfg.buffers) {
+  for (int buf_idx = 0; buf_idx < cfg.buffers_size(); buf_idx++) {
+    const TraceConfig::BufferConfig& buffer_cfg = cfg.buffers(buf_idx);
     did_allocate_all_buffers = false;
     // Find a free slot in the |trace_buffers_| table.
     for (size_t i = 0; i < kMaxTraceBuffers; i++) {
       if (trace_buffers_[i])
         continue;
-      trace_buffers_[i].Create(buffer_cfg.size_kb * 1024, 4096 /* page size */);
+      trace_buffers_[i].Create(buffer_cfg.size_kb() * 1024, 4096 /*page size*/);
       tracing_session.trace_buffers.emplace_back(i);
       did_allocate_all_buffers = true;
       break;
@@ -155,9 +156,11 @@ void ServiceImpl::EnableTracing(ConsumerEndpointImpl* initiator,
   }
 
   // Enable the data sources on the producers.
-  for (const auto& cfg_data_source : cfg.data_sources) {
+  for (int ds_idx = 0; ds_idx < cfg.data_sources_size(); ds_idx++) {
+    const TraceConfig::DataSource& cfg_data_source = cfg.data_sources(ds_idx);
+
     // Scan all the registered data sources with a matching name.
-    auto range = data_sources_.equal_range(cfg_data_source.config.name);
+    auto range = data_sources_.equal_range(cfg_data_source.config().name());
     for (auto it = range.first; it != range.second; it++) {
       const RegisteredDataSource& reg_data_source = it->second;
       // TODO match against |producer_name_filter|.
@@ -169,7 +172,7 @@ void ServiceImpl::EnableTracing(ConsumerEndpointImpl* initiator,
       DataSourceInstanceID inst_id = ++last_data_source_instance_id_;
       tracing_session.data_source_instances.emplace(producer_id, inst_id);
       producer->producer()->CreateDataSourceInstance(inst_id,
-                                                     cfg_data_source.config);
+                                                     cfg_data_source.config());
     }
   }
 }
@@ -247,7 +250,8 @@ void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {
                        flags & SharedMemoryABI::ChunkHeader::
                                    kLastPacketContinuesOnNextChunk);
 
-          // printf("      #%-3zu len:%u skip: %d\n", pack_idx, pack_size, skip);
+          // printf("      #%-3zu len:%u skip: %d\n", pack_idx, pack_size,
+          // skip);
           if (ptr > chunk.end_addr() - pack_size) {
             // printf("out of bounds!\n");
             break;
@@ -347,8 +351,9 @@ void ServiceImpl::ProducerEndpointImpl::RegisterDataSource(
     RegisterDataSourceCallback callback) {
   const DataSourceID dsid = ++last_data_source_id_;
   PERFETTO_DLOG("Register %" PRIu64, dsid);
-  auto it = service_->data_sources_.emplace(desc.name, RegisteredDataSource());
-  it->second.descriptor = desc;
+  auto it =
+      service_->data_sources_.emplace(desc.name(), RegisteredDataSource());
+  it->second.descriptor.CopyFrom(desc.proto());  // TODO: add copy ctor.
   it->second.producer_id = id_;
   data_source_instances_[dsid] = it;
 

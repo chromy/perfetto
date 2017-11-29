@@ -121,10 +121,12 @@ void ProducerIPCClientImpl::OnServiceRequest(
     // Keep this in sync with chages in data_source_config.proto.
     const auto& req = cmd.start_data_source();
     const DataSourceInstanceID dsid = req.new_instance_id();
-    const proto::DataSourceConfig& proto_cfg = req.config();
-    DataSourceConfig cfg;
-    cfg.trace_category_filters = proto_cfg.trace_category_filters();
-    producer_->CreateDataSourceInstance(dsid, cfg);
+
+    // TODO: fix const correctness adding a const& ctor to DataSourceConfig.
+    const DataSourceConfig ds_config(
+        const_cast<GetAsyncCommandResponse::StartDataSource&>(req)
+            .mutable_config());
+    producer_->CreateDataSourceInstance(dsid, ds_config);
     return;
   }
 
@@ -148,8 +150,7 @@ void ProducerIPCClientImpl::RegisterDataSource(
   }
   // Keep this in sync with changes in data_source_descriptor.proto.
   RegisterDataSourceRequest req;
-  auto* proto_descriptor = req.mutable_data_source_descriptor();
-  proto_descriptor->set_name(descriptor.name);
+  req.mutable_data_source_descriptor()->CopyFrom(descriptor.proto());
   ipc::Deferred<RegisterDataSourceResponse> async_response;
   // TODO: add a test that destroys the IPC channel soon after this call and
   // checks that the callback(0) is invoked.

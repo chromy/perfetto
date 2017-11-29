@@ -84,7 +84,7 @@ void FtraceProducer::OnConnect() {
 
   DataSourceDescriptor descriptor;
   // TODO(hjd): Update name.
-  descriptor.name = "perfetto.test.data_source";
+  descriptor.set_name("perfetto.test.data_source");
   endpoint_->RegisterDataSource(
       descriptor, [this](DataSourceID id) { data_source_id_ = id; });
 }
@@ -99,7 +99,7 @@ void FtraceProducer::CreateDataSourceInstance(
     const DataSourceConfig& source_config) {
   PERFETTO_DLOG("Service asked to start data source\n");
 
-  const std::string& categories = source_config.trace_category_filters;
+  const std::string& categories = source_config.trace_category_filters();
   FtraceConfig config;
   size_t last = 0;
   for (size_t i = 0; i <= categories.size(); i++) {

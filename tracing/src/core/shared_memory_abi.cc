@@ -165,8 +165,8 @@ SharedMemoryABI::Chunk SharedMemoryABI::TryAcquireChunk(
   uint32_t next_layout = layout;
   next_layout &= ~(kChunkMask << (chunk_idx * kChunkShift));
   next_layout |= (desired_chunk_state << (chunk_idx * kChunkShift));
-  if (!phdr->layout.compare_exchange_weak(layout, next_layout,
-                                          std::memory_order_acq_rel)) {
+  if (!phdr->layout.compare_exchange_strong(layout, next_layout,
+                                            std::memory_order_acq_rel)) {
     // TODO: returning here is too aggressive. We should look at the returned
     // |layout| to figure out if somebody else took the same chunk (in which
     // case we should immediately return false) or if they took another chunk in
@@ -191,10 +191,11 @@ bool SharedMemoryABI::TryPartitionPage(size_t page_idx,
   uint32_t expected_state = 0;
   uint32_t next_layout = (layout << kLayoutShift) & kLayoutMask;
   PageHeader* phdr = page_header(page_idx);
-  if (!phdr->layout.compare_exchange_weak(expected_state, next_layout,
-                                          std::memory_order_acq_rel)) {
+  if (!phdr->layout.compare_exchange_strong(expected_state, next_layout,
+                                            std::memory_order_acq_rel)) {
     return false;
   }
+
   PERFETTO_DCHECK(target_buffer < kMaxTraceBuffers);
   phdr->target_buffer.store(static_cast<uint16_t>(target_buffer),
                             std::memory_order_release);
@@ -261,8 +262,8 @@ size_t SharedMemoryABI::ReleaseChunk(Chunk chunk,
     if ((next_layout & kAllChunksMask) == kAllChunksFree)
       next_layout = 0;
 
-    if (phdr->layout.compare_exchange_weak(layout, next_layout,
-                                           std::memory_order_acq_rel)) {
+    if (phdr->layout.compare_exchange_strong(layout, next_layout,
+                                             std::memory_order_acq_rel)) {
       return (next_layout & kAllChunksMask) == all_chunks_state
                  ? page_idx
                  : kInvalidPageIdx;
@@ -297,8 +298,8 @@ bool SharedMemoryABI::TryAcquireAllChunksForReading(size_t page_idx) {
         break;
     }
   }
-  return phdr->layout.compare_exchange_weak(layout, next_layout,
-                                            std::memory_order_acq_rel);
+  return phdr->layout.compare_exchange_strong(layout, next_layout,
+                                              std::memory_order_acq_rel);
 }
 
 void SharedMemoryABI::ReleaseAllChunksAsFree(size_t page_idx) {

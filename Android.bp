@@ -530,10 +530,11 @@ filegroup {
 filegroup {
   name: "perfetto_tracing_messages",
   srcs:  [
-    "tracing/src/ipc/consumer_port.proto",
-    "tracing/src/ipc/data_source_config.proto",
-    "tracing/src/ipc/data_source_descriptor.proto",
-    "tracing/src/ipc/producer_port.proto",
+    "protos/ipc/consumer_port.proto",
+    "protos/ipc/data_source_config.proto",
+    "protos/ipc/data_source_descriptor.proto",
+    "protos/ipc/producer_port.proto",
+    "protos/ipc/trace_config.proto",
   ]
 }
 
@@ -543,14 +544,16 @@ cc_genrule {
   srcs: [ ":perfetto_tracing_messages" ],
   cmd: ipcc_cmd,
   out: [
-    "external/perfetto/tracing/src/ipc/consumer_port.ipc.cc",
-    "external/perfetto/tracing/src/ipc/consumer_port.pb.cc",
-    "external/perfetto/tracing/src/ipc/data_source_config.ipc.cc",
-    "external/perfetto/tracing/src/ipc/data_source_config.pb.cc",
-    "external/perfetto/tracing/src/ipc/data_source_descriptor.ipc.cc",
-    "external/perfetto/tracing/src/ipc/data_source_descriptor.pb.cc",
-    "external/perfetto/tracing/src/ipc/producer_port.ipc.cc",
-    "external/perfetto/tracing/src/ipc/producer_port.pb.cc",
+    "external/perfetto/protos/ipc/consumer_port.ipc.cc",
+    "external/perfetto/protos/ipc/consumer_port.pb.cc",
+    "external/perfetto/protos/ipc/data_source_config.ipc.cc",
+    "external/perfetto/protos/ipc/data_source_config.pb.cc",
+    "external/perfetto/protos/ipc/data_source_descriptor.ipc.cc",
+    "external/perfetto/protos/ipc/data_source_descriptor.pb.cc",
+    "external/perfetto/protos/ipc/producer_port.ipc.cc",
+    "external/perfetto/protos/ipc/producer_port.pb.cc",
+    "external/perfetto/protos/ipc/trace_config.ipc.cc",
+    "external/perfetto/protos/ipc/trace_config.pb.cc",
   ]
 }
 
@@ -561,14 +564,16 @@ cc_genrule {
   cmd: ipcc_cmd,
   export_include_dirs: [ "." ],
   out: [
-    "external/perfetto/tracing/src/ipc/consumer_port.ipc.h",
-    "external/perfetto/tracing/src/ipc/consumer_port.pb.h",
-    "external/perfetto/tracing/src/ipc/data_source_config.ipc.h",
-    "external/perfetto/tracing/src/ipc/data_source_config.pb.h",
-    "external/perfetto/tracing/src/ipc/data_source_descriptor.ipc.h",
-    "external/perfetto/tracing/src/ipc/data_source_descriptor.pb.h",
-    "external/perfetto/tracing/src/ipc/producer_port.ipc.h",
-    "external/perfetto/tracing/src/ipc/producer_port.pb.h",
+    "external/perfetto/protos/ipc/consumer_port.ipc.h",
+    "external/perfetto/protos/ipc/consumer_port.pb.h",
+    "external/perfetto/protos/ipc/data_source_config.ipc.h",
+    "external/perfetto/protos/ipc/data_source_config.pb.h",
+    "external/perfetto/protos/ipc/data_source_descriptor.ipc.h",
+    "external/perfetto/protos/ipc/data_source_descriptor.pb.h",
+    "external/perfetto/protos/ipc/producer_port.ipc.h",
+    "external/perfetto/protos/ipc/producer_port.pb.h",
+    "external/perfetto/protos/ipc/trace_config.ipc.h",
+    "external/perfetto/protos/ipc/trace_config.pb.h",
   ]
 }
 

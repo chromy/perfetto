@@ -38,7 +38,7 @@ class TaskRunner;
 class DataSourceConfig;
 class Producer;
 class SharedMemory;
-struct TraceConfig;
+class TraceConfig;
 
 // The tracing service business logic.
 class ServiceImpl : public Service {

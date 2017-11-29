@@ -26,7 +26,7 @@
 #include "tracing/core/consumer.h"
 #include "tracing/core/service.h"
 
-#include "tracing/src/ipc/consumer_port.ipc.h"  // From consumer_port.proto.
+#include "protos/ipc/consumer_port.ipc.h"  // From consumer_port.proto.
 
 namespace perfetto {
 

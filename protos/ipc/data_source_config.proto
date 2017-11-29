@@ -19,6 +19,8 @@ option optimize_for = LITE_RUNTIME;
 
 package perfetto.proto;
 
+// See protos/ipc/data_source_config.proto for comments.
+
 message DataSourceConfig {
   // Data source unique name, e.g., "org.chromium.trace_events". This must match
   // the name passed by the data source when it registers (see

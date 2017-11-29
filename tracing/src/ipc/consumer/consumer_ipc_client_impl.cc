@@ -73,18 +73,7 @@ void ConsumerIPCClientImpl::EnableTracing(const TraceConfig& trace_config) {
   // Serialize the |trace_config| into a EnableTracingRequest protobuf.
   // Keep this in sync with changes in consumer_port.proto.
   EnableTracingRequest req;
-  for (const TraceConfig::BufferConfig& buf_cfg : trace_config.buffers)
-    req.add_buffers()->set_size_kb(buf_cfg.size_kb);
-
-  for (const TraceConfig::DataSource& ds_cfg : trace_config.data_sources) {
-    auto* data_source = req.add_data_sources();
-    for (const std::string& producer_name_filter : ds_cfg.producer_name_filter)
-      data_source->add_producer_name_filter(producer_name_filter);
-    auto* proto_cfg = data_source->mutable_config();
-    proto_cfg->set_name(ds_cfg.config.name);
-    proto_cfg->set_target_buffer(ds_cfg.config.target_buffer);
-    proto_cfg->set_trace_category_filters(ds_cfg.config.trace_category_filters);
-  }
+  req.mutable_trace_config()->CopyFrom(trace_config.proto());
   ipc::Deferred<EnableTracingResponse> async_response;
   async_response.Bind([](ipc::AsyncResult<EnableTracingResponse> response) {
     if (!response)

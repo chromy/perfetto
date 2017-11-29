@@ -37,7 +37,7 @@ class TaskRunner;
 class Consumer;
 class DataSourceDescriptor;
 class Producer;
-struct TraceConfig;
+class TraceConfig;
 class TraceWriter;
 
 // TODO: for the moment this assumes that all the calls hapen on the same

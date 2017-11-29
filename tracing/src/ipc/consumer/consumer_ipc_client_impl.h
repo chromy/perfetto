@@ -26,8 +26,8 @@
 #include "tracing/core/basic_types.h"
 #include "tracing/core/service.h"
 
+#include "protos/ipc/consumer_port.ipc.h"  // From consumer_port.proto.
 #include "tracing/ipc/consumer_ipc_client.h"
-#include "tracing/src/ipc/consumer_port.ipc.h"  // From consumer_port.proto.
 
 namespace perfetto {
 
@@ -40,7 +40,7 @@ class Client;
 }  // namespace ipc
 
 class Consumer;
-struct TraceConfig;
+class TraceConfig;
 
 // Exposes a Service endpoint to Consumer(s), proxying all requests through a
 // IPC channel to the remote Service. This class is the glue layer between the

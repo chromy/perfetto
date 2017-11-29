@@ -29,6 +29,8 @@
 
 #include "base/logging.h"
 
+// TODO: never use compare_exchange_weak ever.
+
 namespace perfetto {
 
 // This file defines the binary interface of the memory buffers shared between
