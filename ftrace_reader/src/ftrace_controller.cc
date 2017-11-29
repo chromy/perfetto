@@ -57,17 +57,25 @@ bool RunAtrace(const std::vector<std::string>& args) {
     waitpid(pid, &status, 0);
   } else {
     std::vector<char*> argv;
-    argv.push_back(
-        const_cast<char*>(std::string("/system/bin/atrace").c_str()));
-    for (const auto& arg : args)
-      argv.push_back(const_cast<char*>(arg.c_str()));
+    char argv_arena[1024];
+    char* wptr = &argv_arena[0];
+    argv.push_back(wptr);
+    strcpy(wptr, "atrace");
+    wptr += strlen("atrace") + 1;
+    for (const auto& arg : args) {
+      argv.push_back(wptr);
+      strcat(wptr, arg.c_str());
+      wptr += arg.size() + 1;
+    }
     argv.push_back(nullptr);
+    int devnull_fd = open("/dev/null", O_WRONLY);
+    dup2(devnull_fd, STDOUT_FILENO);
     execve("/system/bin/atrace", &argv[0], envp);
     exit(1);
   }
   return status == 0;
 }
-#endif // defined(ANDROID)
+#endif  // defined(ANDROID)
 
 }  // namespace
 
