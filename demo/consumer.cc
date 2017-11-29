@@ -110,7 +110,7 @@ int ConsumerMain(int argc, char** argv) {
 
   printf("Writing trace output to /data/local/tmp/trace.output\n");
   unlink("/data/local/tmp/trace.protobuf");
-  int fd = open("/data/local/tmp/trace.protobuf", O_WRONLY | O_CREAT);
+  int fd = open("/data/local/tmp/trace.protobuf", O_WRONLY | O_CREAT, 0644);
   PERFETTO_CHECK(fd > 0);
 
   consumer.on_trace_data = [&fd](const std::vector<TracePacket>& trace_packets,

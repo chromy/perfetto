@@ -199,6 +199,7 @@ filegroup {
     "protos/ftrace/sched_switch.proto",
     "protos/ftrace/test_bundle_wrapper.proto",
     "protos/trace_packet.proto",
+    "protos/trace.proto",
   ]
 }
 
@@ -214,6 +215,7 @@ cc_genrule {
     "external/perfetto/protos/ftrace/sched_switch.pb.cc",
     "external/perfetto/protos/ftrace/test_bundle_wrapper.pb.cc",
     "external/perfetto/protos/trace_packet.pb.cc",
+    "external/perfetto/protos/trace.pb.cc",
   ]
 }
 
@@ -230,6 +232,7 @@ cc_genrule {
     "external/perfetto/protos/ftrace/sched_switch.pb.h",
     "external/perfetto/protos/ftrace/test_bundle_wrapper.pb.h",
     "external/perfetto/protos/trace_packet.pb.h",
+    "external/perfetto/protos/trace.pb.h",
   ]
 }
 
@@ -245,6 +248,7 @@ cc_genrule {
     "external/perfetto/protos/ftrace/sched_switch.pbzero.cc",
     "external/perfetto/protos/ftrace/test_bundle_wrapper.pbzero.cc",
     "external/perfetto/protos/trace_packet.pbzero.cc",
+    "external/perfetto/protos/trace.pbzero.cc",
   ]
 }
 
@@ -261,6 +265,7 @@ cc_genrule {
     "external/perfetto/protos/ftrace/sched_switch.pbzero.h",
     "external/perfetto/protos/ftrace/test_bundle_wrapper.pbzero.h",
     "external/perfetto/protos/trace_packet.pbzero.h",
+    "external/perfetto/protos/trace.pbzero.h",
   ]
 }
 
@@ -519,9 +524,12 @@ cc_defaults {
 filegroup {
   name: "perfetto_tracing",
   srcs: [
+    "tracing/src/core/data_source_config.cc",
+    "tracing/src/core/data_source_descriptor.cc",
     "tracing/src/core/producer_shared_memory_arbiter.cc",
     "tracing/src/core/service_impl.cc",
     "tracing/src/core/shared_memory_abi.cc",
+    "tracing/src/core/trace_config.cc",
     "tracing/src/core/trace_packet.cc",
     "tracing/src/core/trace_writer_impl.cc",
   ]
