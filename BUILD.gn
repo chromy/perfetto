@@ -16,6 +16,7 @@ group("all") {
   testonly = true  # allow to build also test targets
   deps = [
     ":tests",
+    "//demo:proto_to_text($host_toolchain)",
     "//demo:service",
     "//ftrace_reader:ftrace_reader_demo",
     "//ipc/src/protoc_plugin:ipc_plugin($host_toolchain)",
