@@ -93,8 +93,7 @@ int ConsumerMain(int argc, char** argv) {
   DataSourceConfig ds_config = data_source.mutable_config();
   ds_config.set_name("perfetto.test.data_source");
   ds_config.set_target_buffer(0);
-  ds_config.set_trace_category_filters("print,sched_switch,");
-  //  *filter += "atrace_cat.res,";
+  ds_config.set_trace_category_filters("print,sched_switch,atrace_cat.sched");
 
   consumer.on_connect = [&endpoint, &trace_config] {
     printf("Connected, sending EnableTracing() request\n");
@@ -110,7 +109,9 @@ int ConsumerMain(int argc, char** argv) {
       2000);
 
   printf("Writing trace output to /data/local/tmp/trace.output\n");
+  unlink("/data/local/tmp/trace.protobuf");
   int fd = open("/data/local/tmp/trace.protobuf", O_WRONLY | O_CREAT);
+  PERFETTO_CHECK(fd > 0);
 
   consumer.on_trace_data = [&fd](const std::vector<TracePacket>& trace_packets,
                                  bool has_more) {
@@ -131,20 +132,6 @@ int ConsumerMain(int argc, char** argv) {
       pos = WriteVarInt(static_cast<uint32_t>(packet.size()), pos);
       write(fd, buffer, pos - buffer);
       write(fd, packet.start(), packet.size());
-
-      const FtraceEventBundle& bundle = packet->ftrace_events();
-      for (const FtraceEvent& event : bundle.event()) {
-        if (event.has_sched_switch()) {
-          const SchedSwitchFtraceEvent& sched_switch = event.sched_switch();
-          printf("%llu %8s: %s -> %s\n", event.timestamp(), "switch",
-                 sched_switch.prev_comm().c_str(),
-                 sched_switch.next_comm().c_str());
-        } else if (event.has_print()) {
-          const PrintFtraceEvent& print = event.print();
-          printf("%llu %8s: %s\n", event.timestamp(), "print",
-                 print.buf().c_str());
-        }
-      }
     }
 
     if (!has_more) {

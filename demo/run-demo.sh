@@ -2,7 +2,7 @@
 
 set -e
 
-outdir=out/android_debug_arm64
+outdir=out/android_release_arm64
 
 ninja -C $outdir
 

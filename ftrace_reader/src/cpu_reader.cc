@@ -97,6 +97,9 @@ bool CpuReader::Drain(const std::array<const EventFilter*, kMaxSinks>& filters,
   if (!fd_)
     return false;
 
+  // TODO(hjd): Non-blocking read.
+  // TODO(hjd): Read in loop.
+
   uint8_t* buffer = GetBuffer();
   // TOOD(hjd): One read() per page may be too many.
   long bytes = PERFETTO_EINTR(read(fd_.get(), buffer, kPageSize));
