@@ -141,8 +141,7 @@ void FtraceProducer::OnBundleComplete(size_t cpu, BundleHandle bundle) {
 }
 
 void FtraceProducer::Run() {
-  // Shell has recently lost access to tracingfs. http://b/69839129.
-  // SetUidAndGid("shell");
+  SetUidAndGid("shell");
 
   base::UnixTaskRunner runner;
   ftrace_ = FtraceController::Create(&runner);
