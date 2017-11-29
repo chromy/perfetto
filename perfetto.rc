@@ -1,0 +1,11 @@
+service perfetto-service /system/bin/logwrapper /system/bin/perfetto service
+    class core
+    #user logd
+    #group logd
+    writepid /dev/cpuset/system-background/tasks
+
+service perfetto-producer /system/bin/logwrapper /system/bin/perfetto producer
+    class core
+    #user shell
+    #group shell
+    writepid /dev/cpuset/system-background/tasks

@@ -680,7 +680,8 @@ cc_binary {
     ":perfetto_tracing_messages_lite",
     ":perfetto_tracing_ipc",
     "demo/main.cc",
-  ]
+  ],
+  init_rc: [ "perfetto.rc" ],
 }
 
 filegroup {
