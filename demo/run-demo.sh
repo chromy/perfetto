@@ -23,10 +23,10 @@ else
   tmux set-option -g mouse-select-window on
 fi
 
-tmux split-window -h
-tmux split-window -h
+tmux split-window -v
+tmux split-window -v
 
-tmux select-layout even-horizontal
+tmux select-layout even-vertical
 
 tmux select-pane -t 0
 tmux send-keys "adb shell" C-m
