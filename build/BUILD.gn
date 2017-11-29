@@ -159,7 +159,6 @@ config("debug_symbols") {
   }
 }
 
-
 config("release") {
   cflags = [
     "-fdata-sections",
