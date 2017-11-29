@@ -132,7 +132,6 @@ void FtraceProducer::TearDownDataSourceInstance(DataSourceInstanceID id) {
 
 BundleHandle FtraceProducer::GetBundleForCpu(size_t cpu) {
   trace_packet_ = trace_writer_->NewTracePacket();
-  trace_packet_->set_test("Foo!");
   return BundleHandle(trace_packet_->set_ftrace_events());
 }
 
@@ -143,14 +142,14 @@ void FtraceProducer::OnBundleComplete(size_t cpu, BundleHandle bundle) {
 void FtraceProducer::Run() {
   SetUidAndGid("shell");
 
-  base::UnixTaskRunner runner;
-  ftrace_ = FtraceController::Create(&runner);
-  endpoint_ = ProducerIPCClient::Connect(kProducerSocketName, this, &runner);
+  ftrace_ = FtraceController::Create(g_task_runner);
+  endpoint_ =
+      ProducerIPCClient::Connect(kProducerSocketName, this, g_task_runner);
   ftrace_->DisableAllEvents();
   ftrace_->ClearTrace();
   ftrace_->WriteTraceMarker("Hello, world!");
   ftrace_->Start();
-  runner.Run();
+  g_task_runner->Run();
 }
 
 }  // namespace.

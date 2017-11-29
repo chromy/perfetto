@@ -21,6 +21,10 @@
 
 namespace perfetto {
 
+namespace base {
+class UnixTaskRunner;
+}  // namespace base
+
 #if BUILDFLAG(OS_ANDROID)
 const char kProducerSocketName[] = "@perfetto-ipc-test-producer.sock";
 const char kConsumerSocketName[] = "@perfetto-ipc-test-consumer.sock";
@@ -35,6 +39,8 @@ void SetUidAndGid(const char* username);
 int ConsumerMain(int argc, char** argv);
 int ProducerMain(int argc, char** argv);
 int ServiceMain(int argc, char** argv);
+
+extern base::UnixTaskRunner* g_task_runner;
 
 }  // namespace perfetto
 

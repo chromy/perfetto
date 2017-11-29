@@ -26,15 +26,14 @@ namespace perfetto {
 int ServiceMain(int argc, char** argv) {
   unlink(perfetto::kProducerSocketName);
   unlink(perfetto::kConsumerSocketName);
-  perfetto::base::UnixTaskRunner task_runner;
   std::unique_ptr<perfetto::ServiceIPCHost> host =
-      perfetto::ServiceIPCHost::CreateInstance(&task_runner);
+      perfetto::ServiceIPCHost::CreateInstance(g_task_runner);
   host->Start(perfetto::kProducerSocketName, perfetto::kConsumerSocketName);
-  task_runner.PostTask([] { printf("Service started\n"); });
+  g_task_runner->PostTask([] { printf("Service started\n"); });
 
   SetUidAndGid("nobody");
 
-  task_runner.Run();
+  g_task_runner->Run();
   return 0;
 }
 

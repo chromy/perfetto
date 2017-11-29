@@ -79,10 +79,9 @@ class TestConsumer : public Consumer {
 }  // namespace.
 
 int ConsumerMain(int argc, char** argv) {
-  base::UnixTaskRunner task_runner;
   TestConsumer consumer;
   std::unique_ptr<Service::ConsumerEndpoint> endpoint =
-      ConsumerIPCClient::Connect(kConsumerSocketName, &consumer, &task_runner);
+      ConsumerIPCClient::Connect(kConsumerSocketName, &consumer, g_task_runner);
 
   TraceConfig trace_config;
 
@@ -100,47 +99,56 @@ int ConsumerMain(int argc, char** argv) {
     endpoint->EnableTracing(trace_config);
   };
 
-  task_runner.PostDelayedTask(
+  g_task_runner->PostDelayedTask(
       [&endpoint] {
         printf("Sending DisableTracing() + ReadBuffers() request\n");
         endpoint->DisableTracing();
         endpoint->ReadBuffers();
       },
-      2000);
+      5000);
 
-  printf("Writing trace output to /data/local/tmp/trace.output\n");
-  unlink("/data/local/tmp/trace.protobuf");
-  int fd = open("/data/local/tmp/trace.protobuf", O_WRONLY | O_CREAT, 0644);
+  static const char kTraceFile[] = "/data/local/tmp/trace.protobuf";
+  printf("\nWriting trace output to %s\n\n", kTraceFile);
+  unlink(kTraceFile);
+  int fd = open(kTraceFile, O_WRONLY | O_CREAT, 0644);
   PERFETTO_CHECK(fd > 0);
+  size_t tot_packets = 0;
+  size_t tot_events = 0;
+  size_t tot_size = 0;
 
-  consumer.on_trace_data = [&fd](const std::vector<TracePacket>& trace_packets,
-                                 bool has_more) {
-    printf("OnTraceData() num packets = %zu\n", trace_packets.size());
+  consumer.on_trace_data = [&](const std::vector<TracePacket>& trace_packets,
+                               bool has_more) {
+    // printf("OnTraceData() num packets = %zu\n", trace_packets.size());
     for (const TracePacket& const_packet : trace_packets) {
+      tot_packets++;
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
       bool decoded = packet.Decode();
-      printf(" %d %s\n", decoded,
-             decoded ? packet->test().c_str() : "[Decode fail]");
       if (!decoded || !packet->has_ftrace_events())
         continue;
+      tot_events += packet->ftrace_events().event_size();
 
-      uint8_t buffer[1024];
-      uint32_t field_id = 1;
-      uint32_t tag = MakeTagLengthDelimited(field_id);
-      uint8_t* pos = buffer;
-      pos = WriteVarInt(tag, pos);
+      uint8_t preamble[8];
+      uint8_t* pos = preamble;
+      pos = WriteVarInt(MakeTagLengthDelimited(1 /* field_id */), pos);
       pos = WriteVarInt(static_cast<uint32_t>(packet.size()), pos);
-      write(fd, buffer, pos - buffer);
+      write(fd, preamble, pos - preamble);
       write(fd, packet.start(), packet.size());
+      tot_size += packet.size();
     }
+    printf(
+        "\r\x1B[34mWriting trace:\x1B[0m %6zu packets, %6zu events, %zu kB "
+        "%20s\r",
+        tot_packets, tot_events, tot_size / 1024, "");
+    fflush(stdout);
 
     if (!has_more) {
+      printf("\n\n");
       close(fd);
       exit(0);
     }
   };
 
-  task_runner.Run();
+  g_task_runner->Run();
 
   return 0;
 }

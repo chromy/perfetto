@@ -23,6 +23,8 @@
 
 namespace perfetto {
 
+base::UnixTaskRunner* g_task_runner;
+
 void SetUidAndGid(const char* username) {
 
   if (getuid() != 0) {
