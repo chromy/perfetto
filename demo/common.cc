@@ -30,22 +30,22 @@ base::UnixTaskRunner* g_task_runner;
 void SetUidAndGid(const char* username) {
 
   if (getuid() != 0) {
-    PERFETTO_DLOG("Cannot setuid() without being root");
+    PERFETTO_ELOG("Cannot setuid() without being root");
     return;
   }
 
   struct passwd* creds = getpwnam(username);
   if (!creds) {
-    PERFETTO_DLOG("Cannot find user %s, keeping running as root", username);
+    PERFETTO_ELOG("Cannot find user %s, keeping running as root", username);
     return;
   }
 
   int gid_res = setgid(creds->pw_gid);
   int uid_res = setuid(creds->pw_uid);
   if (gid_res || uid_res) {
-    PERFETTO_DLOG("Failed setuid/setgid: %d/%d", uid_res, gid_res);
+    PERFETTO_ELOG("Failed setuid/setgid: %d/%d", uid_res, gid_res);
   } else {
-    PERFETTO_DLOG("Switched to user:%s uid:%lu gid:%lu", username,
+    PERFETTO_LOG("Switched to user:%s uid:%lu gid:%lu", username,
                   static_cast<unsigned long>(creds->pw_uid),
                   static_cast<unsigned long>(creds->pw_gid));
   }

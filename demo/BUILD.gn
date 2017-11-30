@@ -84,14 +84,36 @@ if (current_toolchain == host_toolchain) {
   copy("proto_to_text") {
     ptt_out_dir = get_label_info(":proto_to_text_host", "root_out_dir")
     deps = [
-      ":proto_to_text_host"
+      ":proto_to_text_host",
     ]
     sources = [
-      "${ptt_out_dir}/proto_to_text_host"
+      "${ptt_out_dir}/proto_to_text_host",
     ]
     outputs = [
       "${root_build_dir}/proto_to_text",
     ]
   }
 
+  executable("gen_trace_config_host") {
+    deps += [
+      "//base",
+      "//protos/ipc:full",
+    ]
+    sources = [
+      "gen_trace_config.cc",
+    ]
+  }
+
+  copy("gen_trace_config") {
+    ptt_out_dir = get_label_info(":gen_trace_config_host", "root_out_dir")
+    deps = [
+      ":gen_trace_config_host",
+    ]
+    sources = [
+      "${ptt_out_dir}/gen_trace_config_host",
+    ]
+    outputs = [
+      "${root_build_dir}/gen_trace_config",
+    ]
+  }
 }  # host_toolchain

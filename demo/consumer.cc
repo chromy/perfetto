@@ -40,6 +40,7 @@
 #include "protos/ftrace/ftrace_event_bundle.pb.h"
 #include "protos/ftrace/print.pb.h"
 #include "protos/ftrace/sched_switch.pb.h"
+#include "protos/ipc/trace_config.pb.h"
 #include "protos/trace.pb.h"
 #include "protos/trace_packet.pb.h"
 
@@ -84,23 +85,39 @@ int ConsumerMain(int argc, char** argv) {
   std::unique_ptr<Service::ConsumerEndpoint> endpoint =
       ConsumerIPCClient::Connect(kConsumerSocketName, &consumer, g_task_runner);
 
+  uint32_t trace_duration_ms = 5000;
 
   //////////////////////////////////////////////////////////////////////////////
   // Setting up the trace config.
   //////////////////////////////////////////////////////////////////////////////
-  TraceConfig trace_config;
+  proto::TraceConfig proto_config;
+  if (argc > 2) {
+    PERFETTO_LOG("Reading trace config form %s", argv[2]);
+    char buf[4096];
+    base::ScopedFile fd(open(argv[2], O_RDONLY));
+    auto rsize = read(*fd, buf, sizeof(buf));
+    bool config_parse_success = proto_config.ParseFromArray(buf, rsize);
+    PERFETTO_CHECK(config_parse_success);
+    if (proto_config.duration_ms())
+      trace_duration_ms = proto_config.duration_ms();
+  } else {
+    PERFETTO_LOG("No config provided as argument, using default trace config");
 
-  TraceConfig::BufferConfig buf_config(trace_config.add_buffers());
-  buf_config.set_size_kb(1024);
+    auto buf_config(proto_config.add_buffers());
+    buf_config->set_size_kb(1024);
 
-  TraceConfig::DataSource data_source = trace_config.add_data_sources();
-  DataSourceConfig ds_config = data_source.mutable_config();
-  ds_config.set_name("com.google.perfetto.ftrace");
-  ds_config.set_target_buffer(0);
-  ds_config.set_trace_category_filters("print,sched_switch,atrace_cat.sched");
+    auto data_source = proto_config.add_data_sources();
+    auto ds_config = data_source->mutable_config();
+    ds_config->set_name("com.google.perfetto.ftrace");
+    ds_config->set_target_buffer(0);
+    ds_config->set_trace_category_filters(
+        "print,sched_switch,atrace_cat.sched");
+  }
 
-  consumer.on_connect = [&endpoint, &trace_config] {
-    PERFETTO_LOG("Connected, sending EnableTracing() request");
+  TraceConfig trace_config(&proto_config);
+
+  consumer.on_connect = [&endpoint, &trace_config, trace_duration_ms] {
+    PERFETTO_LOG("Connected, Starting trace for %u ms", trace_duration_ms);
     endpoint->EnableTracing(trace_config);
   };
 
@@ -110,7 +127,7 @@ int ConsumerMain(int argc, char** argv) {
         endpoint->DisableTracing();
         endpoint->ReadBuffers();
       },
-      7000);
+      trace_duration_ms);
 
   static const char kTraceFile[] = "/data/local/tmp/trace.protobuf";
   PERFETTO_LOG("Writing trace output to %s", kTraceFile);

@@ -24,3 +24,43 @@ ipc_library("tracing_service") {
     "trace_config.proto",
   ]
 }
+
+full_protos_base_dir3 = "${root_gen_dir}/protos_full"
+full_protos_target_dir3 =
+    "$full_protos_base_dir3/" + rebase_path(target_gen_dir, root_gen_dir)
+
+proto_names3 = [
+  "data_source_config.proto",
+  "data_source_descriptor.proto",
+  "trace_config.proto",
+]
+
+action_foreach("generate_full_protos") {
+  visibility = [ ":*" ]
+  script = "//build/generate_full_protos.py"
+  sources = proto_names3
+
+  output_directory = full_protos_target_dir3
+  outputs = [
+    "$output_directory/{{source_name_part}}.proto",
+  ]
+
+  args = [
+    "{{source}}",
+    rebase_path(output_directory, root_build_dir) +
+        "/{{source_name_part}}.proto",
+  ]
+}
+
+proto_library("full") {
+  deps = [
+    ":generate_full_protos",
+  ]
+  sources = []
+  use_protobuf_full = true
+  proto_out_dir = "protos_full"
+  proto_in_dir = full_protos_base_dir3
+  foreach(proto, proto_names3) {
+    sources += [ "$full_protos_target_dir3/$proto" ]
+  }
+}

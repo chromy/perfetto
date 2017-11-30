@@ -70,4 +70,6 @@ message TraceConfig {
     repeated string producer_name_filter = 2;
   }
   repeated DataSource data_sources = 2;
+
+  uint32 duration_ms = 3;
 }
