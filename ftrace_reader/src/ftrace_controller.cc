@@ -160,14 +160,14 @@ void FtraceController::Stop() {
   }
   listening_for_raw_trace_data_ = false;
   size_t total_events = 0;
-  printf("\nFtrace done. Counting total events:\n");
+  PERFETTO_LOG("Ftrace done. Counting total events:");
   for (size_t cpu = 0; cpu < ftrace_procfs_->NumberOfCpus(); cpu++) {
     CpuReader* reader = GetCpuReader(cpu);
-    printf("  Cpu %zu: %zu\n", cpu, reader->total_num_events());
+    PERFETTO_LOG("  Cpu %zu: %zu", cpu, reader->total_num_events());
     total_events += reader->total_num_events();
   }
   ftrace_procfs_->DisableTracing();
-  printf("Total: %zu events, %zu bundles\n", total_events, num_bundles_);
+  PERFETTO_ILOG("Total: %zu events, %zu bundles", total_events, num_bundles_);
 }
 
 bool FtraceController::OnRawFtraceDataAvailable(size_t cpu) {

@@ -105,8 +105,7 @@ Chunk ProducerSharedMemoryArbiter::GetNewChunk(
     // All chunks are taken (either kBeingWritten by us or kBeingRead by the
     // Service). TODO: at this point we should return a bankrupcy chunk, not
     // crash the process.
-    printf("\n\x1b[31mShared memory buffer overrun! Stalling\x1b[0m\n");
-    fflush(stdout);
+    PERFETTO_ELOG("Shared memory buffer overrun! Stalling");
     usleep(250000);
   }
 }

@@ -86,7 +86,7 @@ void WriteCpuUsage() {
 
 int main(int argc, char** argv) {
   signal(SIGINT, [](int) { exit(2); });
-  printf("PID: %d\n", getpid());
+  PERFETTO_LOG("PID: %d", getpid());
 
   perfetto::g_task_runner = new perfetto::base::UnixTaskRunner();
   perfetto::g_task_runner->PostDelayedTask(&WriteCpuUsage, 1000);

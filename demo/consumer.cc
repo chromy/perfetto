@@ -95,20 +95,20 @@ int ConsumerMain(int argc, char** argv) {
   ds_config.set_trace_category_filters("print,sched_switch,atrace_cat.sched");
 
   consumer.on_connect = [&endpoint, &trace_config] {
-    printf("Connected, sending EnableTracing() request\n");
+    PERFETTO_LOG("Connected, sending EnableTracing() request");
     endpoint->EnableTracing(trace_config);
   };
 
   g_task_runner->PostDelayedTask(
       [&endpoint] {
-        printf("Sending DisableTracing() + ReadBuffers() request\n");
+        PERFETTO_LOG("Sending DisableTracing() + ReadBuffers() request");
         endpoint->DisableTracing();
         endpoint->ReadBuffers();
       },
       5000);
 
   static const char kTraceFile[] = "/data/local/tmp/trace.protobuf";
-  printf("\nWriting trace output to %s\n\n", kTraceFile);
+  PERFETTO_LOG("Writing trace output to %s", kTraceFile);
   unlink(kTraceFile);
   int fd = open(kTraceFile, O_WRONLY | O_CREAT, 0644);
   PERFETTO_CHECK(fd > 0);
@@ -118,7 +118,7 @@ int ConsumerMain(int argc, char** argv) {
 
   consumer.on_trace_data = [&](const std::vector<TracePacket>& trace_packets,
                                bool has_more) {
-    // printf("OnTraceData() num packets = %zu\n", trace_packets.size());
+    PERFETTO_DLOG("OnTraceData() num packets = %zu", trace_packets.size());
     for (const TracePacket& const_packet : trace_packets) {
       tot_packets++;
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
@@ -135,14 +135,10 @@ int ConsumerMain(int argc, char** argv) {
       write(fd, packet.start(), packet.size());
       tot_size += packet.size();
     }
-    printf(
-        "\r\x1B[34mWriting trace:\x1B[0m %6zu packets, %6zu events, %zu kB "
-        "%20s\r",
-        tot_packets, tot_events, tot_size / 1024, "");
-    fflush(stdout);
 
     if (!has_more) {
-      printf("\n\n");
+      PERFETTO_ILOG("Writing trace: %zu packets, %zu events, %zu kB %s",
+                    tot_packets, tot_events, tot_size / 1024, "");
       close(fd);
       exit(0);
     }

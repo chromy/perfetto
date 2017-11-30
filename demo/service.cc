@@ -29,7 +29,7 @@ int ServiceMain(int argc, char** argv) {
   std::unique_ptr<perfetto::ServiceIPCHost> host =
       perfetto::ServiceIPCHost::CreateInstance(g_task_runner);
   host->Start(perfetto::kProducerSocketName, perfetto::kConsumerSocketName);
-  g_task_runner->PostTask([] { printf("Service started\n"); });
+  g_task_runner->PostTask([] { PERFETTO_ILOG("Service started\n"); });
 
   SetUidAndGid("nobody");
 
