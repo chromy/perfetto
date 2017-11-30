@@ -48,7 +48,7 @@ bool RunAtrace(const std::vector<std::string>& args) {
     cmd += " ";
     cmd += arg;
   }
-  PERFETTO_DLOG("%s", cmd.c_str());
+  PERFETTO_ILOG("Invoke: %s", cmd.c_str());
   int status = 1;
   char* const envp[1] = {nullptr};
   pid_t pid = fork();
@@ -275,14 +275,13 @@ void FtraceController::StartAtrace(const FtraceConfig& config) {
   PERFETTO_DLOG("Start atrace...");
   std::vector<std::string> args;
   args.push_back("--async_start");
-  for (const auto& category : config.atrace_categories())
-    args.push_back(category);
   if (!config.atrace_apps().empty()) {
     args.push_back("-a");
     for (const auto& app : config.atrace_apps())
       args.push_back(app);
   }
-
+  for (const auto& category : config.atrace_categories())
+    args.push_back(category);
   PERFETTO_CHECK(RunAtrace(args));
   PERFETTO_DLOG("...done");
 #endif  // defined(ANDROID)
@@ -332,6 +331,8 @@ void FtraceConfig::AddAtraceApp(const std::string& app) {
   // You implicitly need the print ftrace event if you
   // are using atrace.
   AddEvent("print");
+  // You implicitly need the app category as well:
+  AddAtraceCategory("app");
   atrace_apps_.insert(app);
 }
 

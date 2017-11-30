@@ -16,6 +16,7 @@
 
 #include <inttypes.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <istream>
@@ -58,12 +59,21 @@ const char* GetFlag(int32_t state) {
   return "R";
 }
 
-void PrintfSchedSwitch(uint64_t timestamp,
+uint64_t TimestampToSeconds(uint64_t timestamp) {
+  return timestamp / 1000000000;
+}
+
+uint64_t TimestampToMicroseconds(uint64_t timestamp) {
+  return (timestamp / 1000) % 1000000;
+}
+
+std::string FormatSchedSwitch(uint64_t timestamp,
                        uint64_t cpu,
                        const SchedSwitchFtraceEvent& sched_switch) {
-  uint64_t seconds = timestamp / 1000000000;
-  uint64_t useconds = (timestamp / 1000) % 1000000;
-  printf("<idle>-0     (-----) [%03" PRIu64 "] d..3 %" PRIu64 ".%.6" PRIu64
+  char line[2048];
+  uint64_t seconds = TimestampToSeconds(timestamp);
+  uint64_t useconds = TimestampToMicroseconds(timestamp);
+  sprintf(line, "<idle>-0     (-----) [%03" PRIu64 "] d..3 %" PRIu64 ".%.6" PRIu64
          ": sched_switch: prev_comm=%s "
          "prev_pid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_pid=%d "
          "next_prio=%d\\n",
@@ -71,6 +81,21 @@ void PrintfSchedSwitch(uint64_t timestamp,
          sched_switch.prev_pid(), sched_switch.prev_prio(),
          GetFlag(sched_switch.prev_state()), sched_switch.next_comm().c_str(),
          sched_switch.next_pid(), sched_switch.next_prio());
+  return std::string(line);
+}
+
+std::string FormatPrint(uint64_t timestamp,
+                       uint64_t cpu,
+                       const PrintFtraceEvent& print) {
+  char line[2048];
+  uint64_t seconds = TimestampToSeconds(timestamp);
+  uint64_t useconds = TimestampToMicroseconds(timestamp);
+  std::string msg = print.buf();
+  msg.erase(std::remove(msg.begin(), msg.end(), '\n'), msg.end());
+  sprintf(line, "<idle>-0     (-----) [%03" PRIu64 "] d..3 %" PRIu64 ".%.6" PRIu64
+         ": tracing_mark_write: %s\\n",
+         cpu, seconds, useconds, msg.c_str());
+  return std::string(line);
 }
 
 int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
@@ -109,7 +134,7 @@ int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
 })";
   printf("%s", header.c_str());
   printf("%s", ftrace_start.c_str());
-  std::multimap<uint64_t, std::pair<uint32_t, SchedSwitchFtraceEvent>> sorted_ss;
+  std::multimap<uint64_t, std::string> sorted;
 
   for (const TracePacket& packet : trace.packet()) {
     if (!packet.has_ftrace_events())
@@ -119,17 +144,20 @@ int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
     for (const FtraceEvent& event : bundle.event()) {
       if (event.has_sched_switch()) {
         const SchedSwitchFtraceEvent& sched_switch = event.sched_switch();
-        sorted_ss.emplace(event.timestamp(), std::make_pair(bundle.cpu(), sched_switch));
-        // PrintfSchedSwitch(event.timestamp(), bundle.cpu(), sched_switch);
+        sorted.emplace(
+            event.timestamp(),
+            FormatSchedSwitch(event.timestamp(), bundle.cpu(), sched_switch));
       } else if (event.has_print()) {
         const PrintFtraceEvent& print = event.print();
-        (void)print;
+        sorted.emplace(
+            event.timestamp(),
+            FormatPrint(event.timestamp(), bundle.cpu(), print));
       }
     }
   }
 
-  for (auto it = sorted_ss.begin(); it != sorted_ss.end(); it++)
-    PrintfSchedSwitch(it->first, it->second.first, it->second.second);
+  for (auto it = sorted.begin(); it != sorted.end(); it++)
+    printf("%s", it->second.c_str());
 
   printf("%s", footer.c_str());
 
