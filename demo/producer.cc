@@ -81,8 +81,7 @@ void FtraceProducer::OnConnect() {
   PERFETTO_DLOG("Connected to the service\n");
 
   DataSourceDescriptor descriptor;
-  // TODO(hjd): Update name.
-  descriptor.set_name("perfetto.test.data_source");
+  descriptor.set_name("com.google.perfetto.ftrace");
   endpoint_->RegisterDataSource(
       descriptor, [this](DataSourceID id) { data_source_id_ = id; });
 }

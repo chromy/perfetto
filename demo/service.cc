@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <sys/prctl.h>
 #include <unistd.h>
 
 #include "base/logging.h"

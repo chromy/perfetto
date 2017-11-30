@@ -84,6 +84,10 @@ int ConsumerMain(int argc, char** argv) {
   std::unique_ptr<Service::ConsumerEndpoint> endpoint =
       ConsumerIPCClient::Connect(kConsumerSocketName, &consumer, g_task_runner);
 
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Setting up the trace config.
+  //////////////////////////////////////////////////////////////////////////////
   TraceConfig trace_config;
 
   TraceConfig::BufferConfig buf_config(trace_config.add_buffers());
@@ -91,7 +95,7 @@ int ConsumerMain(int argc, char** argv) {
 
   TraceConfig::DataSource data_source = trace_config.add_data_sources();
   DataSourceConfig ds_config = data_source.mutable_config();
-  ds_config.set_name("perfetto.test.data_source");
+  ds_config.set_name("com.google.perfetto.ftrace");
   ds_config.set_target_buffer(0);
   ds_config.set_trace_category_filters("print,sched_switch,atrace_cat.sched");
 
@@ -119,10 +123,9 @@ int ConsumerMain(int argc, char** argv) {
   size_t tot_size = 0;
   size_t tot_corrupted = 0;
 
+  // Right now just writes the trace packets to a file.
   consumer.on_trace_data = [&](const std::vector<TracePacket>& trace_packets,
                                bool has_more) {
-    PERFETTO_DLOG("OnTraceData() num packets = %zu", trace_packets.size());
-    std::map<uint32_t /*cpu*/, uint64_t /*timestamp*/> tstamps;
     for (const TracePacket& const_packet : trace_packets) {
       tot_packets++;
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
@@ -135,18 +138,7 @@ int ConsumerMain(int argc, char** argv) {
       for (int ev = 0; ev < packet->ftrace_events().event_size(); ev++) {
         if (packet->ftrace_events().event(ev).has_sched_switch())
           tot_sched_switch++;
-        uint32_t cpu = packet->ftrace_events().cpu();
-        uint64_t tstamp = packet->ftrace_events().event(ev).timestamp();
-        uint64_t& old_tstamp = tstamps[cpu];
-        if (tstamp < old_tstamp) {
-          PERFETTO_ELOG(
-              "Timestamp wrapping on cpu %u @ packet %zu, delta: %ld", cpu,
-              tot_packets,
-              static_cast<long>(tstamp) - static_cast<long>(old_tstamp));
-        }
-        old_tstamp = tstamp;
       }
-
       uint8_t preamble[8];
       uint8_t* pos = preamble;
       pos = WriteVarInt(MakeTagLengthDelimited(1 /* field_id */), pos);
