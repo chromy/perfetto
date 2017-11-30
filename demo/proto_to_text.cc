@@ -46,8 +46,8 @@ using google::protobuf::io::OstreamOutputStream;
 void PrintfSchedSwitch(uint64_t timestamp,
                        uint64_t cpu,
                        const SchedSwitchFtraceEvent& sched_switch) {
-  uint64_t seconds = timestamp / 1000000;
-  uint64_t useconds = timestamp % 1000000;
+  uint64_t seconds = timestamp / 1000000000;
+  uint64_t useconds = timestamp % 1000000000;
   printf("<idle>-0     (-----) [%03" PRIu64 "] d..3 %" PRIu64 ".%.6" PRIu64
          ": sched_switch: prev_comm=%s "
          "prev_pid=%d prev_prio=%d prev_state=R ==> next_comm=%s next_pid=%d "
