@@ -48,7 +48,7 @@ bool RunAtrace(const std::vector<std::string>& args) {
     cmd += " ";
     cmd += arg;
   }
-  PERFETTO_ILOG("Invoke: %s", cmd.c_str());
+  PERFETTO_LOG("Invoke: %s", cmd.c_str());
   int status = 1;
   char* const envp[1] = {nullptr};
   pid_t pid = fork();

@@ -4,7 +4,7 @@ set -e
 
 outdir=out/android_release_arm64
 
-ninja -C $outdir perfetto gen_trace_config
+ninja -C $outdir perfetto gen_trace_config proto_to_text
 
 set -x
 $outdir/gen_trace_config gen < demo/trace_config.json > /tmp/config.pb

@@ -37,7 +37,7 @@ namespace perfetto {
 
 namespace {
 constexpr size_t kPageSize = 4096;
-constexpr size_t kDefaultShmSize = kPageSize * 32;  // 128 KB.
+constexpr size_t kDefaultShmSize = kPageSize * 64;  // 256 KB.
 constexpr size_t kMaxShmSize = kPageSize * 1024;    // 4 MB.
 }  // namespace
 

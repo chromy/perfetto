@@ -8,7 +8,7 @@
       "config": {
         "name": "com.google.perfetto.ftrace",
         "target_buffer": 0,
-        "trace_category_filters": "print,sched_switch,atrace_cat.sched"
+        "trace_category_filters": "print,sched_switch,atrace_cat.view,atrace_cat.input,atrace_cat.core_services,atrace_app.com.google.android.apps.maps"
       }
     }
   ]
