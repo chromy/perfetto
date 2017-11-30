@@ -221,9 +221,8 @@ void FtraceController::Register(FtraceSink* sink) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
   auto it_and_inserted = sinks_.insert(sink);
   PERFETTO_DCHECK(it_and_inserted.second);
-  if (sink->config().WantsAtrace()) {
+  if (sink->config().WantsAtrace())
     StartAtrace(sink->config());
-  }
   for (const std::string& name : sink->enabled_events())
     RegisterForEvent(name);
   if (sinks_.size() == 1)
@@ -268,6 +267,9 @@ void FtraceController::Unregister(FtraceSink* sink) {
 
 void FtraceController::StartAtrace(const FtraceConfig& config) {
 #if defined(ANDROID)
+  // TODO(hjd): Handle multiple people want atrace.
+  if (atrace_running_)
+    return;
   PERFETTO_CHECK(atrace_running_ == false);
   atrace_running_ = true;
   PERFETTO_DLOG("Start atrace...");
@@ -288,6 +290,9 @@ void FtraceController::StartAtrace(const FtraceConfig& config) {
 
 void FtraceController::StopAtrace() {
 #if defined(ANDROID)
+  // TODO(hjd): Handle multiple people want atrace.
+  if (!atrace_running_)
+    return;
   PERFETTO_CHECK(atrace_running_ == true);
   atrace_running_ = false;
   PERFETTO_DLOG("Stop atrace...");

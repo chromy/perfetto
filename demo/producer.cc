@@ -48,7 +48,41 @@ std::string RemovePrefix(const std::string& str, const std::string& prefix) {
 using BundleHandle =
     protozero::ProtoZeroMessageHandle<protos::pbzero::FtraceEventBundle>;
 
-class FtraceProducer : public Producer, FtraceSink::Delegate {
+class SinkDelegate : public FtraceSink::Delegate {
+ public:
+  SinkDelegate(std::unique_ptr<TraceWriter> writer);
+  ~SinkDelegate() override;
+
+  // FtraceDelegateImpl
+  BundleHandle GetBundleForCpu(size_t cpu) override;
+  void OnBundleComplete(size_t cpu, BundleHandle bundle) override;
+
+  void sink(std::unique_ptr<FtraceSink> sink) {
+    sink_ = std::move(sink);
+  }
+
+ private:
+  std::unique_ptr<FtraceSink> sink_ = nullptr;
+  TraceWriter::TracePacketHandle trace_packet_;
+  std::unique_ptr<TraceWriter> writer_;
+};
+
+SinkDelegate::SinkDelegate(
+    std::unique_ptr<TraceWriter> writer) :
+    writer_(std::move(writer)) {}
+
+SinkDelegate::~SinkDelegate() = default;
+
+BundleHandle SinkDelegate::GetBundleForCpu(size_t cpu) {
+  trace_packet_ = writer_->NewTracePacket();
+  return BundleHandle(trace_packet_->set_ftrace_events());
+}
+
+void SinkDelegate::OnBundleComplete(size_t cpu, BundleHandle bundle) {
+  trace_packet_.Finalize();
+}
+
+class FtraceProducer : public Producer {
  public:
   ~FtraceProducer() override;
 
@@ -59,20 +93,14 @@ class FtraceProducer : public Producer, FtraceSink::Delegate {
                                 const DataSourceConfig&) override;
   void TearDownDataSourceInstance(DataSourceInstanceID) override;
 
-  // FtraceDelegateImpl
-  BundleHandle GetBundleForCpu(size_t cpu) override;
-  void OnBundleComplete(size_t cpu, BundleHandle bundle) override;
-
   // Our Impl
   void Run();
 
  private:
   std::unique_ptr<Service::ProducerEndpoint> endpoint_ = nullptr;
   std::unique_ptr<FtraceController> ftrace_ = nullptr;
-  std::unique_ptr<TraceWriter> trace_writer_ = nullptr;
-  TraceWriter::TracePacketHandle trace_packet_;
   DataSourceID data_source_id_;
-  std::map<DataSourceInstanceID, std::unique_ptr<FtraceSink>> sinks_;
+  std::map<DataSourceInstanceID, std::unique_ptr<SinkDelegate>> delegates_;
 };
 
 FtraceProducer::~FtraceProducer() = default;
@@ -95,10 +123,7 @@ void FtraceProducer::OnDisconnect() {
 void FtraceProducer::CreateDataSourceInstance(
     DataSourceInstanceID id,
     const DataSourceConfig& source_config) {
-  PERFETTO_ILOG("Source start (id=%" PRIu64 ")", id);
-
-  // TODO(hjd): Hack. Get actual buffer id.
-  trace_writer_ = endpoint_->CreateTraceWriter(id-1);
+  PERFETTO_ILOG("Source start (id=%" PRIu64 ", target_buf=%" PRIu32 ")", id, source_config.target_buffer());
 
   const std::string& categories = source_config.trace_category_filters();
   FtraceConfig config;
@@ -118,23 +143,19 @@ void FtraceProducer::CreateDataSourceInstance(
       }
     }
   }
-  auto sink = ftrace_->CreateSink(config, this);
+  //auto trace_writer = endpoint_->CreateTraceWriter(source_config.target_buffer());
+  // TODO(hjd): Remove this terrible hack:
+  auto trace_writer = endpoint_->CreateTraceWriter(id-1);
+  auto delegate = std::unique_ptr<SinkDelegate>(new SinkDelegate(std::move(trace_writer)));
+  auto sink = ftrace_->CreateSink(config, delegate.get());
   PERFETTO_CHECK(sink);
-  sinks_.emplace(id, std::move(sink));
+  delegate->sink(std::move(sink));
+  delegates_.emplace(id, std::move(delegate));
 }
 
 void FtraceProducer::TearDownDataSourceInstance(DataSourceInstanceID id) {
   PERFETTO_ILOG("Source stop (id=%" PRIu64 ")", id);
-  sinks_.erase(id);
-}
-
-BundleHandle FtraceProducer::GetBundleForCpu(size_t cpu) {
-  trace_packet_ = trace_writer_->NewTracePacket();
-  return BundleHandle(trace_packet_->set_ftrace_events());
-}
-
-void FtraceProducer::OnBundleComplete(size_t cpu, BundleHandle bundle) {
-  trace_packet_.Finalize();
+  delegates_.erase(id);
 }
 
 void FtraceProducer::Run() {
