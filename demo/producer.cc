@@ -80,8 +80,6 @@ FtraceProducer::~FtraceProducer() = default;
 void FtraceProducer::OnConnect() {
   PERFETTO_DLOG("Connected to the service\n");
 
-  trace_writer_ = endpoint_->CreateTraceWriter();
-
   DataSourceDescriptor descriptor;
   // TODO(hjd): Update name.
   descriptor.set_name("perfetto.test.data_source");
@@ -97,7 +95,10 @@ void FtraceProducer::OnDisconnect() {
 void FtraceProducer::CreateDataSourceInstance(
     DataSourceInstanceID id,
     const DataSourceConfig& source_config) {
-  PERFETTO_DLOG("Service asked to start data source\n");
+  PERFETTO_ILOG("Source start (id=%" PRIu64 ")", id);
+
+  // TODO(hjd): Hack. Get actual buffer id.
+  trace_writer_ = endpoint_->CreateTraceWriter(id-1);
 
   const std::string& categories = source_config.trace_category_filters();
   FtraceConfig config;
@@ -123,11 +124,8 @@ void FtraceProducer::CreateDataSourceInstance(
 }
 
 void FtraceProducer::TearDownDataSourceInstance(DataSourceInstanceID id) {
-  PERFETTO_DLOG(
-      "The tracing service requested us to shutdown the data source %" PRIu64,
-      id);
+  PERFETTO_ILOG("Source stop (id=%" PRIu64 ")", id);
   sinks_.erase(id);
-  ftrace_->Stop();  // TODO: here?
 }
 
 BundleHandle FtraceProducer::GetBundleForCpu(size_t cpu) {
@@ -148,7 +146,6 @@ void FtraceProducer::Run() {
   ftrace_->DisableAllEvents();
   ftrace_->ClearTrace();
   ftrace_->WriteTraceMarker("Hello, world!");
-  ftrace_->Start();
   g_task_runner->Run();
 }
 
