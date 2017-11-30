@@ -37,7 +37,7 @@ namespace perfetto {
 
 namespace {
 constexpr size_t kPageSize = 4096;
-constexpr size_t kDefaultShmSize = kPageSize * 16;  // 64 KB.
+constexpr size_t kDefaultShmSize = kPageSize * 32;  // 128 KB.
 constexpr size_t kMaxShmSize = kPageSize * 1024;    // 4 MB.
 }  // namespace
 
@@ -400,10 +400,6 @@ void ServiceImpl::ProducerEndpointImpl::NotifySharedMemoryUpdate(
 
     size_t target_buffer = shmem_abi_.GetTargetBuffer(page_idx);
 
-    printf("NotifySharedMemoryUpdate(). page: %u, buffer: %zu (%s)\n", page_idx,
-           target_buffer,
-           service_->trace_buffers_[target_buffer] ? "OK" : "N/A");
-
     if (target_buffer < kMaxTraceBuffers &&
         service_->trace_buffers_[target_buffer]) {
       // TODO: we should have some stronger check to prevent that the Producer
@@ -412,16 +408,20 @@ void ServiceImpl::ProducerEndpointImpl::NotifySharedMemoryUpdate(
       // into a log buffer that has nothing to do with it.
       // TODO right now the page_size in the SMB and the trace_buffers_ can
       // mismatch Remove the ability to decide the page size on the Producer.
-      uint8_t* dst = service_->trace_buffers_[target_buffer].get_next_page();
-      // printf("  Moving page: %u, into buffer: %zu, %zx.\n", page_idx,
-      //        target_buffer,
-      //        dst - service_->trace_buffers_[target_buffer].get_page(0));
+      TraceBuffer& tb = service_->trace_buffers_[target_buffer];
+      uint8_t* dst = tb.get_next_page();
+
       // printf("  Page header: %s\n",
       //        std::bitset<32>(shmem_abi_.page_layout(page_idx))
       //            .to_string()
       //            .c_str());
 
       memcpy(dst, shmem_abi_.page_start(page_idx), shmem_abi_.page_size());
+      if ((num_pages_moved_++ & 3) == 3) {
+        printf("\rMoved %zu pages. Log buffer position: %zu/%zu\r",
+               num_pages_moved_, tb.cur_page(), tb.num_pages());
+        fflush(stdout);
+      }
     }
 
     shmem_abi_.ReleaseAllChunksAsFree(page_idx);

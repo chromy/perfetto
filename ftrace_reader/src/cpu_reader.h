@@ -74,6 +74,7 @@ class CpuReader {
           protozero::ProtoZeroMessageHandle<protos::pbzero::FtraceEventBundle>,
           kMaxSinks>&);
   int GetFileDescriptor();
+  size_t total_num_events() const { return total_num_events_; }
 
  private:
   FRIEND_TEST(CpuReaderTest, ReadAndAdvanceNumber);
@@ -95,12 +96,12 @@ class CpuReader {
     return true;
   }
 
-  static bool ParsePage(size_t cpu,
-                        const uint8_t* ptr,
-                        size_t ptr_size,
-                        const EventFilter*,
-                        protos::pbzero::FtraceEventBundle*,
-                        const ProtoTranslationTable* table);
+  size_t ParsePage(size_t cpu,
+                   const uint8_t* ptr,
+                   size_t ptr_size,
+                   const EventFilter*,
+                   protos::pbzero::FtraceEventBundle*,
+                   const ProtoTranslationTable* table);
   uint8_t* GetBuffer();
   CpuReader(const CpuReader&) = delete;
   CpuReader& operator=(const CpuReader&) = delete;
@@ -109,6 +110,7 @@ class CpuReader {
   const size_t cpu_;
   base::ScopedFile fd_;
   std::unique_ptr<uint8_t[]> buffer_;
+  size_t total_num_events_ = 0;
 };
 
 }  // namespace perfetto

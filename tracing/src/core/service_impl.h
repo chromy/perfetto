@@ -108,6 +108,7 @@ class ServiceImpl : public Service {
              std::multimap<std::string, RegisteredDataSource>::iterator>
         data_source_instances_;
     DataSourceID last_data_source_id_ = 0;
+    size_t num_pages_moved_ = 0;
   };
 
   // The implementation behind the service endpoint exposed to each consumer.

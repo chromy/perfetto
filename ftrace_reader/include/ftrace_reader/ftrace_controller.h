@@ -141,6 +141,8 @@ class FtraceController {
   FtraceController(const FtraceController&) = delete;
   FtraceController& operator=(const FtraceController&) = delete;
 
+  static void PeriodicDrainCPU(base::WeakPtr<FtraceController>, int cpu);
+
   void Register(FtraceSink*);
   void Unregister(FtraceSink*);
   void RegisterForEvent(const std::string& event_name);
@@ -151,8 +153,8 @@ class FtraceController {
 
   // Called when we know there is data for the raw pipe
   // for the given |cpu|. Kicks off the reading/parsing
-  // of the pipe.
-  void OnRawFtraceDataAvailable(size_t cpu);
+  // of the pipe. Returns true if has more data.
+  bool OnRawFtraceDataAvailable(size_t cpu);
 
   // Returns a cached CpuReader for |cpu|.
   // CpuReaders are constructed lazily and owned by the controller.
@@ -167,6 +169,7 @@ class FtraceController {
   std::unique_ptr<ProtoTranslationTable> table_;
   std::map<size_t, std::unique_ptr<CpuReader>> readers_;
   std::set<FtraceSink*> sinks_;
+  size_t num_bundles_ = 0;
   PERFETTO_THREAD_CHECKER(thread_checker_)
 };
 
