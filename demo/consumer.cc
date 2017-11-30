@@ -106,7 +106,7 @@ int ConsumerMain(int argc, char** argv) {
         endpoint->DisableTracing();
         endpoint->ReadBuffers();
       },
-      5000);
+      7000);
 
   static const char kTraceFile[] = "/data/local/tmp/trace.protobuf";
   PERFETTO_LOG("Writing trace output to %s", kTraceFile);
@@ -115,18 +115,37 @@ int ConsumerMain(int argc, char** argv) {
   PERFETTO_CHECK(fd > 0);
   size_t tot_packets = 0;
   size_t tot_events = 0;
+  size_t tot_sched_switch = 0;
   size_t tot_size = 0;
+  size_t tot_corrupted = 0;
 
   consumer.on_trace_data = [&](const std::vector<TracePacket>& trace_packets,
                                bool has_more) {
     PERFETTO_DLOG("OnTraceData() num packets = %zu", trace_packets.size());
+    std::map<uint32_t /*cpu*/, uint64_t /*timestamp*/> tstamps;
     for (const TracePacket& const_packet : trace_packets) {
       tot_packets++;
       TracePacket& packet = const_cast<TracePacket&>(const_packet);
       bool decoded = packet.Decode();
-      if (!decoded || !packet->has_ftrace_events())
+      if (!decoded || !packet->has_ftrace_events()) {
+        tot_corrupted++;
         continue;
+      }
       tot_events += packet->ftrace_events().event_size();
+      for (int ev = 0; ev < packet->ftrace_events().event_size(); ev++) {
+        if (packet->ftrace_events().event(ev).has_sched_switch())
+          tot_sched_switch++;
+        uint32_t cpu = packet->ftrace_events().cpu();
+        uint64_t tstamp = packet->ftrace_events().event(ev).timestamp();
+        uint64_t& old_tstamp = tstamps[cpu];
+        if (tstamp < old_tstamp) {
+          PERFETTO_ELOG(
+              "Timestamp wrapping on cpu %u @ packet %zu, delta: %ld", cpu,
+              tot_packets,
+              static_cast<long>(tstamp) - static_cast<long>(old_tstamp));
+        }
+        old_tstamp = tstamp;
+      }
 
       uint8_t preamble[8];
       uint8_t* pos = preamble;
@@ -138,8 +157,11 @@ int ConsumerMain(int argc, char** argv) {
     }
 
     if (!has_more) {
-      PERFETTO_ILOG("Writing trace: %zu packets, %zu events, %zu kB %s",
-                    tot_packets, tot_events, tot_size / 1024, "");
+      PERFETTO_ILOG(
+          "Writing trace: %zu packets, %zu events (%zu sched_switch), %zu "
+          "corrupted, %zu kB %s",
+          tot_packets, tot_events, tot_sched_switch, tot_corrupted,
+          tot_size / 1024, "");
       close(fd);
       exit(0);
     }
