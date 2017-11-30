@@ -69,6 +69,9 @@ TraceWriterImpl::TracePacketHandle TraceWriterImpl::NewTracePacket() {
   // finalized the previous packet.
   PERFETTO_DCHECK(!cur_packet_being_written_);
 
+  // TODO: hack to get a new page every time.
+  protobuf_stream_writer_.Reset(GetNewBuffer());
+
   // Reserve space for the size of the message. Note: this call might re-enter
   // this class into GetNewBuffer() if there isn't enough space or if this is
   // the very first call to NewTracePacket().

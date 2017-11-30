@@ -234,7 +234,6 @@ size_t CpuReader::ParsePage(size_t cpu,
 
         // PERFETTO_DLOG("Event type=%d pid=%d", ftrace_event_id, pid);
 
-        total_num_events_++;
         protos::pbzero::FtraceEvent* event = bundle->add_event();
         event->set_pid(pid);
         event->set_timestamp(timestamp);
@@ -254,6 +253,7 @@ size_t CpuReader::ParsePage(size_t cpu,
           print_event->set_buf(reinterpret_cast<const char*>(buf_start),
                                buf_end - buf_start);
           print_event->Finalize();
+          total_num_events_++;
         }
 
         // TODO(hjd): Replace this handrolled code with generic parsing code.
@@ -296,6 +296,7 @@ size_t CpuReader::ParsePage(size_t cpu,
           switch_event->set_next_pid(next_pid);
           switch_event->set_next_prio(next_prio);
           switch_event->Finalize();
+          total_num_events_++;
         }
 
         event->Finalize();

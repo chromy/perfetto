@@ -208,10 +208,10 @@ void ServiceImpl::ReadBuffers(ConsumerEndpointImpl* initiator) {
     TraceBuffer& trace_buffer = trace_buffers_[buf_idx];
     SharedMemoryABI abi(trace_buffer.get_page(0), trace_buffer.size(),
                         trace_buffer.page_size());
-    for (size_t page_idx =
-             (trace_buffer.cur_page() + 1) % trace_buffer.num_pages();
-         page_idx != trace_buffer.cur_page();
-         page_idx = (page_idx + 1) % trace_buffer.num_pages()) {
+
+    for (size_t iter = 0; iter < trace_buffer.num_pages(); iter++) {
+      size_t page_idx =
+          (trace_buffer.cur_page() + iter + 1) % trace_buffer.num_pages();
       bool is_free = abi.is_page_free(page_idx);
       // printf("Dumping page: %zu (Free: %d)\n", page_idx, is_free);
       if (is_free)
@@ -418,8 +418,8 @@ void ServiceImpl::ProducerEndpointImpl::NotifySharedMemoryUpdate(
 
       memcpy(dst, shmem_abi_.page_start(page_idx), shmem_abi_.page_size());
       if ((num_pages_moved_++ & 3) == 3) {
-        printf("\rMoved %zu pages. Log buffer position: %zu/%zu\r",
-               num_pages_moved_, tb.cur_page(), tb.num_pages());
+        printf("\rMoved %3zu pages. Log buffer position: %3zu / %3zu\r",
+               num_pages_moved_, tb.cur_page(), tb.num_pages() - 1);
         fflush(stdout);
       }
     }

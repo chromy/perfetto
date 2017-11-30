@@ -20,9 +20,11 @@
 #include <iostream>
 #include <istream>
 #include <memory>
+#include <map>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include "google/protobuf/text_format.h"
@@ -43,19 +45,32 @@ using protos::PrintFtraceEvent;
 using google::protobuf::TextFormat;
 using google::protobuf::io::OstreamOutputStream;
 
+const char* GetFlag(int32_t state) {
+  state &= 511;
+  if (state & 1) return "S";
+  if (state & 2) return "D";
+  if (state & 4) return "T";
+  if (state & 8) return "t";
+  if (state & 16) return "Z";
+  if (state & 32) return "X";
+  if (state & 64) return "x";
+  if (state & 128) return "W";
+  return "R";
+}
+
 void PrintfSchedSwitch(uint64_t timestamp,
                        uint64_t cpu,
                        const SchedSwitchFtraceEvent& sched_switch) {
-  uint64_t seconds = timestamp / 1000000;
-  uint64_t useconds = timestamp % 1000000;
+  uint64_t seconds = timestamp / 1000000000;
+  uint64_t useconds = (timestamp / 1000) % 1000000;
   printf("<idle>-0     (-----) [%03" PRIu64 "] d..3 %" PRIu64 ".%.6" PRIu64
          ": sched_switch: prev_comm=%s "
-         "prev_pid=%d prev_prio=%d prev_state=R ==> next_comm=%s next_pid=%d "
+         "prev_pid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_pid=%d "
          "next_prio=%d\\n",
          cpu, seconds, useconds, sched_switch.prev_comm().c_str(),
          sched_switch.prev_pid(), sched_switch.prev_prio(),
-         sched_switch.next_comm().c_str(), sched_switch.next_pid(),
-         sched_switch.next_prio());
+         GetFlag(sched_switch.prev_state()), sched_switch.next_comm().c_str(),
+         sched_switch.next_pid(), sched_switch.next_prio());
 }
 
 int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
@@ -94,6 +109,8 @@ int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
 })";
   printf("%s", header.c_str());
   printf("%s", ftrace_start.c_str());
+  std::multimap<uint64_t, std::pair<uint32_t, SchedSwitchFtraceEvent>> sorted_ss;
+
   for (const TracePacket& packet : trace.packet()) {
     if (!packet.has_ftrace_events())
       continue;
@@ -102,13 +119,18 @@ int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
     for (const FtraceEvent& event : bundle.event()) {
       if (event.has_sched_switch()) {
         const SchedSwitchFtraceEvent& sched_switch = event.sched_switch();
-        PrintfSchedSwitch(event.timestamp(), bundle.cpu(), sched_switch);
+        sorted_ss.emplace(event.timestamp(), std::make_pair(bundle.cpu(), sched_switch));
+        // PrintfSchedSwitch(event.timestamp(), bundle.cpu(), sched_switch);
       } else if (event.has_print()) {
         const PrintFtraceEvent& print = event.print();
         (void)print;
       }
     }
   }
+
+  for (auto it = sorted_ss.begin(); it != sorted_ss.end(); it++)
+    PrintfSchedSwitch(it->first, it->second.first, it->second.second);
+
   printf("%s", footer.c_str());
 
   return 0;

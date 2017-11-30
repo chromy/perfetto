@@ -61,7 +61,7 @@ Chunk ProducerSharedMemoryArbiter::GetNewChunk(
       const size_t initial_page_idx = page_idx_;
       do {
         bool is_new_page = false;
-        auto layout = SharedMemoryABI::PageLayout::kPageDiv4;
+        auto layout = SharedMemoryABI::PageLayout::kPageDiv1;
         size_t tbuf = target_buffer;
         if (shmem_.is_page_free(page_idx_)) {
           // TODO: Use the |size_hint| here to decide the layout.
