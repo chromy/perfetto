@@ -155,6 +155,7 @@ void FtraceProducer::Run() {
 }  // namespace.
 
 int ProducerMain(int argc, char** argv) {
+  SetComm("perfetto-producer");
   perfetto::FtraceProducer producer;
   producer.Run();
   return 0;

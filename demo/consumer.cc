@@ -79,6 +79,7 @@ class TestConsumer : public Consumer {
 }  // namespace.
 
 int ConsumerMain(int argc, char** argv) {
+  SetComm("perfetto-producer");
   TestConsumer consumer;
   std::unique_ptr<Service::ConsumerEndpoint> endpoint =
       ConsumerIPCClient::Connect(kConsumerSocketName, &consumer, g_task_runner);

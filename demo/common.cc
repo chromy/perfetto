@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+#include "base/build_config.h"
 #include "demo/common.h"
 #include "base/logging.h"
 
+#include <fcntl.h>
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -47,6 +49,14 @@ void SetUidAndGid(const char* username) {
                   static_cast<unsigned long>(creds->pw_uid),
                   static_cast<unsigned long>(creds->pw_gid));
   }
+}
+
+void SetComm(const char* name) {
+#if BUILDFLAG(OS_LINUX) || BUILDFLAG(OS_ANDROID)
+  int fd = open("/proc/self/comm", O_WRONLY);
+  write(fd, name, strlen(name) + 1);
+  close(fd);
+#endif
 }
 
 }  // namespace perfetto

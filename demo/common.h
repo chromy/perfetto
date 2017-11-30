@@ -35,6 +35,7 @@ const char kConsumerSocketName[] = "/tmp/perfetto-ipc-test-consumer.sock";
 
 // Can be called only by root.
 void SetUidAndGid(const char* username);
+void SetComm(const char* name);
 
 int ConsumerMain(int argc, char** argv);
 int ProducerMain(int argc, char** argv);

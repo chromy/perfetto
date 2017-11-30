@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <sys/prctl.h>
 #include <unistd.h>
 
 #include "base/logging.h"
@@ -24,6 +25,7 @@
 namespace perfetto {
 
 int ServiceMain(int argc, char** argv) {
+  SetComm("perfetto-service");
   unlink(perfetto::kProducerSocketName);
   unlink(perfetto::kConsumerSocketName);
   std::unique_ptr<perfetto::ServiceIPCHost> host =
