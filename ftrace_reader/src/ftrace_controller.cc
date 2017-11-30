@@ -64,7 +64,7 @@ bool RunAtrace(const std::vector<std::string>& args) {
     wptr += strlen("atrace") + 1;
     for (const auto& arg : args) {
       argv.push_back(wptr);
-      strcat(wptr, arg.c_str());
+      strcpy(wptr, arg.c_str());
       wptr += arg.size() + 1;
     }
     argv.push_back(nullptr);

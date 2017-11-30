@@ -47,14 +47,12 @@ void WriteCpuUsage() {
   long user_us = TimevalToUs(&usg.ru_utime);
   long kern_us = TimevalToUs(&usg.ru_stime);
 
-  static long start_time_us = now_us;
   static long last_time_us = now_us;
   static long last_user_us = 0;
   static long last_kern_us = 0;
   static long active_us = 0;
 
   const long tdelta_us = std::max(now_us - last_time_us, 0l);
-  const long wall_delta_us = std::max(now_us - start_time_us, 0l);
   last_time_us = now_us;
 
   long user_percent_1s = 0;
@@ -67,7 +65,7 @@ void WriteCpuUsage() {
   last_kern_us = kern_us;
 
   if (user_percent_1s + kern_percent_1s > 0)
-    active_us += wall_delta_us;
+    active_us += tdelta_us;
 
   long user_percent_tot = 0;
   long kern_percent_tot = 0;
@@ -77,10 +75,10 @@ void WriteCpuUsage() {
   }
 
   printf(
-      "\rCPU usage: "
-      "[\x1B[32mLast 1s:\x1B[0m %2ld%% /%2ld%%, "
-      "\x1B[32mTotal:\x1B[0m %2ld%% /%2ld%%]%80s",
-      user_percent_1s, kern_percent_1s, user_percent_tot, kern_percent_tot, "");
+      "\x1B[s\x1B[0;50H\x1B[7mCPU: ["
+      "1s: %2ld%% /%2ld%%, "
+      "Tot: %2ld%% /%2ld%%]\x1B[0m\x1B[u",
+      user_percent_1s, kern_percent_1s, user_percent_tot, kern_percent_tot);
   fflush(stdout);
 }
 

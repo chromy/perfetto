@@ -4,7 +4,7 @@ set -e
 
 outdir=out/android_release_arm64
 
-ninja -C $outdir
+ninja -C $outdir perfetto
 
 adb push $outdir/perfetto /data/local/tmp/perfetto
 
@@ -29,26 +29,26 @@ tmux split-window -v
 tmux select-layout even-vertical
 
 tmux select-pane -t 0
+tmux send-keys "clear" C-m
 tmux send-keys "adb shell" C-m
 
 tmux select-pane -t 1
+tmux send-keys "clear" C-m
 tmux send-keys "adb shell" C-m
 
 tmux select-pane -t 2
+tmux send-keys "clear" C-m
 tmux send-keys "adb shell" C-m
 
 sleep 3
 
 tmux select-pane -t 0
-tmux send-keys "echo Producer" C-m
 tmux send-keys "/data/local/tmp/perfetto producer"
 
 tmux select-pane -t 1
-tmux send-keys "echo Service" C-m
 tmux send-keys "/data/local/tmp/perfetto service"
 
 tmux select-pane -t 2
-tmux send-keys "echo Consumer" C-m
 tmux send-keys "/data/local/tmp/perfetto consumer"
 
 # Select consumer pane.
