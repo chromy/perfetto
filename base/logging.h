@@ -20,12 +20,12 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>   // For fprintf and stderr.
 
 #if defined(NDEBUG)
 #define PERFETTO_DCHECK_IS_ON() 0
 #else
 #define PERFETTO_DCHECK_IS_ON() 1
-#include <stdio.h>   // For fprintf.
 #include <string.h>  // For strerror.
 #endif
 

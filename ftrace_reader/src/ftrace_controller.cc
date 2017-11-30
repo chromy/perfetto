@@ -226,6 +226,8 @@ void FtraceController::Register(FtraceSink* sink) {
   }
   for (const std::string& name : sink->enabled_events())
     RegisterForEvent(name);
+  if (sinks_.size() == 1)
+    Start();
 }
 
 void FtraceController::RegisterForEvent(const std::string& name) {
@@ -258,9 +260,10 @@ void FtraceController::Unregister(FtraceSink* sink) {
   PERFETTO_DCHECK(removed == 1);
   for (const std::string& name : sink->enabled_events())
     UnregisterForEvent(name);
-  if (sink->config().WantsAtrace()) {
+  if (sink->config().WantsAtrace())
     StopAtrace();
-  }
+  if (sinks_.size() == 0)
+    Stop();
 }
 
 void FtraceController::StartAtrace(const FtraceConfig& config) {
