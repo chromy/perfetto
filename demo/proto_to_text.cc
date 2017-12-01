@@ -69,7 +69,23 @@ uint64_t TimestampToMicroseconds(uint64_t timestamp) {
 
 std::string FormatSchedSwitch(uint64_t timestamp,
                        uint64_t cpu,
-                       const SchedSwitchFtraceEvent& sched_switch) {
+                       const SchedSwitchFtraceEvent& sched_switch,
+                        std::map<uint32_t, std::string>* pid_to_name) {
+
+  std::string prev_comm;
+  std::string next_comm;
+  if (sched_switch.prev_comm() != "") {
+    prev_comm = sched_switch.prev_comm();
+    pid_to_name->emplace(sched_switch.prev_pid(), prev_comm);
+  } else {
+    prev_comm = pid_to_name->at(sched_switch.prev_pid());
+  }
+  if (sched_switch.next_comm() != "") {
+    next_comm = sched_switch.next_comm();
+    pid_to_name->emplace(sched_switch.next_pid(), next_comm);
+  } else {
+    next_comm = pid_to_name->at(sched_switch.next_pid());
+  }
   char line[2048];
   uint64_t seconds = TimestampToSeconds(timestamp);
   uint64_t useconds = TimestampToMicroseconds(timestamp);
@@ -77,9 +93,9 @@ std::string FormatSchedSwitch(uint64_t timestamp,
          ": sched_switch: prev_comm=%s "
          "prev_pid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_pid=%d "
          "next_prio=%d\\n",
-         cpu, seconds, useconds, sched_switch.prev_comm().c_str(),
+         cpu, seconds, useconds, prev_comm.c_str(),
          sched_switch.prev_pid(), sched_switch.prev_prio(),
-         GetFlag(sched_switch.prev_state()), sched_switch.next_comm().c_str(),
+         GetFlag(sched_switch.prev_state()), next_comm.c_str(),
          sched_switch.next_pid(), sched_switch.next_prio());
   return std::string(line);
 }
@@ -135,18 +151,19 @@ int ProtoToText(std::istream* input, std::ostream* output, bool systrace) {
   printf("%s", header.c_str());
   printf("%s", ftrace_start.c_str());
   std::multimap<uint64_t, std::string> sorted;
+  std::map<uint32_t, std::string> pid_to_name;
 
   for (const TracePacket& packet : trace.packet()) {
     if (!packet.has_ftrace_events())
       continue;
-
+    
     const FtraceEventBundle& bundle = packet.ftrace_events();
     for (const FtraceEvent& event : bundle.event()) {
       if (event.has_sched_switch()) {
         const SchedSwitchFtraceEvent& sched_switch = event.sched_switch();
         sorted.emplace(
             event.timestamp(),
-            FormatSchedSwitch(event.timestamp(), bundle.cpu(), sched_switch));
+            FormatSchedSwitch(event.timestamp(), bundle.cpu(), sched_switch, &pid_to_name));
       } else if (event.has_print()) {
         const PrintFtraceEvent& print = event.print();
         sorted.emplace(

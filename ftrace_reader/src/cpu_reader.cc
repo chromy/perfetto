@@ -141,6 +141,7 @@ size_t CpuReader::ParsePage(size_t cpu,
                             protos::pbzero::FtraceEventBundle* bundle,
                             const ProtoTranslationTable* table) {
   // TODO(hjd): Remove when the generic parser comes in.
+  std::set<uint32_t> seen;
   const size_t print_id = table->GetEventByName("print")->ftrace_event_id;
   const size_t sched_switch_id =
       table->GetEventByName("sched_switch")->ftrace_event_id;
@@ -286,13 +287,19 @@ size_t CpuReader::ParsePage(size_t cpu,
             return 0;
           // TODO(hjd): Not sure if this is null-terminated.
           prev_comm[15] = '\0';
-          switch_event->set_prev_comm(prev_comm);
+          if (!seen.count(prev_pid)) {
+            switch_event->set_prev_comm(prev_comm);
+            seen.insert(prev_pid);
+          }
           switch_event->set_prev_pid(prev_pid);
           switch_event->set_prev_prio(prev_prio);
           switch_event->set_prev_state(prev_state);
           // TODO(hjd): Not sure if this is null-terminated.
           next_comm[15] = '\0';
-          switch_event->set_next_comm(next_comm);
+          if (!seen.count(next_pid)) {
+            switch_event->set_next_comm(next_comm);
+            seen.insert(next_pid);
+          }
           switch_event->set_next_pid(next_pid);
           switch_event->set_next_prio(next_prio);
           switch_event->Finalize();
