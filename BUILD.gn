@@ -26,6 +26,7 @@ group("all") {
   testonly = true  # allow to build also test targets
   deps = [
     ":perfetto_unittests",
+    "ui",
     "src/protozero/protoc_plugin($host_toolchain)",
   ]
   if (!build_with_chromium) {
