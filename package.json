@@ -1,0 +1,27 @@
+{
+  "name": "perfetto",
+  "version": "0.0.1",
+  "description": "This project is meant to be built both as part of the Android tree and from a standalone checkout",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://android.googlesource.com/platform/external/perfetto"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "mithril": "^1.1.6",
+    "ospec": "^1.4.0",
+    "typescript": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/mithril": "git+https://git@github.com/MithrilJS/mithril.d.ts"
+  }
+}

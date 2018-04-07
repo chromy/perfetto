@@ -1,0 +1,90 @@
+# Copyright (C) 2018 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../perfetto.gni")
+
+template("typescript_source_set") {
+  assert(defined(invoker.sources))
+  typescript_sources = invoker.sources
+
+  copy_action_name = "${target_name}_copy"
+  action_name = "${target_name}"
+
+  copy(copy_action_name) {
+    sources = typescript_sources
+    outputs = ["$target_gen_dir/{{source_file_part}}"]
+  }
+
+  action_foreach(action_name) {
+    deps = [
+      ":$copy_action_name",
+    ]
+    script = "//gn/standalone/build_tool_wrapper.py"
+    tsc_path = "${perfetto_root_path}node_modules/typescript/bin/tsc"
+    sources = get_target_outputs(":$copy_action_name")
+    inputs = ["${perfetto_root_path}package-lock.json"]
+    out_directory = target_gen_dir
+    outputs = ["$target_gen_dir/{{source_name_part}}.js", "$target_gen_dir/{{source_name_part}}.js.map"]
+    args = [
+      rebase_path(tsc_path, ""),
+      "--module",
+      "commonjs",
+      "--sourceMap",
+      "--outDir",
+      rebase_path(out_directory, ""),
+    ]
+    args += rebase_path(sources, root_build_dir)
+  }
+}
+
+template("typescript_runnable") {
+  assert(defined(invoker.name))
+  name = invoker.name
+  output_path = "$target_gen_dir/$name"
+
+  has_sources = defined(invoker.sources)
+  has_deps = defined(invoker.deps)
+
+  if (has_sources) {
+    source_action_name = "${target_name}_src"
+    typescript_source_set(source_action_name) {
+      sources = invoker.sources
+    }
+  }
+
+  action(target_name) {
+    deps = []
+    sources = []
+    modules_to_require = []
+
+    if (has_deps) {
+      deps += invoker.deps
+    }
+    if (has_sources) {
+      deps += [":$source_action_name"]
+
+      foreach(path, get_target_outputs(":$source_action_name")) {
+        sources += [path]
+        modules_to_require += [rebase_path(path, target_gen_dir)]
+      }
+    }
+
+    script = "${perfetto_root_path}tools/gen_require_many_js"
+    args = [ rebase_path(output_path, "") ] + modules_to_require
+    outputs = [output_path]
+  }
+}
+
+
+

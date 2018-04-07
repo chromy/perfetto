@@ -13,11 +13,13 @@
 # limitations under the License.
 
 import("../gn/perfetto.gni")
+import("../gn/standalone/typescript.gni")
 
 group("ui") {
   deps = [
     ":index",
     ":js",
+    ":unittests",
   ]
 }
 
@@ -26,12 +28,23 @@ copy("index") {
   outputs = [ "${root_out_dir}/ui/index.html" ]
 }
 
-copy("js") {
-  sources = [ "perfetto.js" ]
-  outputs = [ "${root_out_dir}/ui/perfetto.js" ]
-}
-
 copy("css") {
   sources = [ "perfetto.css" ]
   outputs = [ "${root_out_dir}/ui/perfetto.css" ]
+}
+
+typescript_source_set("js") {
+  sources = [
+#    "perfetto.ts",
+    "a.ts",
+    "b.ts",
+  ]
+}
+
+typescript_runnable("unittests") {
+  name = "run_all_unittests.js"
+  sources = [
+    "a_unittest.ts",
+    "unittest_runner.ts",
+  ]
 }
