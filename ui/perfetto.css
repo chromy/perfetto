@@ -107,11 +107,18 @@ ul.big-list li {
 
 .big-list-item-action {
   grid-area: action;
-  padding: 0 10px;
   align-self: center;
   user-select: none;
   color: #1565C0;
   text-transform: uppercase;
+  border: solid 1px;
+  padding: 10px;
+}
+
+.big-input {
+  height: 34px;
+  font-size: 25px;
+  padding: 0 10px;
 }
 
 .card {

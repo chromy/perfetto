@@ -14,6 +14,8 @@
 
 import("../perfetto.gni")
 
+root_output_dir = "${root_out_dir}/ui"
+
 template("typescript_source_set") {
   assert(defined(invoker.sources))
   typescript_sources = invoker.sources
@@ -23,7 +25,7 @@ template("typescript_source_set") {
 
   copy(copy_action_name) {
     sources = typescript_sources
-    outputs = ["$target_gen_dir/{{source_file_part}}"]
+    outputs = ["$root_output_dir/{{source_file_part}}"]
   }
 
   action_foreach(action_name) {
@@ -34,24 +36,26 @@ template("typescript_source_set") {
     tsc_path = "${perfetto_root_path}node_modules/typescript/bin/tsc"
     sources = get_target_outputs(":$copy_action_name")
     inputs = ["${perfetto_root_path}package-lock.json"]
-    out_directory = target_gen_dir
-    outputs = ["$target_gen_dir/{{source_name_part}}.js", "$target_gen_dir/{{source_name_part}}.js.map"]
+    out_directory = root_output_dir
+    outputs = ["$root_output_dir/{{source_name_part}}.js", "$root_output_dir/{{source_name_part}}.js.map"]
     args = [
       rebase_path(tsc_path, ""),
       "--module",
       "commonjs",
+      "--lib",
+      "es2017,dom",
       "--sourceMap",
       "--outDir",
       rebase_path(out_directory, ""),
+      "{{source}}",
     ]
-    args += rebase_path(sources, root_build_dir)
   }
 }
 
 template("typescript_runnable") {
   assert(defined(invoker.name))
   name = invoker.name
-  output_path = "$target_gen_dir/$name"
+  output_path = "$root_output_dir/$name"
 
   has_sources = defined(invoker.sources)
   has_deps = defined(invoker.deps)
@@ -76,7 +80,7 @@ template("typescript_runnable") {
 
       foreach(path, get_target_outputs(":$source_action_name")) {
         sources += [path]
-        modules_to_require += [rebase_path(path, target_gen_dir)]
+        modules_to_require += [rebase_path(path, root_output_dir)]
       }
     }
 
@@ -86,5 +90,60 @@ template("typescript_runnable") {
   }
 }
 
+template("js_bundle") {
 
+  assert(defined(invoker.name))
+  name = invoker.name
+  output_path = "$root_output_dir/$name"
 
+  assert(defined(invoker.start))
+  start = invoker.start
+
+  start_paths = []
+  target_outputs = get_target_outputs("$start")
+  filter_source_maps = "${perfetto_root_path}tools/filter_source_map_paths"
+  target_js_outputs = exec_script(filter_source_maps, target_outputs,
+  "list lines")
+  foreach(path, target_js_outputs) {
+    start_paths += [rebase_path(path, "")]
+  }
+
+  action(target_name) {
+    deps = [start]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    sources = []
+
+    inputs = ["${perfetto_root_path}package-lock.json"]
+    script = "//gn/standalone/build_tool_wrapper.py"
+    browserify_path = "${perfetto_root_path}node_modules/browserify/bin/cmd.js"
+    args = [
+      rebase_path(browserify_path, ""),
+    ] + start_paths + [
+      "-o",
+      rebase_path(output_path, "")
+    ]
+    outputs = [output_path]
+  }
+}
+  
+template("protos_json") {
+  assert(defined(invoker.name))
+  name = invoker.name
+  output_path = "$root_output_dir/$name"
+
+  assert(defined(invoker.sources))
+ 
+  action(target_name) {
+    sources = invoker.sources
+
+    inputs = ["${perfetto_root_path}package-lock.json"]
+    script = "//gn/standalone/build_tool_wrapper.py"
+    pbjs_path = "${perfetto_root_path}node_modules/protobufjs/bin/pbjs"
+    args = [ rebase_path(pbjs_path, "") ]
+    args += rebase_path(sources, "")
+    args += ["-o", rebase_path(output_path, "")]
+    outputs = [output_path]
+  }
+}

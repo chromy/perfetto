@@ -18,8 +18,8 @@ import("../gn/standalone/typescript.gni")
 group("ui") {
   deps = [
     ":index",
-    ":js",
-    ":unittests",
+    ":js_bundle",
+    ":unittests_bundle",
   ]
 }
 
@@ -35,10 +35,16 @@ copy("css") {
 
 typescript_source_set("js") {
   sources = [
-#    "perfetto.ts",
+    "perfetto.ts",
     "a.ts",
     "b.ts",
   ]
+}
+
+js_bundle("js_bundle") {
+  deps = [":protos"]
+  start = ":js" 
+  name = "perfetto_bundle.js"
 }
 
 typescript_runnable("unittests") {
@@ -46,5 +52,17 @@ typescript_runnable("unittests") {
   sources = [
     "a_unittest.ts",
     "unittest_runner.ts",
+  ]
+}
+
+js_bundle("unittests_bundle") {
+  start = ":unittests" 
+  name = "run_all_unittests_bundle.js"
+}
+
+protos_json("protos") {
+  name = "perfetto_config.json"
+  sources = [
+    "../protos/perfetto/config/perfetto_config.proto",
   ]
 }
