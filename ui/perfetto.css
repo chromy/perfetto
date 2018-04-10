@@ -179,13 +179,19 @@ ul.big-list li {
 }
 
 .help-text {
-  color: steelblue;
+  font-style: italic;
+}
+
+.var-text {
+  color: #1565C0;
 }
 
 .editor {
   padding-bottom: 10px;
-  align-content: center;
+  align-items: center;
   display: flex;
+  justify-content: space-between;
+  max-width: 400px;
 }
 
 .editor.column {
@@ -197,15 +203,15 @@ ul.big-list li {
   padding-bottom: 0;
 }
 
-.editor input {
+.editor > input {
   margin-left: 20px;
 }
 
-.editor button {
+.editor > button {
   margin-left: 20px;
 }
 
-.editor select {
+.editor > select {
   margin-left: 20px;
 }
 
@@ -221,8 +227,7 @@ ul.big-list li {
 
 .repeat {
   padding-left: 2px;
-  margin-top: 10px;
-  border-left: solid 1px #dad8d8;
+  margin: 10px 0;
 }
 
 input.invalid {

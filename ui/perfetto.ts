@@ -54,8 +54,11 @@ class Config {
   }
 
   details() {
-    let num_buffers = this.data['buffers'].length;
-    return [num_buffers + ' buffers'];
+    let details = [];
+    details.push(this.data['buffers'].length + ' buffers');
+    details.push(this.data['dataSources'].length + ' data sources');
+
+    return details;
   }
 }
 
@@ -100,9 +103,11 @@ function ConfigListView(home) {
     let summary = m('span', config.details().join(' - '));
 
     if (config === home.new_config) {
-      name = m('.help-text', config.name ? config.name : 'New Config');
+      name = m('.var-text', config.name ? config.name : 'New Config');
       action = m('.big-list-item-action', {onclick: () => home.editConfig(config)}, "create");
-      summary = m('.help-text', 'Details about the config will appear here');
+      summary = m('.var-text', 'Details about the config will appear here');
+      if (config === home.focused_config)
+        summary = m('span', config.details().join(' - '));
     }
 
     if (config === home.focused_config)
@@ -117,11 +122,39 @@ function ConfigListView(home) {
   return m(".mixer-column", [
     m('h1', 'Configs'),
     m('ul.big-list',
-      m('li.help-text', 'Create, edit and manage configs here.'),
+      m('li.help-text', 'Create, edit, and download configs'),
       m('li.inset', 'Drag and drop or ', m('a[href=""]', 'click to import'), '.'),
       //m('li.big-list-item', BigListItemView(
       ConfigListItemView(home.new_config),
       Configs.map(c => ConfigListItemView(c))),
+  ]);
+}
+
+function DevicesListView(home) {
+  return m(".mixer-column", [
+    m('h1', 'Devices'),
+    m('ul.big-list', [
+      m('li.help-text', 'Manage devices'),
+      m('li.inset', 'Drag and drop or ', m('a[href=""]', 'click to import'), '.'),
+    ])
+    m('li.big-list-item', [
+      m('.big-list-item-header', "hjd0.lon.corp.google.com"),
+      m('.big-list-item-body', ''),
+    ]),
+    m('li.big-list-item', [
+      m('.big-list-item-header', 'Pixel 2'),
+      m('.big-list-item-body', ''),
+    ]),
+  ]);
+}
+
+function TracesListView(home) {
+  return m(".mixer-column", [
+    m('h1', 'Traces'),
+    m('ul.big-list', [
+      m('li.help-text', 'View traces'),
+      m('li.inset', 'Drag and drop or ', m('a[href=""]', 'click to import'), '.'),
+    ])
   ]);
 }
 
@@ -151,13 +184,27 @@ function ProtoEditorFieldView(field, proto) {
 }
 
 function ProtoEditorRepeatedFieldView(field, proto) {
-  return m('.return', field.name);
+  let vs = proto[field.name];
+  let elements = [];
+
+  function newElement() {
+    if (field.resolvedType === null)
+      return field.typeDefault;
+    return field.resolvedType.create();
+  }
+
+  for (let i=0; i<vs.length; i++) {
+    elements.push(ProtoEditorSingleFieldView(field, getset(vs, i)));
+  }
+
+  return m('.repeat', [
+    elements,
+    m('button', { onclick: () => vs.push(newElement()) }, 'Add ' + field.name),
+  ]);
 }
 
 function ProtoEditorSingleFieldView(field, value) {
   field.resolve();
-  if (field.repeated)
-    return null;
   if (field.type === 'string') 
     return ProtoEditorStringView(field, value);
   if (field.type === 'bool') 
@@ -233,11 +280,15 @@ function ProtoEditorStringView(field, value) {
 function ProtoEditorNumberView(field, value, hint = null) {
   function tryNumber(n) {
     let reg = new RegExp('^[+-]?[0-9]+$');
+    if (n === '')
+      return null;
     if (reg.test(n))
       return parseInt(n);
     return n;
   }
   function isValid(n) {
+    if (n === '')
+      return true;
     let reg = new RegExp('^[+-]?[0-9]+$');
     return reg.test(n);
   }
@@ -300,6 +351,7 @@ function ConfigEditorView(config) {
     ]),
     m('.sentence', [
       'Copy ',
+      m('button', { onclick: () => {} }, 'as commandline'),
     ]),
     m('.fields', fields),
   ];
@@ -318,12 +370,8 @@ let HomeComponent = {
 
     return m("#mixer", [
         ConfigListView(home),
-        m(".mixer-column", [
-          m('h1', 'Devices'),
-        ]),
-        m(".mixer-column", [
-          m('h1', 'Traces'),
-        ]),
+        DevicesListView(home),
+        TracesListView(home),
     ]);
   }
 };
