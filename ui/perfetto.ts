@@ -23,6 +23,22 @@ console.log(json_descriptor);
 console.log(root);
 console.log(TraceConfig);
 
+function download(data, file_name) {
+  let mime_type = 'application/octet-stream';
+  let blob = new Blob([data], {
+    type: mime_type
+  });
+  let url = window.URL.createObjectURL(blob);
+
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = file_name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+};
+
 class Config {
   name: string;
   data: protobuf.Message<{}>;
@@ -109,6 +125,15 @@ function ConfigListView(home) {
   ]);
 }
 
+function getset(o, key) {
+  return function(...args : any[]) {
+    let value = args[0];
+    if (value === undefined)
+      return o[key];
+    o[key] = value;
+  }
+}
+
 function ProtoEditorFieldsView(type, proto) {
   let fields = [];
   for (let field of Object.values(type.fields)) {
@@ -117,89 +142,135 @@ function ProtoEditorFieldsView(type, proto) {
   return fields;
 }
 
-function ProtoEditorFieldView(field, parent) {
+function ProtoEditorFieldView(field, proto) {
+  if (field.repeated)
+    return ProtoEditorRepeatedFieldView(field, proto);
+
+  let value = getset(proto, field.name);
+  return ProtoEditorSingleFieldView(field, value);
+}
+
+function ProtoEditorRepeatedFieldView(field, proto) {
+  return m('.return', field.name);
+}
+
+function ProtoEditorSingleFieldView(field, value) {
   field.resolve();
-  console.log('parent', parent);
-  console.log(field);
-  console.log(field.name);
-  console.log(field.resolvedType);
   if (field.repeated)
     return null;
   if (field.type === 'string') 
-    return ProtoEditorStringView(field, parent);
+    return ProtoEditorStringView(field, value);
   if (field.type === 'bool') 
-    return ProtoEditorBoolView(field, parent);
+    return ProtoEditorBoolView(field, value);
   if (['uint32', 'uint64', 'int32', 'int64'].indexOf(field.type) != -1)
-    return ProtoEditorNumberView(field, parent);
+    return ProtoEditorNumberView(field, value);
   if (field.resolvedType.values != undefined)
-    return ProtoEditorEnumView(field, parent);
-  return ProtoEditorNestedView(field, parent);
+    return ProtoEditorEnumView(field, value);
+  return ProtoEditorNestedView(field, value);
 }
 
-function ProtoEditorEnumView(field, parent) {
-  console.log('enum');
-  return m('div');
-}
-
-function ProtoEditorNestedView(field, parent) {
-  //  let type = root.lookupType('perfetto.' + field.type);
-  console.log('ProtoEditorNestedView', field, parent);
+function ProtoEditorEnumView(field, value) {
   let type = field.resolvedType;
-  let child = parent[field.name];
-  if (child === null) {
+//  let current = parseInt(parent[field.name]);
+  console.log('enum', value(), field);
+
+  return m('.editor', [
+    m('label', field.name),
+    m('select[name="text"]',
+      { onchange: e => value(parseInt(e.target.value)) },
+      Object.entries(type.values).map(([v, n]) => m('option', { 
+        value: n,
+        selected: v === value(),
+      }, v)),
+    ),
+  ]);
+}
+
+function ProtoEditorNestedView(field, value) {
+  //  let type = root.lookupType('perfetto.' + field.type);
+  let type = field.resolvedType;
+  if (value() === null) {
     return m('.editor', [
       m('label', field.name),
       m('button', {
-        onclick: () => parent[field.name] = type.create(),
+        onclick: () => value(type.create()),
       }, 'add'),
     ]);
   }
 
   return m('.editor.column', [
     m('label', field.name),
-    m('.nest', ProtoEditorFieldsView(type, child)),
+    m('.nest', ProtoEditorFieldsView(type, value())),
   ]);
 }
 
-function ProtoEditorBoolView(field, parent) {
-  console.log(field.name, parent[field.name]);
+function ProtoEditorBoolView(field, value) {
 
-  let values = [undefined, true, false];
+  let values = [null, true, false];
   let names = ['unset', 'true', 'false'];
 
-  let value = parent[field.name];
-  let value_name = names[values.indexOf(value)];
-  let next_value = values[(values.indexOf(value) + 1) % names.length];
+  let value_name = names[values.indexOf(value())];
+  let next_value = values[(values.indexOf(value()) + 1) % names.length];
 
   return m('.editor', [
     m('label', field.name),
     m('button', {
-      onclick: () => parent[field.name] = next_value,
+      onclick: () => value(next_value),
     }, value_name),
   ]);
 }
 
-function ProtoEditorStringView(field, parent) {
-  console.log("String View", field, parent);
+function ProtoEditorStringView(field, value) {
   return m('.editor', [
     m('label', field.name),
     m('input', {
-      oninput: m.withAttr('value', v => parent[field.name] = v),
-      value: parent[field.name],
+      oninput: m.withAttr('value', value),
+      value: value(),
     })
   ]);
 }
 
-function ProtoEditorNumberView(field, parent, hint = null) {
-  console.log('ProtoEditorNumberView', field, parent);
+function ProtoEditorNumberView(field, value, hint = null) {
+  function tryNumber(n) {
+    let reg = new RegExp('^[+-]?[0-9]+$');
+    if (reg.test(n))
+      return parseInt(n);
+    return n;
+  }
+  function isValid(n) {
+    let reg = new RegExp('^[+-]?[0-9]+$');
+    return reg.test(n);
+  }
+
   return m('.editor', [
     m('label', field.name),
-    hint ? hint(parent[field.name]) : null,
+    hint ? hint(value()) : null,
     m('input', {
-      oninput: m.withAttr('value', v => parent[field.name] = v),
-      value: parent[field.name],
+      class: isValid(value()) ? '' : 'invalid',
+      oninput: m.withAttr('value', v => value(tryNumber(v))),
+      value: '' + value(),
     }),
   ]);
+}
+
+function DownloadConfig(config) {
+  let error = TraceConfig.verify(config.data);
+  if (error) {
+    console.error("Could not validate config.", error)
+    return;
+  }
+  let buffer = TraceConfig.encode(config.data).finish();
+  download(buffer, config.name + '.pb');
+}
+
+function DownloadConfigAsPbtxt(config) {
+  let error = TraceConfig.verify(config.data);
+  if (error) {
+    console.error("Could not validate config.", error)
+    return;
+  }
+  let buffer = TraceConfig.encode(config.data).finish();
+  download(buffer, config.name + '.pbtxt');
 }
 
 function ConfigEditorView(config) {
@@ -212,10 +283,7 @@ function ConfigEditorView(config) {
     text += '  ' +  field.name + " (" + field.type + ")\n";
   }
 
-  let fields = [];
-  for (let field of Object.values(proto_type.fields)) {
-    fields.push(ProtoEditorFieldView(field, config.data));
-  }
+  let fields = ProtoEditorFieldsView(proto_type, config.data);
 
   return [
     m('h1', 'Editing'),
@@ -223,6 +291,16 @@ function ConfigEditorView(config) {
       oninput: m.withAttr('value', name => { config.name = name }),
       value: config.name,
     }),
+    m('.sentence', [
+      'Download ',
+      m('button', { onclick: () => DownloadConfig(config)}, 'as .pb'),
+      ' ',
+      m('button', { onclick: () => DownloadConfigAsPbtxt(config)}, 'as .pbtxt'),
+      // m('button', { onclick: () => DownloadConfigAsPbtxt(config)}, 'copy command to clipboard'),
+    ]),
+    m('.sentence', [
+      'Copy ',
+    ]),
     m('.fields', fields),
   ];
 }
