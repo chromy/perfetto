@@ -180,6 +180,41 @@ ul.big-list li {
 
 .help-text {
   color: steelblue;
-  
 }
+
+.editor {
+  padding-bottom: 10px;
+  align-content: center;
+  display: flex;
+}
+
+.editor.column {
+  padding-bottom: 10px;
+  display: block;
+}
+
+.editor:last-child {
+  padding-bottom: 0;
+}
+
+.editor input {
+  margin-left: 20px;
+}
+
+.editor button {
+  margin-left: 20px;
+}
+
+.fields {
+  margin-top: 10px;
+}
+
+.nest {
+  padding-left: 10px;
+  margin-top: 10px;
+  border-left: solid 5px #dad8d8;
+}
+
+
+
 
