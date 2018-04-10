@@ -136,16 +136,17 @@ function DevicesListView(home) {
     m('ul.big-list', [
       m('li.help-text', 'Manage devices'),
       m('li.inset', 'Drag and drop or ', m('a[href=""]', 'click to import'), '.'),
-    ])
-    m('li.big-list-item', [
-      m('.big-list-item-header', "hjd0.lon.corp.google.com"),
-      m('.big-list-item-body', ''),
-    ]),
-    m('li.big-list-item', [
-      m('.big-list-item-header', 'Pixel 2'),
-      m('.big-list-item-body', ''),
-    ]),
-  ]);
+      m('li.big-list-item', [
+        m('.big-list-item-header', "hjd0.lon.corp.google.com"),
+        m('.big-list-item-body', '4.9.0-6-amd64'),
+        m('.big-list-item-action', {onclick: () => {}}, "details"),
+      ]),
+      m('li.big-list-item', [
+        m('.big-list-item-header', 'Pixel 2'),
+        m('.big-list-item-body', '0123456789ABCDEF'),
+        m('.big-list-item-action', {onclick: () => {}}, "details"),
+      ]),
+  ])]);
 }
 
 function TracesListView(home) {
@@ -357,21 +358,30 @@ function ConfigEditorView(config) {
   ];
 }
 
+function ControlsView(home) {
+  return m('.controls', [
+    m('h1', 'The controls are here'),
+
+  ]);
+}
+
 let HomeComponent = {
   view: function() {
     let home = TheHome;
     if (home.isEditingConfig()) {
       let config = home.focused_config;
       return m("#mixer", [
-          ConfigListView(home),
-          m('.mixer-config-editor', ConfigEditorView(config)),
+        ConfigListView(home),
+        m('.mixer-config-editor', ConfigEditorView(config)),
+        ControlsView(home),
       ]);
    }
 
     return m("#mixer", [
-        ConfigListView(home),
-        DevicesListView(home),
-        TracesListView(home),
+      ConfigListView(home),
+      DevicesListView(home),
+      TracesListView(home),
+      ControlsView(home),
     ]);
   }
 };

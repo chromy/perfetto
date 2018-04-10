@@ -247,4 +247,10 @@ input.invalid {
   margin-left: 5px;
 }
 
+.controls {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  border-top: solid 1px black;
+}
 
