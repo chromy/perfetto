@@ -361,7 +361,6 @@ function ConfigEditorView(config) {
 function ControlsView(home) {
   return m('.controls', [
     m('h1', 'The controls are here'),
-
   ]);
 }
 
@@ -370,19 +369,23 @@ let HomeComponent = {
     let home = TheHome;
     if (home.isEditingConfig()) {
       let config = home.focused_config;
-      return m("#mixer", [
-        ConfigListView(home),
-        m('.mixer-config-editor', ConfigEditorView(config)),
+      return [
+        m("#mixer", [
+          ConfigListView(home),
+          m('.mixer-config-editor', ConfigEditorView(config)),
+        ]),
         ControlsView(home),
-      ]);
+      ];
    }
 
-    return m("#mixer", [
-      ConfigListView(home),
-      DevicesListView(home),
-      TracesListView(home),
+    return [
+      m("#mixer", [
+        ConfigListView(home),
+        DevicesListView(home),
+        TracesListView(home),
+      ]),
       ControlsView(home),
-    ]);
+    ];
   }
 };
 

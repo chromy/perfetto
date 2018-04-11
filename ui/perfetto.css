@@ -248,7 +248,8 @@ input.invalid {
 }
 
 .controls {
-  position: fixed;
+  margin-top: 100px;
+  background: white;
   bottom: 0;
   width: 100%;
   border-top: solid 1px black;
