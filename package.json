@@ -1,0 +1,23 @@
+{
+  "name": "perfetto",
+  "version": "0.0.0",
+  "description": "Perfetto is an open-source project for performance instrumentation and tracing of Linux/Android/Chrome platforms and user-space apps.   It consists of:",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "dependencies": {
+    "mithril": "^1.1.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://android.googlesource.com/platform/external/perfetto"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
