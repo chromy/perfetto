@@ -2,10 +2,14 @@
 
 ## Setup
 
-Install [serveit](https://github.com/garybernhardt/serveit).
+- Install [serveit](https://github.com/garybernhardt/serveit).
+- Install npm.
+- Install js deps.
 
 ```
 $ brew install serveit
+$ brew install npm
+$ npm install 
 ```
 
 ## Building

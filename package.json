@@ -1,7 +1,7 @@
 {
   "name": "perfetto",
   "version": "0.0.0",
-  "description": "Perfetto is an open-source project for performance instrumentation and tracing of Linux/Android/Chrome platforms and user-space apps.   It consists of:",
+  "description": "Perfetto is an open-source project for performance instrumentation and tracing of Linux/Android/Chrome platforms and user-space apps.",
   "main": "index.js",
   "directories": {
     "doc": "docs",
