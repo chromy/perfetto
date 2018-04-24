@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+usage() {
+    cat <<EOM
+usage: $(basename $0) <commitish>
+  Checks out commitish to OUTPUT_DIR ("$OUTPUT_DIR")
+  Defaults to "$DEFAULT_OUTPUT_DIR" override with the OUTPUT_DIR environment variable
+EOM
+    exit 0
+}
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $DIR/constants > /dev/null
+
+[ -z $1 ] && { usage; }
+
+COMMITISH=$1
+
+git -C $OUTPUT_DIR fetch || git clone $ROOT_DIR $OUTPUT_DIR
