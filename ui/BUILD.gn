@@ -12,6 +12,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../gn/perfetto.gni")
+
+root_output_dir = "ui"
+
+template("js_bundle") {
+  assert(defined(invoker.name))
+  assert(defined(invoker.sources))
+  invoker_name = invoker.name
+  invoker_sources = invoker.sources
+  invoker_deps = []
+  output_path = "$root_output_dir/$invoker_name"
+  print(output_path)
+  print(root_build_dir)
+  print(root_out_dir)
+  print(root_gen_dir)
+  print(root_build_dir)
+  print(target_out_dir)
+  print(target_gen_dir)
+  print(target_name)
+  if (defined(invoker.deps)) {
+    invoker_deps += invoker.deps
+  }
+
+  action(target_name) {
+    sources = invoker_sources
+    deps = invoker_deps
+    inputs = ["${perfetto_root_path}package-lock.json"]
+    script = "//gn/standalone/build_tool_wrapper.py"
+    browserify_path = "${perfetto_root_path}node_modules/browserify/bin/cmd.js"
+    args = [
+      rebase_path(browserify_path, ""),
+    ] + sources + [
+      "-o",
+      rebase_path(output_path, "")
+    ]
+    outputs = [output_path]
+  }
+}
+
 group("ui") {
   deps = [
     ":index",
@@ -32,12 +71,17 @@ copy("css") {
 
 copy("js") {
   sources = [
-    "perfetto.js"
+    "main.js"
   ]
-  foo = [
-    ["hello"],
-    ["world"],
-  ] 
-  print(foo)
-  outputs = ["$root_out_dir/ui/perfetto.js"]
+  outputs = ["$root_out_dir/ui/main.js"]
+}
+
+js_bundle("bundle") {
+  deps = [
+    ":js",
+  ]
+  sources = [
+    "$root_out_dir/ui/main.js"
+  ]
+  name = "ui/perfetto.js"
 }

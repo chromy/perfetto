@@ -40,7 +40,6 @@ group("all") {
       "test/configs",
       "tools:protoc_helper",
       "tools/ftrace_proto_gen:ftrace_proto_gen",
-      "tools/femtobundle",
       "tools/proto_to_cpp",
       "ui",
     ]
