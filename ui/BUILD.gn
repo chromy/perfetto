@@ -16,34 +16,39 @@ import("../gn/perfetto.gni")
 
 root_output_dir = "ui"
 
+template("js") {
+  assert(defined(invoker.sources))
+  invoker_sources = invoker.sources
+  
+  copy(target_name) {
+    sources = invoker_sources
+    outputs = [ "$target_out_dir/{{source_file_part}}" ]
+  }
+}
+
 template("js_bundle") {
   assert(defined(invoker.name))
-  assert(defined(invoker.sources))
+  assert(defined(invoker.deps))
   invoker_name = invoker.name
-  invoker_sources = invoker.sources
-  invoker_deps = []
-  output_path = "$root_output_dir/$invoker_name"
-  print(output_path)
-  print(root_build_dir)
-  print(root_out_dir)
-  print(root_gen_dir)
-  print(root_build_dir)
-  print(target_out_dir)
-  print(target_gen_dir)
-  print(target_name)
-  if (defined(invoker.deps)) {
-    invoker_deps += invoker.deps
+  invoker_deps = invoker.deps
+
+  all_sources = [] 
+  foreach(dep, invoker_deps) {
+    foreach(source, get_target_outputs(dep)) {
+      all_sources += [source]
+    }  
   }
+  output_path = "${root_out_dir}/${invoker_name}"
 
   action(target_name) {
-    sources = invoker_sources
     deps = invoker_deps
     inputs = ["${perfetto_root_path}package-lock.json"]
     script = "//gn/standalone/build_tool_wrapper.py"
+    sources = all_sources
     browserify_path = "${perfetto_root_path}node_modules/browserify/bin/cmd.js"
     args = [
       rebase_path(browserify_path, ""),
-    ] + sources + [
+    ] + rebase_path(all_sources, "") + [
       "-o",
       rebase_path(output_path, "")
     ]
@@ -69,19 +74,16 @@ copy("css") {
   outputs = ["$root_out_dir/ui/perfetto.css"]
 }
 
-copy("js") {
+js("js") {
   sources = [
-    "main.js"
+    "main.js",
+    "api.js",
   ]
-  outputs = ["$root_out_dir/ui/main.js"]
 }
 
 js_bundle("bundle") {
   deps = [
     ":js",
-  ]
-  sources = [
-    "$root_out_dir/ui/main.js"
   ]
   name = "ui/perfetto.js"
 }
