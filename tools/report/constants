@@ -2,8 +2,8 @@
 
 ROOT_DIR="$(dirname "$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )")")"
 DEFAULT_OUTPUT_DIR=$HOME/.report-card-perfetto
-OUTPUT_DIR=$HOME/.report-card-perfetto
+OUTPUT_DIR=${OUTPUT_DIR:-$(echo $DEFAULT_OUTPUT_DIR)}
 
 echo root_dir: $ROOT_DIR
-echo default_output_dir: $ROOT_DIR
-echo output_dir: $ROOT_DIR
+echo default_output_dir: $DEFAULT_OUTPUT_DIR
+echo output_dir: $OUTPUT_DIR

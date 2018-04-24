@@ -5,8 +5,8 @@ set -e
 usage() {
     cat <<EOM
 usage: $(basename $0) <commitish>
-  Checks out commitish to OUTPUT_DIR ("$OUTPUT_DIR")
-  Defaults to "$DEFAULT_OUTPUT_DIR" override with the OUTPUT_DIR environment variable
+  Checks out commitish in OUTPUT_DIR ("$OUTPUT_DIR")
+  OUTPUT_DIR defaults to "$DEFAULT_OUTPUT_DIR" if the environment variable is not set.
 EOM
     exit 0
 }
@@ -18,4 +18,6 @@ source $DIR/constants > /dev/null
 
 COMMITISH=$1
 
+echo "Checking out $COMMITISH into directory $OUTPUT_DIR"
 git -C $OUTPUT_DIR fetch || git clone $ROOT_DIR $OUTPUT_DIR
+git -C $OUTPUT_DIR checkout $COMMITISH
