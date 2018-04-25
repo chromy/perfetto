@@ -1,6 +1,7 @@
+/* tslint:disable */
 import m from "mithril";
 
-function greeter(person) {
+function greeter(person: any) {
     return "Hello, " + person;
 }
 m('foo');

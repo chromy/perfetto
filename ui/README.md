@@ -18,3 +18,13 @@ $ npm install
 $ serveit -s out/mac_debug/ui -i out -i buildtools -i src/ftrace_reader/test/data 'ninja -C out/mac_debug -v'
 $ open http://localhost:8000/index.html
 ```
+
+
+## Building the react-redux-typescript ui
+
+```
+$ npm install
+$ npm start
+```
+
+
