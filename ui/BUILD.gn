@@ -16,6 +16,26 @@ import("../gn/perfetto.gni")
 
 root_output_dir = "ui"
 
+template("protos_json") {
+  assert(defined(invoker.name))
+  assert(defined(invoker.sources))
+  invoker_name = invoker.name
+  invoker_sources = invoker.sources
+  output_path = "${target_out_dir}/${invoker_name}"
+
+  action(target_name) {
+    sources = invoker_sources
+
+    inputs = ["${perfetto_root_path}package-lock.json"]
+    script = "//gn/standalone/build_tool_wrapper.py"
+    pbjs_path = "${perfetto_root_path}node_modules/protobufjs/bin/pbjs"
+    args = [ rebase_path(pbjs_path, "") ]
+    args += rebase_path(sources, "")
+    args += ["-o", rebase_path(output_path, "")]
+    outputs = [output_path]
+  }
+}
+
 template("js") {
   assert(defined(invoker.sources))
   invoker_sources = invoker.sources
@@ -61,6 +81,8 @@ group("ui") {
     ":index",
     ":css",
     ":js",
+    ":trace_proto_json",
+    ":config_proto_json",
   ]
 }
 
@@ -86,4 +108,18 @@ js_bundle("bundle") {
     ":js",
   ]
   name = "ui/perfetto.js"
+}
+
+protos_json("config_proto_json") {
+  name = "perfetto_config.json"
+  sources = [
+    "../protos/perfetto/config/perfetto_config.proto",
+  ]
+}
+
+protos_json("trace_proto_json") {
+  name = "perfetto_trace.json"
+  sources = [
+    "../protos/perfetto/trace/perfetto_trace.proto",
+  ]
 }
