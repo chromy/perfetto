@@ -1,0 +1,1 @@
+{"commits": [{"right": "2017-10-10", "hash": "edb3beb", "total_changes": {"deletions": 7, "files_changed": 1, "insertions": 6}, "author_email": "hjd@google.com", "first_line": "Remove no-macro-redefined", "changes": [{"deletions": 7, "insertions": 6, "filename": "buildtools/BUILD.gn"}], "commit_date": "2017-10-09T17:54:00+00:00", "left": "2017-10-09"}]}

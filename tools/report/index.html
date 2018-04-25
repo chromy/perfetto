@@ -1,0 +1,125 @@
+<body>
+<style>
+body {
+}
+svg { width: 100%; }
+</style>
+<main>
+</main>
+
+<script src="//unpkg.com/mithril/mithril.js"></script>
+<script src="//d3js.org/d3.v5.js"></script>
+<script>
+let SUMMARY = [];
+
+m.request({
+    method: "GET",
+    url: "data/summary.json",
+})
+.then(data => {
+  SUMMARY = data;
+})
+
+function CreateD3Component(element, render) {
+  return {
+    oncreate: function(vnode) {
+      render(vnode.dom);
+    },
+  
+    onupdate: function(vnode) {
+      render(vnode.dom);
+    },
+  
+    view: function(vnode) {
+      return m(element, vnode.attrs);
+    },
+  };
+}
+
+let BarChartComponent = CreateD3Component('svg', function(node) {
+  let rect = node.getBoundingClientRect();
+  let svg = d3.select(node);
+  let margin = {top: 20, right: 20, bottom: 30, left: 50};
+  let width = rect.width - margin.left - margin.right;
+  let height = +svg.attr("height") - margin.top - margin.bottom;
+  let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+  let y = d3.scaleLinear().rangeRound([height, 0]);
+
+  x.domain(SUMMARY.map(function(d) { return d.date; }));
+  y.domain([0, d3.max(SUMMARY, function(d) { return d.todo_count; })]);
+
+  let x_axis = g.selectAll('axis--x').data([0]);
+  x_axis.enter()
+      .append("g").attr("class", "axis axis--x")
+    .merge(x_axis)
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  let y_axis = g.selectAll('axis--y').data([0]);
+  x_axis.enter()
+    .append("g")
+      .attr("class", "axis axis--y")
+    .merge(y_axis)
+      .call(d3.axisLeft(y).ticks(3))
+
+  g.selectAll(".bar")
+    .data(SUMMARY)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.date); })
+      .attr("y", function(d) { return y(d.todo_count); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.todo_count); });
+});
+
+let LineChartComponent = CreateD3Component('svg', function(node) {
+  let rect = node.getBoundingClientRect();
+  let svg = d3.select(node);
+  let margin = {top: 20, right: 20, bottom: 30, left: 50};
+  let width = rect.width - margin.left - margin.right;
+  let height = +svg.attr("height") - margin.top - margin.bottom;
+  let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+  let y = d3.scaleLinear().rangeRound([height, 0]);
+
+  x.domain(SUMMARY.map(function(d) { return d.date; }));
+  y.domain([0, d3.max(SUMMARY, function(d) { return d.todo_count; })]);
+
+  let x_axis = g.selectAll('axis--x').data([0]);
+  x_axis.enter()
+      .append("g").attr("class", "axis axis--x")
+    .merge(x_axis)
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  let y_axis = g.selectAll('axis--y').data([0]);
+  x_axis.enter()
+    .append("g")
+      .attr("class", "axis axis--y")
+    .merge(y_axis)
+      .call(d3.axisLeft(y).ticks(3))
+
+  g.selectAll(".bar")
+    .data(SUMMARY)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.date); })
+      .attr("y", function(d) { return y(d.todo_count); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.todo_count); });
+});
+
+let App = {
+  view: function() {
+    return [
+      m('h1', 'Hello, world!'),
+      m(BarChartComponent, {height: 100}),
+    ];
+  },
+};
+
+let root = document.querySelector('main');
+m.mount(root, App);
+
+</script>
