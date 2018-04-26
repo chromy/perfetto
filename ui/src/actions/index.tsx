@@ -1,23 +1,17 @@
-import * as constants from '../constants'
+import { ActionName } from '../constants'
 
-export interface IncrementEnthusiasm {
-    type: constants.INCREMENT_ENTHUSIASM;
+export interface Action {
+    type: ActionName;
 }
 
-export interface IDecrementEnthusiasm {
-    type: constants.DECREMENT_ENTHUSIASM;
-}
-
-export type EnthusiasmAction = IncrementEnthusiasm | IDecrementEnthusiasm;
-
-export function incrementEnthusiasm(): IncrementEnthusiasm {
+export function incrementEnthusiasm(): Action {
     return {
-        type: constants.INCREMENT_ENTHUSIASM
+        type: ActionName.INCREMENT_ENTHUSIASM,
     }
 }
 
-export function decrementEnthusiasm(): IDecrementEnthusiasm {
+export function decrementEnthusiasm(): Action {
     return {
-        type: constants.DECREMENT_ENTHUSIASM
+        type: ActionName.DECREMENT_ENTHUSIASM,
     }
 }

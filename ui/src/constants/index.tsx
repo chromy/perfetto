@@ -1,8 +1,9 @@
 // src/constants/index.tsx
 
-export const INCREMENT_ENTHUSIASM = 'INCREMENT_ENTHUSIASM';
-export type INCREMENT_ENTHUSIASM = typeof INCREMENT_ENTHUSIASM;
-
-
-export const DECREMENT_ENTHUSIASM = 'DECREMENT_ENTHUSIASM';
-export type DECREMENT_ENTHUSIASM = typeof DECREMENT_ENTHUSIASM;
+// Eventually we'll probably have multiple action enums to group actions.
+export const enum ActionName {
+    DECREMENT_ENTHUSIASM,
+    INCREMENT_ENTHUSIASM,
+    SHIFT_TIMELINE_RIGHT,
+    SHIFT_TIMELINE_LEFT,
+};

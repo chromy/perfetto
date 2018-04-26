@@ -1,15 +1,27 @@
 // src/reducers/index.tsx
 
-import { EnthusiasmAction } from '../actions';
-import { DECREMENT_ENTHUSIASM, INCREMENT_ENTHUSIASM } from '../constants/index';
+import { Action } from '../actions';
+import { ActionName } from '../constants/index';
 import { IStoreState } from '../types/index';
 
-export function enthusiasm(state: IStoreState, action: EnthusiasmAction): IStoreState {
+export function enthusiasm(state: IStoreState, action: Action): IStoreState {
+    // tslint:disable-next-line
+    console.log(action);
     switch (action.type) {
-        case INCREMENT_ENTHUSIASM:
+        case ActionName.INCREMENT_ENTHUSIASM:
             return { ...state, enthusiasmLevel: state.enthusiasmLevel + 1 };
-        case DECREMENT_ENTHUSIASM:
+        case ActionName.DECREMENT_ENTHUSIASM:
             return { ...state, enthusiasmLevel: Math.max(1, state.enthusiasmLevel - 1) };
+        case ActionName.SHIFT_TIMELINE_RIGHT:
+            // TODO: There are definitely less verbose conventions of doing
+            // this, but keeping things explicit for now.
+            return { ...state,
+                     timeline: {
+                         ...state.timeline,
+                         x: state.timeline.x + state.timeline.zoom,
+                     },
+            };
+        default:
+            return state;
     }
-    return state;
 }

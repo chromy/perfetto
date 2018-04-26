@@ -7,15 +7,19 @@ import './index.css';
 import { enthusiasm } from './reducers';
 import registerServiceWorker from './registerServiceWorker';
 
+// Force any on window.
+const windowAny: any = window;
+
 const store = createStore(enthusiasm, {
-  enthusiasmLevel: 1,
-  languageName: 'Perfetto',
-});
+    enthusiasmLevel: 1,
+    languageName: 'Perfetto',
+},
+windowAny.__REDUX_DEVTOOLS_EXTENSION__ && windowAny.__REDUX_DEVTOOLS_EXTENSION__());
 
 ReactDOM.render(
     <Provider store={store}>
       <Hello />
     </Provider>,
-  document.getElementById('root') as HTMLElement  // What is this?
+  document.getElementById('root')
 );
 registerServiceWorker();

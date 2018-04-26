@@ -11,7 +11,7 @@ export function mapStateToProps({ enthusiasmLevel, languageName }: IStoreState) 
     }
 }
 
-export function mapDispatchToProps(dispatch: Dispatch<actions.EnthusiasmAction>) {
+export function mapDispatchToProps(dispatch: Dispatch<actions.Action>) {
     return {
         onDecrement: () => dispatch(actions.decrementEnthusiasm()),
         onIncrement: () => dispatch(actions.incrementEnthusiasm()),

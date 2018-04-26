@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import './Hello.css';
+import TimelineTrack from './TimelineTrack';
 
 export interface IProps {
   name: string;
@@ -10,7 +11,7 @@ export interface IProps {
   onDecrement?: () => void;
 }
 
-function Hello({ name, enthusiasmLevel = 1, onIncrement, onDecrement }: IProps) {
+function Hello({ name, enthusiasmLevel = 1, timelineState, onIncrement, onDecrement }: IProps) {
   if (enthusiasmLevel <= 0) {
     throw new Error('You could be a little more enthusiastic. :D');
   }
@@ -24,6 +25,7 @@ function Hello({ name, enthusiasmLevel = 1, onIncrement, onDecrement }: IProps) 
         <button onClick={onDecrement}>-</button>
         <button onClick={onIncrement}>+</button>
       </div>
+      <TimelineTrack x={23} zoom={5} />
     </div>
   );
 }

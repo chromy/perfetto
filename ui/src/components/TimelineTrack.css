@@ -1,0 +1,15 @@
+.timeline-track {
+    text-align: center;
+    margin: 20px;
+    border: 1px solid black;
+    height: 50px;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.hello button {
+    margin-left: 25px;
+    margin-right: 25px;
+    font-size: 40px;
+    min-width: 50px;
+}
