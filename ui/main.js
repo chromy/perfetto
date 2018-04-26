@@ -81,19 +81,62 @@ let TraceList = {
         `Pending upload.`
       ])),
       TheTraceStore.traces.map(trace => m('li', [
-        `${trace.name} has ${trace.tracePacketCount()} trace packets.` 
+        `${trace.name} has ${trace.tracePacketCount()} trace packets.`
       ])),
     );
   },
 };
 
+
+const ZOOM_STEP = 1.25;
+
+const TimelineTrackState = {
+  xOffset: 0,
+  zoomLevel: 1
+};
+
+// keyboard event listeners.
+document.addEventListener('keydown', (event) => {
+  switch (event.code) {
+  case 'KeyD':
+    TimelineTrackState.xOffset += TimelineTrackState.zoomLevel;
+    break;
+  case 'KeyA':
+    TimelineTrackState.xOffset -= TimelineTrackState.zoomLevel;
+    break;
+  case 'KeyW':
+    TimelineTrackState.zoomLevel *= ZOOM_STEP;
+    break;
+  case 'KeyS':
+    TimelineTrackState.zoomLevel /= ZOOM_STEP;
+    break;
+  default:
+    return;  // return without triggering a redraw.
+  }
+
+  // We had a switch match. Schedule a redraw.
+  m.redraw();
+});
+
+const TimelineTrack = {
+  view: function() {
+    return m('div.timelineTrack',
+             `This is a timeline track. ` +
+             `X offset: ${TimelineTrackState.xOffset}. ` +
+             `Zoom level: ${TimelineTrackState.zoomLevel}  `);
+  }
+}
+
+
 let App = {
   view: function(vnode) {
-    return [
-      m('h1', 'Perfetto'),
-      m(FileUploader),
-      m(TraceList),
-    ];
+    return m('.app-shell', {
+    },
+             m('h1', 'Perfetto'),
+             m(FileUploader),
+             m(TraceList),
+             m(TimelineTrack),
+            );
   }
 };
 
