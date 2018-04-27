@@ -121,6 +121,24 @@ def commit_log(out_dir, checkout_dir, left, right):
     with open(path, 'w') as fd:
       json.dump({'commits': json_output}, fd)
 
+
+@metric
+def cloc(out_dir, checkout_dir, left, right):
+  path = os.path.join(out_dir, 'cloc.json')
+
+  args = [
+    'cloc',
+    '--git',
+    'HEAD',
+    '--json',
+  ]
+  output = subprocess.check_output(args, cwd=checkout_dir)
+  j = json.loads(output)
+  j['left'] = left.date().isoformat()
+  j['right'] = right.date().isoformat()
+  with open(path, 'w') as fd:
+    json.dump(j, fd)
+
 @metric
 def todos(out_dir, checkout_dir, left, right):
   path = os.path.join(out_dir, 'todos.json')
@@ -152,7 +170,7 @@ def todo_count(date_dir_pairs):
   args = [
     'jq',
     '--slurp',
-    'map({"date": .left, data: .count})',
+    'map({date: .left, data: .count})',
   ] + [os.path.join(path, 'todos', 'todos.json') for date, path in date_dir_pairs if path]
   try:
     output = subprocess.check_output(args)
@@ -160,6 +178,26 @@ def todo_count(date_dir_pairs):
     print(' '.join(args))
     raise
   return json.loads(output)
+
+@summary
+def comment_count(*args):
+  return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.comment})')(*args)
+
+def jq_command(suffix, command):
+  def f(date_dir_pairs):
+    args = [
+      'jq',
+      '--slurp',
+      command,
+    ] + [os.path.join(path, suffix) for date, path in date_dir_pairs if path]
+    try:
+      output = subprocess.check_output(args)
+    except ValueError:
+      print(' '.join(args))
+      raise
+    return json.loads(output)
+  return f
+
 
 def mkdir(path):
   try:
@@ -243,7 +281,7 @@ def compute_summaries(root, left, right):
   dates = list(dates_in_range(left, right))
   output = [{'date': date.date().isoformat()} for date in dates]
   for summary in SUMMARIES:
-    for i, row in enumerate(compute_summary(root, 'todo_count', dates)):
+    for i, row in enumerate(compute_summary(root, summary, dates)):
       output[i][summary] = row
   with open(path, 'wb') as fd:
     json.dump(output, fd)
