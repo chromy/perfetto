@@ -115,6 +115,7 @@ let TraceList = {
 const ZOOM_STEP = 1.25;
 
 const TimelineTrackState = {
+  sidePanelDisplayed: true,
   xOffset: 0,
   zoomLevel: 1
 };
@@ -191,11 +192,16 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs) {
 
 const SidePanel = {
   view: function(vnode) {
+    const open = TimelineTrackState.sidePanelDisplayed;
+    const flip = () => TimelineTrackState.sidePanelDisplayed = !open;
     return m('.sidepanel',
-        {},
-        m('h1', 'Perfetto'),
-        m(FileUploader),
-        m(TraceList),
+        { class: open ? 'sidepanel-open' : 'sidepanel-closed' },
+        m('button.sidepanel-button', { onclick: flip }, open ? '<' : '>'),
+        m('.sidepanel-contents', open ? [
+          m('h1', 'Perfetto'),
+          m(FileUploader),
+          m(TraceList),
+        ] : undefined),
     );
   },
 };

@@ -4,10 +4,10 @@ body {
   height: 100%;
   width: 100%;
   background: #fafafa;
+  margin: 0;
 }
 
 .drop {
-  width: 300px;
   height: 100px;
   display: flex;
   justify-content: center;
@@ -35,5 +35,35 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: auto 1fr;
+}
+
+.sidepanel {
+  position: relative;
+}
+
+.sidepanel-open {
+  width: 400px;
+  box-shadow:
+    0 1px 3px 0 rgba(0,0,0,.2),
+    0 1px 1px 0 rgba(0,0,0,.14),
+    0 2px 1px -1px rgba(0,0,0,.12);
+}
+
+.sidepanel-open .sidepanel-contents {
+  padding: 20px;
+}
+
+.sidepanel-button {
+  height: 40px;
+  width: 20px;
+  position: absolute;
+  right: 0;
+  margin-right: -20px;
+  box-shadow:
+    0 1px 3px 0 rgba(0,0,0,.2),
+    0 1px 1px 0 rgba(0,0,0,.14),
+    0 2px 1px -1px rgba(0,0,0,.12);
+  background: #fafafa;
+  border: none;
 }
