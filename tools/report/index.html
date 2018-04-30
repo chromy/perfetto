@@ -23,11 +23,11 @@ m.request({
 function CreateD3Component(element, render) {
   return {
     oncreate: function(vnode) {
-      render(vnode.dom);
+      render(vnode.dom, vnode.attrs);
     },
   
     onupdate: function(vnode) {
-      render(vnode.dom);
+      render(vnode.dom, vnode.attrs);
     },
   
     view: function(vnode) {
@@ -36,7 +36,7 @@ function CreateD3Component(element, render) {
   };
 }
 
-let BarChartComponent = CreateD3Component('svg', function(node) {
+let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
   let margin = {top: 20, right: 20, bottom: 30, left: 50};
@@ -73,7 +73,7 @@ let BarChartComponent = CreateD3Component('svg', function(node) {
       .attr("height", function(d) { return height - y(d.todo_count); });
 });
 
-let LineChartComponent = CreateD3Component('svg', function(node) {
+let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
   let margin = {top: 20, right: 20, bottom: 30, left: 50};
@@ -82,9 +82,10 @@ let LineChartComponent = CreateD3Component('svg', function(node) {
   let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
   let y = d3.scaleLinear().rangeRound([height, 0]);
+  let key = attrs['key'];
 
   x.domain(SUMMARY.map(function(d) { return d.date; }));
-  y.domain([0, d3.max(SUMMARY, function(d) { return d.todo_count; })]);
+  y.domain([0, d3.max(SUMMARY, function(d) { return d[key]; })]);
 
   let x_axis = g.selectAll('axis--x').data([0]);
   x_axis.enter()
@@ -105,9 +106,9 @@ let LineChartComponent = CreateD3Component('svg', function(node) {
     .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return x(d.date); })
-      .attr("y", function(d) { return y(d.todo_count); })
+      .attr("y", d => y(d[key]))
       .attr("width", x.bandwidth())
-      .attr("height", function(d) { return height - y(d.todo_count); });
+      .attr("height", function(d) { return height - y(d[key]); });
 });
 
 let App = {
@@ -115,6 +116,8 @@ let App = {
     return [
       m('h1', 'Hello, world!'),
       m(BarChartComponent, {height: 100}),
+      m(LineChartComponent, {height: 100, key: 'comment_count'}),
+      m(LineChartComponent, {height: 100, key: 'code_count'}),
     ];
   },
 };

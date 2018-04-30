@@ -20,6 +20,10 @@ except ImportError:
 METRICS = {}
 SUMMARIES = {}
 
+def is_cloc_installed():
+  # return subprocess.check_call(['cloc', '--help'])
+  pass
+
 def metric(f):
   METRICS[f.__name__] = f
   return f
@@ -183,6 +187,10 @@ def todo_count(date_dir_pairs):
 def comment_count(*args):
   return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.comment})')(*args)
 
+@summary
+def code_count(*args):
+  return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.code})')(*args)
+
 def jq_command(suffix, command):
   def f(date_dir_pairs):
     args = [
@@ -260,6 +268,14 @@ def main():
       help='choose metrics (default: {})'.format(','.join(METRICS.keys())))
   args = parser.parse_args()
 
+
+  if not is_cloc_installed():
+    print('Should install cloc')
+
+
+  checkout_dir = '/usr/local/google/home/hjd/.report-card-perfetto'
+  mkdir(checkout_dir)
+
   start = datetime(2017, 9, 25, 4, 0, 0, 0)
   now = datetime.utcnow()
   today = datetime.utcnow().replace(hour=4, minute=0,  second=0, microsecond=0)
@@ -273,7 +289,7 @@ def main():
       commit = best_commit_for_day(date)
       subprocess.check_call(['tools/report/checkout', commit], stdout=DEVNULL)
     for name in chosen_metrics:
-      compute_metric_for_day(root, '/Users/chromy/.report-card-perfetto', name, date, overwrite=overwrite)
+      compute_metric_for_day(root, checkout_dir, name, date, overwrite=overwrite)
   compute_summaries(root, start, yesterday)
 
 def compute_summaries(root, left, right):
