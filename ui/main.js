@@ -6,14 +6,15 @@ let api = require("./api.js");
 console.log(api.TraceConfig);
 console.log(api.Trace);
 
-function CreateD3Component(element, render) {
+function CreateD3Component(element, init, render) {
   return {
     oncreate: function(vnode) {
-      render(vnode.dom, vnode.attrs);
+      init(vnode.dom, vnode.attrs, vnode.state);
+      render(vnode.dom, vnode.attrs, vnode.state);
     },
 
     onupdate: function(vnode) {
-      render(vnode.dom, vnode.attrs);
+      render(vnode.dom, vnode.attrs, vnode.state);
     },
 
     view: function(vnode) {
@@ -116,7 +117,8 @@ const ZOOM_STEP = 1.25;
 
 const TimelineTrackState = {
   sidePanelDisplayed: true,
-  xOffset: 0,
+  xStart: 0,
+  xEnd: 0,
   zoomLevel: 1
 };
 
@@ -124,10 +126,12 @@ const TimelineTrackState = {
 document.addEventListener('keydown', (event) => {
   switch (event.code) {
   case 'KeyD':
-    TimelineTrackState.xOffset += TimelineTrackState.zoomLevel;
+    TimelineTrackState.xStart += TimelineTrackState.zoomLevel;
+    TimelineTrackState.xEnd += TimelineTrackState.zoomLevel;
     break;
   case 'KeyA':
-    TimelineTrackState.xOffset -= TimelineTrackState.zoomLevel;
+    TimelineTrackState.xStart -= TimelineTrackState.zoomLevel;
+    TimelineTrackState.xEnd -= TimelineTrackState.zoomLevel;
     break;
   case 'KeyW':
     TimelineTrackState.zoomLevel *= ZOOM_STEP;
@@ -147,47 +151,69 @@ const TimelineTrack = {
   view: function() {
     return m('div.timelineTrack',
              `This is a timeline track. ` +
-             `X offset: ${TimelineTrackState.xOffset}. ` +
+             `X offset: ${TimelineTrackState.xStart}. ` +
              `Zoom level: ${TimelineTrackState.zoomLevel}  `);
   }
 }
 
-const Overview = CreateD3Component('svg.overview', function(node, attrs) {
+const Overview = CreateD3Component('svg.overview', function(node, attrs, state) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
-  let margin = {top: 20, right: 20, bottom: 30, left: 50};
-  let width = rect.width - margin.left - margin.right;
-  let height = +svg.attr("height") - margin.top - margin.bottom;
+  state.margin = {top: 20, right: 20, bottom: 30, left: 0};
+  let width = rect.width - state.margin.left - state.margin.right;
+  let height = +svg.attr("height") - state.margin.top - state.margin.bottom;
   let g = svg.selectAll('g').data([0]);
   let g_update = g.enter().append("g").merge(g);
-  g_update.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  state.g_update = g_update;
 
-  let x = d3.scaleLinear().range([0, width]);
-  x.domain([0, 10000]);
+  let x = d3.scaleLinear();
+  state.x = x;
 
   function brushed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
       return;
-    let s = d3.event.selection || x.range();
-    console.log(s);
+    const s = d3.event.selection || x.range();
+    const [left, right] = s.map(v => x.invert(v));
+    if (TimelineTrackState.xStart === left && TimelineTrackState.xEnd === right)
+      return;
+
+    TimelineTrackState.xStart = left;
+    TimelineTrackState.xEnd = right;
+    m.redraw();
   }
 
   let brush = d3.brushX()
       .extent([[0, 0], [width, height]])
       .on("brush end", brushed);
+  state.brush = brush;
 
   let x_axis = g_update.selectAll('.axis--x').data([0]);
-  x_axis.enter()
+  state.x_axis_update = x_axis.enter()
       .append('g').attr('class', 'axis axis--x')
       .merge(x_axis)
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
 
-  g_update.selectAll('.brush').data([0]).enter()
+  let brush_selection = g_update.selectAll('.brush').data([0])
+
+  state.brush_update = brush_selection.enter()
       .append('g')
       .attr("class", "brush")
-      .call(brush)
-      .call(brush.move, x.range());
+      .call(brush).merge(brush_selection);
+
+}, function(node, attrs, state) {
+  const margin = state.margin;
+  let rect = node.getBoundingClientRect();
+  let svg = d3.select(node);
+  let width = rect.width - margin.left - margin.right;
+  let height = +svg.attr("height") - margin.top - margin.bottom;
+  state.g_update.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  state.x.range([0, width]).domain([0, 10000]);
+  state.x_axis_update
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(state.x));
+  state.brush_update.call(state.brush.move, [
+      state.x(TimelineTrackState.xStart),
+      state.x(TimelineTrackState.xEnd),
+  ]);
 });
 
 const SidePanel = {
