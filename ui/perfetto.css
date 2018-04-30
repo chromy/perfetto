@@ -32,3 +32,8 @@ body {
   width: 500px;
   height: 50px;
 }
+
+.app {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+}

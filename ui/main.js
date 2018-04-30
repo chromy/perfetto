@@ -189,16 +189,34 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs) {
       .call(brush.move, x.range());
 });
 
-let App = {
+const SidePanel = {
   view: function(vnode) {
-    return m('.app-shell', {
-    },
-             m('h1', 'Perfetto'),
-             m(FileUploader),
-             m(TraceList),
-             m(TimelineTrack),
-             m(Overview, {height: 100}),
-            );
+    return m('.sidepanel',
+        {},
+        m('h1', 'Perfetto'),
+        m(FileUploader),
+        m(TraceList),
+    );
+  },
+};
+
+const TraceDisplay = {
+  view: function(vnode) {
+    return m('div',
+        {},
+        m(Overview, {height: 100}),
+        m(TimelineTrack),
+    );
+  },
+};
+
+const App = {
+  view: function(vnode) {
+    return m('.app',
+        {},
+        m(SidePanel),
+        m(TraceDisplay),
+    );
   }
 };
 
