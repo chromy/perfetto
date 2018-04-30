@@ -6,10 +6,11 @@ import errno
 import json
 import os
 import subprocess
-import argparse 
-import shutil 
+import argparse
+import shutil
 from datetime import datetime, date, timedelta
 from itertools import izip
+from functools import wraps
 
 try:
   from subprocess import DEVNULL
@@ -19,18 +20,35 @@ except ImportError:
 
 METRICS = {}
 SUMMARIES = {}
+BEGINING_OF_TIME = datetime(2017, 9, 25, 4, 0, 0, 0)
+
+class Summary(object):
+  def __init__(self, f, metrics):
+    self.f = f
+    self.metrics = set(metrics)
+
+class NotValidHere(Exception):
+  pass
 
 def is_cloc_installed():
   # return subprocess.check_call(['cloc', '--help'])
   pass
 
-def metric(f):
-  METRICS[f.__name__] = f
-  return f
+def metric(valid_from=None):
+  def decorator(f):
+    def wrapper(out_dir, checkout_dir, left, right):
+      if valid_from and left < valid_from:
+        raise NotValidHere
+      return f(out_dir, checkout_dir, left, right)
+    METRICS[f.__name__] = wrapper
+    return wrapper
+  return decorator
 
-def summary(f):
-  SUMMARIES[f.__name__] = f
-  return f
+def summary(*metrics):
+  def decorator(f):
+    SUMMARIES[f.__name__] = Summary(f, metrics)
+    return f
+  return decorator
 
 def dates_in_range(start, end):
   delta = end - start
@@ -59,8 +77,8 @@ def best_commit_for_day(date):
   ]
   output = subprocess.check_output(args)
   return output.split('\n')[0]
- 
-@metric
+
+@metric()
 def commit_log(out_dir, checkout_dir, left, right):
   args = [
     'git',
@@ -125,8 +143,7 @@ def commit_log(out_dir, checkout_dir, left, right):
     with open(path, 'w') as fd:
       json.dump({'commits': json_output}, fd)
 
-
-@metric
+@metric(valid_from=BEGINING_OF_TIME+timedelta(days=1))
 def cloc(out_dir, checkout_dir, left, right):
   path = os.path.join(out_dir, 'cloc.json')
 
@@ -140,10 +157,13 @@ def cloc(out_dir, checkout_dir, left, right):
   j = json.loads(output)
   j['left'] = left.date().isoformat()
   j['right'] = right.date().isoformat()
-  with open(path, 'w') as fd:
-    json.dump(j, fd)
+  try:
+    with open(path, 'w') as fd:
+      json.dump(j, fd)
+  except:
+    print(output)
 
-@metric
+@metric()
 def todos(out_dir, checkout_dir, left, right):
   path = os.path.join(out_dir, 'todos.json')
   args = [
@@ -169,7 +189,7 @@ def todos(out_dir, checkout_dir, left, right):
       'count': count,
     }, fd)
 
-@summary
+@summary('todos')
 def todo_count(date_dir_pairs):
   args = [
     'jq',
@@ -183,11 +203,11 @@ def todo_count(date_dir_pairs):
     raise
   return json.loads(output)
 
-@summary
+@summary('cloc')
 def comment_count(*args):
   return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.comment})')(*args)
 
-@summary
+@summary('cloc')
 def code_count(*args):
   return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.code})')(*args)
 
@@ -205,7 +225,6 @@ def jq_command(suffix, command):
       raise
     return json.loads(output)
   return f
-
 
 def mkdir(path):
   try:
@@ -231,17 +250,64 @@ def compute_metric_for_day(root, checkout_path, name, date, overwrite=False):
   mkdir(metric_path)
 
   left, right = date_to_left_right(date)
-  METRICS[name](metric_path, checkout_path, left, right)
+  try:
+    METRICS[name](metric_path, checkout_path, left, right)
+  except NotValidHere:
+    shutil.rmtree(metric_path)
+  except:
+    shutil.rmtree(metric_path)
+    raise
 
 def compute_summary(root, name, dates):
+  summary = SUMMARIES[name]
+  def can_compute_summary(d):
+    if not os.path.isdir(d):
+      return False
+    for metric in summary.metrics:
+      if not os.path.isdir(os.path.join(d, metric)):
+        return False
+    return True
+
   dirs = [os.path.join(root, date.date().isoformat()) for date in dates]
-  dirs = [(d if os.path.isdir(d) else None) for d in dirs]
-  result = SUMMARIES[name](zip(dates, dirs))
+  dirs = [(d if can_compute_summary(d) else None) for d in dirs]
+  result = summary.f(zip(dates, dirs))
   dates_to_result = {row['date']: row['data'] for row in result}
   output = []
   for date in [date.date().isoformat() for date in dates]:
     output.append(dates_to_result.get(date, None))
-  return output 
+  return output
+
+class App(object):
+  def __init__(self, start=None, end=None):
+    assert start
+    assert end
+    self.start = start
+    self.end = end
+    self.checkout_dir = '/Users/chromy/.report-card-perfetto'
+    self.output_dir = 'tools/report/data'
+
+  def do_compute(self, args):
+    chosen_metrics = args.metrics
+    overwrite = args.overwrite
+    for date in dates_in_range(self.start, self.end):
+      if any((not is_metric_computed(self.output_dir, date, metric) for metric in chosen_metrics)):
+        commit = best_commit_for_day(date)
+        subprocess.check_call(['tools/report/checkout', commit], stdout=DEVNULL)
+      for name in chosen_metrics:
+        compute_metric_for_day(self.output_dir, self.checkout_dir, name, date, overwrite=overwrite)
+
+  def do_summarise(self, args):
+    path = os.path.join(self.output_dir, 'summary.json')
+    dates = list(dates_in_range(self.start, self.end))
+    output = [{'date': date.date().isoformat()} for date in dates]
+    for summary in SUMMARIES:
+      for i, row in enumerate(compute_summary(self.output_dir, summary, dates)):
+        output[i][summary] = row
+    with open(path, 'wb') as fd:
+      json.dump(output, fd)
+
+  def do_upload(self, args):
+    pass
 
 def main():
   def comma_seperated_metrics(s):
@@ -251,57 +317,46 @@ def main():
         raise argparse.ArgumentTypeError('"{}" is not a metric.'.format(metric))
     return metrics
 
+  start = BEGINING_OF_TIME
+  now = datetime.utcnow()
+  today = datetime.utcnow().replace(hour=4, minute=0,  second=0, microsecond=0)
+  yesterday = today - timedelta(days=1)
+  tomorrow = today + timedelta(days=1)
+  end = yesterday
+
   parser = argparse.ArgumentParser(description='Compute prefetto report.')
-  parser.add_argument(
+  subparsers = parser.add_subparsers(dest='name')
+
+  compute = subparsers.add_parser('compute')
+  summarise = subparsers.add_parser('summarise')
+  commit = subparsers.add_parser('commit')
+  compute.add_argument(
       '--overwrite',
       dest='overwrite',
       action='store_const',
       const=True,
       default=False,
       help='overwrite metrics (default: False)')
-  parser.add_argument(
+  compute.add_argument(
       '--metrics',
       dest='metrics',
       action='store',
       type=comma_seperated_metrics,
       default=[],
       help='choose metrics (default: {})'.format(','.join(METRICS.keys())))
+
   args = parser.parse_args()
 
+  app = App(start=start, end=end)
+  if args.name == 'compute':
+    return app.do_compute(args)
+  if args.name == 'summarise':
+    return app.do_summarise(args)
+  if args.name == 'upload':
+    return app.do_upload(args)
 
-  if not is_cloc_installed():
-    print('Should install cloc')
-
-
-  checkout_dir = '/usr/local/google/home/hjd/.report-card-perfetto'
-  mkdir(checkout_dir)
-
-  start = datetime(2017, 9, 25, 4, 0, 0, 0)
-  now = datetime.utcnow()
-  today = datetime.utcnow().replace(hour=4, minute=0,  second=0, microsecond=0)
-  yesterday = today - timedelta(days=1)
-  tomorrow = today + timedelta(days=1)
-  root = 'tools/report/data'
-  chosen_metrics = args.metrics
-  overwrite = args.overwrite
-  for date in dates_in_range(start, yesterday):
-    if any((not is_metric_computed(root, date, metric) for metric in chosen_metrics)):
-      commit = best_commit_for_day(date)
-      subprocess.check_call(['tools/report/checkout', commit], stdout=DEVNULL)
-    for name in chosen_metrics:
-      compute_metric_for_day(root, checkout_dir, name, date, overwrite=overwrite)
-  compute_summaries(root, start, yesterday)
-
-def compute_summaries(root, left, right):
-  path = os.path.join(root, 'summary.json')
-  dates = list(dates_in_range(left, right))
-  output = [{'date': date.date().isoformat()} for date in dates]
-  for summary in SUMMARIES:
-    for i, row in enumerate(compute_summary(root, summary, dates)):
-      output[i][summary] = row
-  with open(path, 'wb') as fd:
-    json.dump(output, fd)
+  #if not is_cloc_installed():
+  #  print('Should install cloc')
 
 if __name__ == "__main__":
   main()
-  #  print(l, r)

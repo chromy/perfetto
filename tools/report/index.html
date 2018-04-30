@@ -1,8 +1,17 @@
 <body>
+<link href="https://fonts.googleapis.com/css?family=Spectral" rel="stylesheet">
 <style>
 body {
 }
-svg { width: 100%; }
+svg {
+  width: 100%;
+}
+h1 {
+  text-align: center;
+  font-family: 'Spectral', serif;
+  font-weight: 400;
+  font-size: 60px;
+}
 </style>
 <main>
 </main>
@@ -13,10 +22,9 @@ svg { width: 100%; }
 let SUMMARY = [];
 
 m.request({
-    method: "GET",
-    url: "data/summary.json",
-})
-.then(data => {
+  method: "GET",
+  url: "data/summary.json",
+}).then(data => {
   SUMMARY = data;
 })
 
@@ -49,15 +57,15 @@ let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
   x.domain(SUMMARY.map(function(d) { return d.date; }));
   y.domain([0, d3.max(SUMMARY, function(d) { return d.todo_count; })]);
 
-  let x_axis = g.selectAll('axis--x').data([0]);
-  x_axis.enter()
-      .append("g").attr("class", "axis axis--x")
-    .merge(x_axis)
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+  //let x_axis = g.selectAll('axis--x').data([0]);
+  //x_axis.enter()
+  //    .append("g").attr("class", "axis axis--x")
+  //  .merge(x_axis)
+  //    .attr("transform", "translate(0," + height + ")")
+  //    .call(d3.axisBottom(x));
 
   let y_axis = g.selectAll('axis--y').data([0]);
-  x_axis.enter()
+  y_axis.enter()
     .append("g")
       .attr("class", "axis axis--y")
     .merge(y_axis)
@@ -84,18 +92,11 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
   let y = d3.scaleLinear().rangeRound([height, 0]);
   let key = attrs['key'];
 
-  x.domain(SUMMARY.map(function(d) { return d.date; }));
-  y.domain([0, d3.max(SUMMARY, function(d) { return d[key]; })]);
-
-  let x_axis = g.selectAll('axis--x').data([0]);
-  x_axis.enter()
-      .append("g").attr("class", "axis axis--x")
-    .merge(x_axis)
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+  x.domain(SUMMARY.map(d => d.date));
+  y.domain([0, d3.max(SUMMARY, d => d[key])]);
 
   let y_axis = g.selectAll('axis--y').data([0]);
-  x_axis.enter()
+  y_axis.enter()
     .append("g")
       .attr("class", "axis axis--y")
     .merge(y_axis)
@@ -114,7 +115,7 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
 let App = {
   view: function() {
     return [
-      m('h1', 'Hello, world!'),
+      m('h1', 'The Perfetto Report'),
       m(BarChartComponent, {height: 100}),
       m(LineChartComponent, {height: 100, key: 'comment_count'}),
       m(LineChartComponent, {height: 100, key: 'code_count'}),
