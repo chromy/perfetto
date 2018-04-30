@@ -1,0 +1,1 @@
+{"commits": [{"right": "2018-03-18", "hash": "e372416", "total_changes": {"deletions": 16, "files_changed": 1, "insertions": 28}, "author_email": "primiano@google.com", "first_line": "Update docs", "changes": [{"deletions": 16, "insertions": 28, "filename": "docs/running_perfetto.md"}], "commit_date": "2018-03-17T09:25:23+00:00", "left": "2018-03-17"}]}
