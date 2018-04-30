@@ -1,9 +1,26 @@
 /* tslint:disable */
+let d3 = require("d3");
 let m = require("mithril");
 let api = require("./api.js");
 
 console.log(api.TraceConfig);
 console.log(api.Trace);
+
+function CreateD3Component(element, render) {
+  return {
+    oncreate: function(vnode) {
+      render(vnode.dom, vnode.attrs);
+    },
+
+    onupdate: function(vnode) {
+      render(vnode.dom, vnode.attrs);
+    },
+
+    view: function(vnode) {
+      return m(element, vnode.attrs);
+    },
+  };
+}
 
 class TraceApi {
   constructor(name, protobuf) {
@@ -22,8 +39,9 @@ class TraceStore {
     this.traces = [];
   }
 
-  loadFromFile(file) {
-    console.info(`Load from file ${file.name}`);
+  loadFromFile(file, opt_name) {
+    let name = opt_name ? opt_name : file.name; 
+    console.info(`Load from file ${name}`);
     let promise = new Promise((resolve, reject) => {
       let reader = new FileReader();
       reader.onload = () => resolve(reader.result); 
@@ -31,17 +49,22 @@ class TraceStore {
     });
     this.pending.add(promise);
     promise.then(buffer => {
-      console.info(`Finished loading ${file.name}`);
+      console.info(`Finished loading ${name}`);
       this.pending.delete(promise);
       let uint8array = new Uint8Array(buffer)
-      console.info(`Parsing ${file.name}`);
+      console.info(`Parsing ${name}`);
       let decoded = api.Trace.decode(uint8array);
-      console.info(`Finished parsing ${file.name}`);
-      this.traces.push(new TraceApi(file.name, decoded));
+      console.info(`Finished parsing ${name}`);
+      this.traces.push(new TraceApi(name, decoded));
       m.redraw();
     });
   }
-  
+
+  loadFromUrl(url) {
+    console.info(`Load from url ${name}`);
+    fetch(url).then(r => r.blob()).then(b => this.loadFromFile(b, url));
+  }
+
   loadFromDropEvent(e) {
     if (e.dataTransfer.items) {
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
@@ -58,6 +81,7 @@ class TraceStore {
 }
 
 let TheTraceStore = new TraceStore();
+TheTraceStore.loadFromUrl('/examples/trace.protobuf');
 
 let FileUploader = {
   view: function(vnode) {
@@ -127,6 +151,43 @@ const TimelineTrack = {
   }
 }
 
+const Overview = CreateD3Component('svg.overview', function(node, attrs) {
+  let rect = node.getBoundingClientRect();
+  let svg = d3.select(node);
+  let margin = {top: 20, right: 20, bottom: 30, left: 50};
+  let width = rect.width - margin.left - margin.right;
+  let height = +svg.attr("height") - margin.top - margin.bottom;
+  let g = svg.selectAll('g').data([0]);
+  let g_update = g.enter().append("g").merge(g);
+  g_update.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  let x = d3.scaleLinear().range([0, width]);
+  x.domain([0, 10000]);
+
+  function brushed() {
+    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
+      return;
+    let s = d3.event.selection || x.range();
+    console.log(s);
+  }
+
+  let brush = d3.brushX()
+      .extent([[0, 0], [width, height]])
+      .on("brush end", brushed);
+
+  let x_axis = g_update.selectAll('.axis--x').data([0]);
+  x_axis.enter()
+      .append('g').attr('class', 'axis axis--x')
+      .merge(x_axis)
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g_update.selectAll('.brush').data([0]).enter()
+      .append('g')
+      .attr("class", "brush")
+      .call(brush)
+      .call(brush.move, x.range());
+});
 
 let App = {
   view: function(vnode) {
@@ -136,6 +197,7 @@ let App = {
              m(FileUploader),
              m(TraceList),
              m(TimelineTrack),
+             m(Overview, {height: 100}),
             );
   }
 };

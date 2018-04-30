@@ -81,6 +81,7 @@ group("ui") {
     ":index",
     ":css",
     ":js",
+    ":examples",
   ]
 }
 
@@ -92,6 +93,11 @@ copy("index") {
 copy("css") {
   sources = ["perfetto.css"]
   outputs = ["$root_out_dir/ui/perfetto.css"]
+}
+
+copy("examples") {
+  sources = ["trace.protobuf"]
+  outputs = ["$root_out_dir/ui/examples/trace.protobuf"]
 }
 
 protos_json("config_proto_json") {
