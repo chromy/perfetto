@@ -16,23 +16,49 @@
 
 #include "tools/ftrace_proto_gen/ftrace_proto_gen.h"
 
-#include "perfetto/base/string_splitter.h"
-
+#include <algorithm>
 #include <fstream>
 #include <regex>
-#include <set>
-#include <string>
+
+#include "perfetto/base/logging.h"
+#include "perfetto/base/string_splitter.h"
 
 namespace perfetto {
 
 namespace {
 
-std::string GetLastPathElement(std::string data) {
-  base::StringSplitter sp(std::move(data), '/');
-  std::string last;
-  while (sp.Next())
-    last = sp.cur_token();
-  return last;
+bool StartsWith(const std::string& str, const std::string& prefix) {
+  return str.compare(0, prefix.length(), prefix) == 0;
+}
+
+bool Contains(const std::string& haystack, const std::string& needle) {
+  return haystack.find(needle) != std::string::npos;
+}
+
+}  // namespace
+
+FtraceEventName::FtraceEventName(const std::string& full_name) {
+  if (full_name == "removed") {
+    valid_ = false;
+    return;
+  }
+  name_ = full_name.substr(full_name.find('/') + 1, std::string::npos);
+  group_ = full_name.substr(0, full_name.find('/'));
+  valid_ = true;
+}
+
+bool FtraceEventName::valid() const {
+  return valid_;
+}
+
+const std::string& FtraceEventName::name() const {
+  PERFETTO_CHECK(valid_);
+  return name_;
+}
+
+const std::string& FtraceEventName::group() const {
+  PERFETTO_CHECK(valid_);
+  return group_;
 }
 
 std::string ToCamelCase(const std::string& s) {
@@ -54,70 +80,137 @@ std::string ToCamelCase(const std::string& s) {
   return result;
 }
 
-bool StartsWith(const std::string& str, const std::string& prefix) {
-  return str.compare(0, prefix.length(), prefix) == 0;
+ProtoType ProtoType::GetSigned() const {
+  PERFETTO_CHECK(type == NUMERIC);
+  if (is_signed)
+    return *this;
+
+  if (size == 64) {
+    return Numeric(64, true);
+  }
+
+  return Numeric(2 * size, true);
 }
 
-bool Contains(const std::string& haystack, const std::string& needle) {
-  return haystack.find(needle) != std::string::npos;
+std::string ProtoType::ToString() const {
+  switch (type) {
+    case INVALID:
+      PERFETTO_CHECK(false);
+    case STRING:
+      return "string";
+    case NUMERIC: {
+      std::string s;
+      if (!is_signed)
+        s += "u";
+      s += "int";
+      s += std::to_string(size);
+      return s;
+    }
+  }
+  PERFETTO_CHECK(false);  // for GCC.
 }
 
-}  // namespace
+// static
+ProtoType ProtoType::String() {
+  return {STRING, 0, false};
+}
 
-std::vector<std::string> GetFileLines(const std::string& filename) {
+// static
+ProtoType ProtoType::Invalid() {
+  return {INVALID, 0, false};
+}
+
+// static
+ProtoType ProtoType::Numeric(uint16_t size, bool is_signed) {
+  PERFETTO_CHECK(size == 32 || size == 64);
+  return {NUMERIC, size, is_signed};
+}
+
+// static
+ProtoType ProtoType::FromDescriptor(
+    google::protobuf::FieldDescriptor::Type type) {
+  if (type == google::protobuf::FieldDescriptor::Type::TYPE_UINT64)
+    return Numeric(64, false);
+
+  if (type == google::protobuf::FieldDescriptor::Type::TYPE_INT64)
+    return Numeric(64, true);
+
+  if (type == google::protobuf::FieldDescriptor::Type::TYPE_UINT32)
+    return Numeric(32, false);
+
+  if (type == google::protobuf::FieldDescriptor::Type::TYPE_INT32)
+    return Numeric(32, true);
+
+  if (type == google::protobuf::FieldDescriptor::Type::TYPE_STRING)
+    return String();
+
+  return Invalid();
+}
+
+ProtoType GetCommon(ProtoType one, ProtoType other) {
+  // Always need to prefer the LHS as it is the one already present
+  // in the proto.
+  if (one.type == ProtoType::STRING)
+    return ProtoType::String();
+
+  if (one.is_signed || other.is_signed) {
+    one = one.GetSigned();
+    other = other.GetSigned();
+  }
+
+  return ProtoType::Numeric(std::max(one.size, other.size), one.is_signed);
+}
+
+std::vector<FtraceEventName> ReadWhitelist(const std::string& filename) {
   std::string line;
-  std::vector<std::string> lines;
+  std::vector<FtraceEventName> lines;
 
   std::ifstream fin(filename, std::ios::in);
   if (!fin) {
-    fprintf(stderr, "Failed to open whitelist %s\n", filename.c_str());
+    fprintf(stderr, "failed to open whitelist %s\n", filename.c_str());
     return lines;
   }
   while (std::getline(fin, line)) {
     if (!StartsWith(line, "#"))
-      lines.emplace_back(line);
+      lines.emplace_back(FtraceEventName(line));
   }
   return lines;
 }
 
-std::string InferProtoType(const FtraceEvent::Field& field) {
+ProtoType InferProtoType(const FtraceEvent::Field& field) {
   // Fixed length strings: "char foo[16]"
   if (std::regex_match(field.type_and_name, std::regex(R"(char \w+\[\d+\])")))
-    return "string";
+    return ProtoType::String();
 
   // String pointers: "__data_loc char[] foo" (as in
   // 'cpufreq_interactive_boost').
   if (Contains(field.type_and_name, "char[] "))
-    return "string";
+    return ProtoType::String();
   if (Contains(field.type_and_name, "char * "))
-    return "string";
+    return ProtoType::String();
 
   // Variable length strings: "char* foo"
   if (StartsWith(field.type_and_name, "char *"))
-    return "string";
+    return ProtoType::String();
 
   // Variable length strings: "char foo" + size: 0 (as in 'print').
   if (StartsWith(field.type_and_name, "char ") && field.size == 0)
-    return "string";
+    return ProtoType::String();
 
   // ino_t, i_ino and dev_t are 32bit on some devices 64bit on others. For the
   // protos we need to choose the largest possible size.
   if (StartsWith(field.type_and_name, "ino_t ") ||
       StartsWith(field.type_and_name, "i_ino ") ||
       StartsWith(field.type_and_name, "dev_t ")) {
-    return "uint64";
+    return ProtoType::Numeric(64, /* is_signed= */ false);
   }
 
   // Ints of various sizes:
-  if (field.size <= 4 && field.is_signed)
-    return "int32";
-  if (field.size <= 4 && !field.is_signed)
-    return "uint32";
-  if (field.size <= 8 && field.is_signed)
-    return "int64";
-  if (field.size <= 8 && !field.is_signed)
-    return "uint64";
-  return "";
+  if (field.size <= 4)
+    return ProtoType::Numeric(32, field.is_signed);
+  if (field.size <= 8)
+    return ProtoType::Numeric(64, field.is_signed);
+  return ProtoType::Invalid();
 }
 
 void PrintEventFormatterMain(const std::set<std::string>& events) {
@@ -135,7 +228,8 @@ void PrintEventFormatterMain(const std::set<std::string>& events) {
 // Add output to ParseInode in ftrace_inode_handler
 void PrintInodeHandlerMain(const std::string& event_name,
                            const perfetto::Proto& proto) {
-  for (const auto& field : proto.fields) {
+  for (const auto& p : proto.fields) {
+    const Proto::Field& field = p.second;
     if (Contains(field.name, "ino") && !Contains(field.name, "minor"))
       printf(
           "else if (event.has_%s() && event.%s().%s()) {\n*inode = "
@@ -167,7 +261,7 @@ void PrintEventFormatterFunctions(const std::set<std::string>& events) {
 
 bool GenerateProto(const FtraceEvent& format, Proto* proto_out) {
   proto_out->name = ToCamelCase(format.name) + "FtraceEvent";
-  proto_out->fields.reserve(format.fields.size());
+  proto_out->event_name = format.name;
   std::set<std::string> seen;
   // TODO(hjd): We should be cleverer about id assignment.
   uint32_t i = 1;
@@ -177,18 +271,20 @@ bool GenerateProto(const FtraceEvent& format, Proto* proto_out) {
     if (name == "" || seen.count(name))
       continue;
     seen.insert(name);
-    std::string type = InferProtoType(field);
+    ProtoType type = InferProtoType(field);
     // Check we managed to infer a type.
-    if (type == "")
+    if (type.type == ProtoType::INVALID)
       continue;
-    proto_out->fields.emplace_back(Proto::Field{type, name, i});
+    Proto::Field protofield{std::move(type), name, i};
+    proto_out->AddField(std::move(protofield));
     i++;
   }
 
   return true;
 }
 
-void GenerateFtraceEventProto(const std::vector<std::string>& raw_whitelist) {
+void GenerateFtraceEventProto(
+    const std::vector<FtraceEventName>& raw_whitelist) {
   std::string output_path = "protos/perfetto/trace/ftrace/ftrace_event.proto";
   std::ofstream fout(output_path.c_str(), std::ios::out);
   fout << "// Autogenerated by:\n";
@@ -197,12 +293,11 @@ void GenerateFtraceEventProto(const std::vector<std::string>& raw_whitelist) {
   fout << R"(syntax = "proto2";)"
        << "\n";
   fout << "option optimize_for = LITE_RUNTIME;\n\n";
-  for (const std::string& event : raw_whitelist) {
-    std::string last_elem = GetLastPathElement(event);
-    if (event == "removed")
+  for (const FtraceEventName& event : raw_whitelist) {
+    if (!event.valid())
       continue;
 
-    fout << R"(import "perfetto/trace/ftrace/)" << last_elem << R"(.proto";)"
+    fout << R"(import "perfetto/trace/ftrace/)" << event.name() << R"(.proto";)"
          << "\n";
   }
 
@@ -221,47 +316,34 @@ void GenerateFtraceEventProto(const std::vector<std::string>& raw_whitelist) {
 )";
 
   int i = 3;
-  for (const std::string& event : raw_whitelist) {
-    std::string last_elem = GetLastPathElement(event);
-    if (event == "removed") {
+  for (const FtraceEventName& event : raw_whitelist) {
+    if (!event.valid()) {
       fout << "    // removed field with id " << i << ";\n";
       ++i;
       continue;
     }
 
-    fout << "    " << ToCamelCase(last_elem) << "FtraceEvent " << last_elem
-         << " = " << i << ";\n";
+    fout << "    " << ToCamelCase(event.name()) << "FtraceEvent "
+         << event.name() << " = " << i << ";\n";
     ++i;
   }
   fout << "  }\n";
   fout << "}\n";
 }
 
-std::set<std::string> GetWhitelistedEvents(
-    const std::vector<std::string>& raw_whitelist) {
-  std::set<std::string> whitelist;
-  for (const std::string& line : raw_whitelist) {
-    if (!StartsWith(line, "#") && line != "removed") {
-      whitelist.insert(line);
-    }
-  }
-  return whitelist;
-}
-
 // Generates section of event_info.cc for a single event.
-std::string SingleEventInfo(perfetto::FtraceEvent format,
-                            perfetto::Proto proto,
+std::string SingleEventInfo(perfetto::Proto proto,
                             const std::string& group,
-                            const std::string& proto_field_id) {
+                            const uint32_t proto_field_id) {
   std::string s = "";
-  s += "    event->name = \"" + format.name + "\";\n";
+  s += "    event->name = \"" + proto.event_name + "\";\n";
   s += "    event->group = \"" + group + "\";\n";
-  s += "    event->proto_field_id = " + proto_field_id + ";\n";
+  s += "    event->proto_field_id = " + std::to_string(proto_field_id) + ";\n";
 
-  for (const auto& field : proto.fields) {
-    s += "    event->fields.push_back(MakeField(\"" + field.name + "\", " +
-         std::to_string(field.number) + ", kProto" + ToCamelCase(field.type) +
-         "));\n";
+  for (const auto& field : proto.SortedFields()) {
+    s += "    event->fields.push_back(MakeField(\"" + field->name + "\", " +
+         std::to_string(field->number) + ", kProto" +
+         ToCamelCase(field->type.ToString()) + "));\n";
   }
   return s;
 }
@@ -307,6 +389,29 @@ std::vector<Event> GetStaticEventInfo() {
   fout.close();
 }
 
+Proto::Proto(std::string evt_name, const google::protobuf::Descriptor& desc)
+    : name(desc.name()), event_name(evt_name) {
+  for (int i = 0; i < desc.field_count(); ++i) {
+    const google::protobuf::FieldDescriptor* field = desc.field(i);
+    PERFETTO_CHECK(field);
+    AddField(Field{ProtoType::FromDescriptor(field->type()), field->name(),
+                   uint32_t(field->number())});
+  }
+}
+
+std::vector<const Proto::Field*> Proto::SortedFields() {
+  std::vector<const Proto::Field*> sorted_fields;
+
+  for (const auto& p : fields) {
+    sorted_fields.emplace_back(&p.second);
+  }
+  std::sort(sorted_fields.begin(), sorted_fields.end(),
+            [](const Proto::Field* a, const Proto::Field* b) {
+              return a->number < b->number;
+            });
+  return sorted_fields;
+}
+
 std::string Proto::ToString() {
   std::string s = "// Autogenerated by:\n";
   s += std::string("// ") + __FILE__ + "\n";
@@ -320,12 +425,32 @@ package perfetto.protos;
 )";
 
   s += "message " + name + " {\n";
-  for (const Proto::Field& field : fields) {
-    s += "  optional " + field.type + " " + field.name + " = " +
-         std::to_string(field.number) + ";\n";
+  for (const auto field : SortedFields()) {
+    s += "  optional " + field->type.ToString() + " " + field->name + " = " +
+         std::to_string(field->number) + ";\n";
   }
   s += "}\n";
   return s;
+}
+
+void Proto::MergeFrom(const Proto& other) {
+  // Always keep number from the left hand side.
+  PERFETTO_CHECK(name == other.name);
+  for (const auto& p : other.fields) {
+    auto it = fields.find(p.first);
+    if (it == fields.end()) {
+      Proto::Field field = p.second;
+      field.number = ++max_id;
+      AddField(std::move(field));
+    } else {
+      it->second.type = GetCommon(it->second.type, p.second.type);
+    }
+  }
+}
+
+void Proto::AddField(Proto::Field other) {
+  max_id = std::max(max_id, other.number);
+  fields.emplace(other.name, std::move(other));
 }
 
 }  // namespace perfetto
