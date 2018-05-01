@@ -3,9 +3,6 @@ let d3 = require("d3");
 let m = require("mithril");
 let api = require("./api.js");
 
-console.log(api.TraceConfig);
-console.log(api.Trace);
-
 function CreateD3Component(element, init, render) {
   return {
     oncreate: function(vnode) {
@@ -21,17 +18,6 @@ function CreateD3Component(element, init, render) {
       return m(element, vnode.attrs);
     },
   };
-}
-
-class TraceApi {
-  constructor(name, protobuf) {
-    this.name = name;
-    this.protobuf = protobuf;
-  }
-
-  tracePacketCount() {
-    return this.protobuf.packet.length;
-  }
 }
 
 class TraceStore {
@@ -54,9 +40,16 @@ class TraceStore {
       this.pending.delete(promise);
       let uint8array = new Uint8Array(buffer)
       console.info(`Parsing ${name}`);
-      let decoded = api.Trace.decode(uint8array);
+      let decoded = api.TraceProto.decode(uint8array);
       console.info(`Finished parsing ${name}`);
-      this.traces.push(new TraceApi(name, decoded));
+      this.traces.push(new api.Trace(name, decoded));
+      // TODO(hjd): Remove.
+      let i = 0;
+      for (const slice of api.slicesForCpu(this.traces[this.traces.length-1])) {
+        if (i++ >= 100)
+          break
+        console.log(slice);
+      }
       m.redraw();
     });
   }
@@ -252,6 +245,7 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
       state.x(TimelineTrackState.xStart),
       state.x(TimelineTrackState.xEnd),
   ]);
+
 });
 
 const SidePanel = {
