@@ -64,6 +64,7 @@ module.exports = {
   TraceConfigProto,
   TraceProto,
   Trace,
+  Slice,
   slicesForCpu,
 };
 

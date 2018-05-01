@@ -110,7 +110,11 @@ const TimelineTrackState = {
   sidePanelDisplayed: true,
   xStart: 0,
   xEnd: 0,
-  zoomLevel: 1
+  zoomLevel: 1,
+  slices: [
+    new api.Slice(10, 30, "Foo"),
+    new api.Slice(40, 50, "Bar")
+  ],
 };
 
 // keyboard event listeners.
@@ -138,16 +142,47 @@ document.addEventListener('keydown', (event) => {
   m.redraw();
 });
 
+const SLICE_VERTICAL_PADDING = 5;  // px
+const SLICE_TEXT_PADDING = 5;  // px
+const SLICE_TEXT_VERTICAL_ALIGNMENT = 6;  //px
+
+// Change these if you change CSS if you don't want your canvas to be blurry.
+const CANVAS_HEIGHT = 50;
+const CANVAS_WIDTH = 500;
+
+
 function drawRect(ctx, x, y, w, h) {
   // Make rects not blurry.
   x = Math.round(x);
   y = Math.round(y);
   w = Math.round(w);
   h = Math.round(h);
-  // ctx.strokeRect(x + 0.5 , y + 0.5, w, h);
-  // ctx.fillRect(x + 0.5 , y + 0.5, w, h);
   ctx.fillRect(x, y, w, h);
+  ctx.strokeRect(x + 0.5 , y + 0.5, w, h);
 };
+
+function drawText(ctx, text, x, y, maxWidth) {
+  if (ctx.measureText(text).width > maxWidth) return;
+  ctx.save();
+  ctx.fillStyle = 'black';
+  ctx.fillText(text, x + SLICE_TEXT_PADDING,
+               y + SLICE_TEXT_PADDING + SLICE_TEXT_VERTICAL_ALIGNMENT);
+  ctx.restore();
+}
+
+function drawSlice(ctx, slice) {
+  const duration = slice.end - slice.start;
+  const x = (slice.start - TimelineTrackState.xStart)
+      * TimelineTrackState.zoomLevel;
+  const y = SLICE_VERTICAL_PADDING;
+  const w = duration * TimelineTrackState.zoomLevel;
+  const h = CANVAS_HEIGHT - 2 * SLICE_VERTICAL_PADDING;
+  drawRect(ctx, x, y, w, h);
+  // 3 just because it looks better than 2. Something weird here. Fix later.
+  const textMaxWidth = w - 3 * SLICE_TEXT_PADDING;
+  drawText(ctx, slice.name, x + SLICE_TEXT_PADDING,
+               y + SLICE_TEXT_PADDING, textMaxWidth);
+}
 
 const TimelineTrack = {
   draw: function(vnode) {
@@ -161,9 +196,12 @@ const TimelineTrack = {
     const y = 10;
     const w = 30 * TimelineTrackState.zoomLevel;
     const h = 80
-    ctx.fillStyle = 'green';
-    ctx.strokeStyle = 'green';
-    drawRect(ctx, x, y, w, h);
+    ctx.fillStyle = 'ivory';
+    ctx.strokeStyle = 'black';
+    ctx.font="12px sans serif";
+    for (const slice of TimelineTrackState.slices) {
+      drawSlice(ctx, slice);
+    }
   },
 
   oncreate: function(vnode) {
@@ -175,7 +213,8 @@ const TimelineTrack = {
   },
 
   view: function() {
-    return [m('canvas.timelineTrack'),
+    return [m('canvas.timelineTrack', {
+               height: CANVAS_HEIGHT, width: CANVAS_WIDTH}),
             m('div', `This is a timeline track. ` +
              `X offset: ${TimelineTrackState.xStart}. ` +
              `Zoom level: ${TimelineTrackState.zoomLevel}  `)];
