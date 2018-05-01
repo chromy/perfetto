@@ -35,7 +35,7 @@ class TraceStore {
       reader.readAsArrayBuffer(file);
     });
     this.pending.add(promise);
-    promise.then(buffer => {
+    return promise.then(buffer => {
       console.info(`Finished loading ${name}`);
       this.pending.delete(promise);
       let uint8array = new Uint8Array(buffer)
@@ -54,7 +54,7 @@ class TraceStore {
 
   loadFromUrl(url) {
     console.info(`Load from url ${name}`);
-    fetch(url).then(r => r.blob()).then(b => this.loadFromFile(b, url));
+    return fetch(url).then(r => r.blob()).then(b => this.loadFromFile(b, url));
   }
 
   loadFromDropEvent(e) {
@@ -62,18 +62,17 @@ class TraceStore {
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
         if (e.dataTransfer.items[i].kind !== 'file')
           continue;
-        this.loadFromFile(e.dataTransfer.items[i].getAsFile());
+        return this.loadFromFile(e.dataTransfer.items[i].getAsFile());
       }
     } else {
       for (let i = 0; i < e.dataTransfer.files.length; i++) {
-        this.loadFromFile(e.dataTransfer.files[i]);
+        return this.loadFromFile(e.dataTransfer.files[i]);
       }
     } 
   } 
 }
 
 let TheTraceStore = new TraceStore();
-TheTraceStore.loadFromUrl('/examples/trace.protobuf');
 
 let FileUploader = {
   view: function(vnode) {
@@ -105,28 +104,26 @@ let TraceList = {
 
 
 const ZOOM_STEP = 1.25;
+const PAN_STEP = 5;
 
 const TimelineTrackState = {
   sidePanelDisplayed: true,
   xStart: 0,
   xEnd: 0,
   zoomLevel: 1,
-  slices: [
-    new api.Slice(10, 30, "Foo"),
-    new api.Slice(40, 50, "Bar")
-  ],
+  slices: []
 };
 
 // keyboard event listeners.
 document.addEventListener('keydown', (event) => {
   switch (event.code) {
   case 'KeyD':
-    TimelineTrackState.xStart += TimelineTrackState.zoomLevel;
-    TimelineTrackState.xEnd += TimelineTrackState.zoomLevel;
+    TimelineTrackState.xStart += PAN_STEP / TimelineTrackState.zoomLevel;
+    TimelineTrackState.xEnd += PAN_STEP / TimelineTrackState.zoomLevel;
     break;
   case 'KeyA':
-    TimelineTrackState.xStart -= TimelineTrackState.zoomLevel;
-    TimelineTrackState.xEnd -= TimelineTrackState.zoomLevel;
+    TimelineTrackState.xStart -= PAN_STEP / TimelineTrackState.zoomLevel;
+    TimelineTrackState.xEnd -= PAN_STEP / TimelineTrackState.zoomLevel;
     break;
   case 'KeyW':
     TimelineTrackState.zoomLevel *= ZOOM_STEP;
@@ -152,16 +149,22 @@ const CANVAS_WIDTH = 500;
 
 
 function drawRect(ctx, x, y, w, h) {
+  // TODO: These should be compile time / debug asserts somehow for perf.
+
   // Make rects not blurry.
   x = Math.round(x);
   y = Math.round(y);
   w = Math.round(w);
   h = Math.round(h);
+
   ctx.fillRect(x, y, w, h);
   ctx.strokeRect(x + 0.5 , y + 0.5, w, h);
+
 };
 
 function drawText(ctx, text, x, y, maxWidth) {
+  // TODO: These should be compile time / debug asserts somehow for perf.
+
   if (ctx.measureText(text).width > maxWidth) return;
   ctx.save();
   ctx.fillStyle = 'black';
@@ -324,3 +327,18 @@ const App = {
 let root = document.querySelector('main');
 m.mount(root, App);
 
+TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
+  if (TheTraceStore.traces.length === 0) return;
+
+  const trace = TheTraceStore.traces[TheTraceStore.traces.length - 1];
+  const slices = [];
+  for (const slice of api.slicesForCpu(trace, 0)) {
+    slices.push(slice);
+  }
+  TimelineTrackState.slices = slices;
+  TimelineTrackState.xStart = slices[0].start;
+  TimelineTrackState.xEnd = slices[slices.length - 1].end;
+  // TODO: Remove(dproy).
+  window.TimelineTrackState = TimelineTrackState;
+  m.redraw();
+});
