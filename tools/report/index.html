@@ -12,6 +12,11 @@ h1 {
   font-weight: 400;
   font-size: 60px;
 }
+text {
+  font-family: 'Spectral', serif;
+  font-variant-caps: small-caps;
+}
+
 </style>
 <main>
 </main>
@@ -64,6 +69,16 @@ let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
   //    .attr("transform", "translate(0," + height + ")")
   //    .call(d3.axisBottom(x));
 
+  let label = g.selectAll('.label').data([0]);
+  label
+    .enter()
+    .append('text')
+    .attr('class', 'label')
+    .merge(label)
+    .text(attrs.label)
+    .attr('x', '10')
+    .attr('y', '10');
+
   let y_axis = g.selectAll('axis--y').data([0]);
   y_axis.enter()
     .append("g")
@@ -87,7 +102,11 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
   let margin = {top: 20, right: 20, bottom: 30, left: 50};
   let width = rect.width - margin.left - margin.right;
   let height = +svg.attr("height") - margin.top - margin.bottom;
-  let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  let g = svg.selectAll('g').data([0])
+  g.enter()
+    .append('g')
+    .merge(g)
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
   let y = d3.scaleLinear().rangeRound([height, 0]);
   let key = attrs['key'];
@@ -95,7 +114,17 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
   x.domain(SUMMARY.map(d => d.date));
   y.domain([0, d3.max(SUMMARY, d => d[key])]);
 
-  let y_axis = g.selectAll('axis--y').data([0]);
+  let label = g.selectAll('.label').data([0]);
+  label
+    .enter()
+    .append('text')
+    .attr('class', 'label')
+    .merge(label)
+    .text(attrs.label)
+    .attr('x', '10')
+    .attr('y', '10');
+
+  let y_axis = g.selectAll('.axis--y').data([0]);
   y_axis.enter()
     .append("g")
       .attr("class", "axis axis--y")
@@ -116,9 +145,10 @@ let App = {
   view: function() {
     return [
       m('h1', 'The Perfetto Report'),
-      m(BarChartComponent, {height: 100}),
-      m(LineChartComponent, {height: 100, key: 'comment_count'}),
-      m(LineChartComponent, {height: 100, key: 'code_count'}),
+      m(BarChartComponent, {height: 100, key: 'todo_count', label: 'Todo count'}),
+      m(LineChartComponent, {height: 100, key: 'comment_count', label: 'Comment count'}),
+      m(LineChartComponent, {height: 100, key: 'code_count', label: 'Code count'}),
+      m(LineChartComponent, {height: 100, key: 'insertions', label: 'Insertions'}),
     ];
   },
 };

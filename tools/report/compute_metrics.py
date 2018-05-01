@@ -126,8 +126,6 @@ def commit_log(out_dir, checkout_dir, left, right):
         'deletions': deletions,
       })
     json_output.append({
-      'left': left.date().isoformat(),
-      'right': right.date().isoformat(),
       'hash': hash,
       'author_email': author_email,
       'commit_date': commit_date,
@@ -139,9 +137,13 @@ def commit_log(out_dir, checkout_dir, left, right):
         'files_changed': total_changes,
       },
     })
-    path = os.path.join(out_dir, 'commit_log.json')
-    with open(path, 'w') as fd:
-      json.dump({'commits': json_output}, fd)
+  path = os.path.join(out_dir, 'commit_log.json')
+  print(path)
+  with open(path, 'w') as fd:
+    json.dump({
+      'left': left.date().isoformat(),
+      'right': right.date().isoformat(),
+      'commits': json_output}, fd)
 
 @metric(valid_from=BEGINING_OF_TIME+timedelta(days=1))
 def cloc(out_dir, checkout_dir, left, right):
@@ -210,6 +212,11 @@ def comment_count(*args):
 @summary('cloc')
 def code_count(*args):
   return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.code})')(*args)
+
+@summary('commit_log')
+def insertions(*args):
+  return jq_command('commit_log/commit_log.json', 
+      'map({date: .left, data: .commits | map(.total_changes.insertions) | add})')(*args)
 
 def jq_command(suffix, command):
   def f(date_dir_pairs):
@@ -290,7 +297,7 @@ class App(object):
     chosen_metrics = args.metrics
     overwrite = args.overwrite
     for date in dates_in_range(self.start, self.end):
-      if any((not is_metric_computed(self.output_dir, date, metric) for metric in chosen_metrics)):
+      if overwrite or any((not is_metric_computed(self.output_dir, date, metric) for metric in chosen_metrics)):
         commit = best_commit_for_day(date)
         subprocess.check_call(['tools/report/checkout', commit], stdout=DEVNULL)
       for name in chosen_metrics:
@@ -307,7 +314,29 @@ class App(object):
       json.dump(output, fd)
 
   def do_upload(self, args):
-    pass
+    subprocess.check_call(['tools/report/checkout', 'gh-pages'], stdout=DEVNULL)
+    data_dir = os.path.join(self.checkout_dir, 'data')
+    print(data_dir)
+    shutil.rmtree(data_dir)
+    shutil.copytree(self.output_dir, data_dir)
+    shutil.copy(os.path.join(self.output_dir, '..', 'index.html'),
+        os.path.join(self.checkout_dir, 'index.html'))
+    subprocess.check_call([
+      'git',
+      '-C',
+      self.checkout_dir,
+      'add',
+      '--all',
+    ])
+    subprocess.check_call([
+      'git',
+      '-C',
+      self.checkout_dir,
+      'commit',
+      '-m',
+      'Update',
+    ])
+
 
 def main():
   def comma_seperated_metrics(s):
@@ -329,7 +358,7 @@ def main():
 
   compute = subparsers.add_parser('compute')
   summarise = subparsers.add_parser('summarise')
-  commit = subparsers.add_parser('commit')
+  upload  = subparsers.add_parser('upload')
   compute.add_argument(
       '--overwrite',
       dest='overwrite',

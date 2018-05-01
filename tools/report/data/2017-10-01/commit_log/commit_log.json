@@ -1,1 +1,0 @@
-{"commits": [{"right": "2017-10-02", "hash": "d770e57", "total_changes": {"deletions": 0, "files_changed": 1, "insertions": 147}, "author_email": "primiano@google.com", "first_line": "Add Travis Continuous Integration config", "changes": [{"deletions": 0, "insertions": 147, "filename": ".travis.yml"}], "commit_date": "2017-10-01T05:28:39-07:00", "left": "2017-10-01"}]}
