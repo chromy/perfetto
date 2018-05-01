@@ -37,7 +37,7 @@ function* schedSwitchEventsForCpu(trace, cpu, opt_start, opt_end) {
     if (!packet.ftraceEvents)
       continue;
     const bundle = packet.ftraceEvents;
-    if (!bundle.cpu === cpu)
+    if (bundle.cpu !== cpu)
       continue;
     const events = bundle.event;
     for (const evt of events) {

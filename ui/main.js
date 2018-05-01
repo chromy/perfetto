@@ -44,11 +44,9 @@ class TraceStore {
       console.info(`Finished parsing ${name}`);
       this.traces.push(new api.Trace(name, decoded));
       // TODO(hjd): Remove.
-      let i = 0;
-      for (const slice of api.slicesForCpu(this.traces[this.traces.length-1])) {
-        if (i++ >= 100)
-          break
-        console.log(slice);
+      let slices = [];
+      for (const slice of api.slicesForCpu(this.traces[this.traces.length-1], 0)) {
+        slices.push(slice);
       }
       m.redraw();
     });
