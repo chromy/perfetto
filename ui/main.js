@@ -245,6 +245,9 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
   state.x_axis_update
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(state.x));
+  state.brush.extent([[0, 0], [width, height]]);
+  state.brush_update.call(state.brush);
+
   state.brush_update.call(state.brush.move, [
       state.x(TimelineTrackState.xStart),
       state.x(TimelineTrackState.xEnd),
