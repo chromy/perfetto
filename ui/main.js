@@ -3,22 +3,6 @@ let d3 = require("d3");
 let m = require("mithril");
 let api = require("./api.js");
 
-function CreateD3Component(element, init, render) {
-  return {
-    oncreate: function(vnode) {
-      init(vnode.dom, vnode.attrs, vnode.state);
-      render(vnode.dom, vnode.attrs, vnode.state);
-    },
-
-    onupdate: function(vnode) {
-      render(vnode.dom, vnode.attrs, vnode.state);
-    },
-
-    view: function(vnode) {
-      return m(element, vnode.attrs);
-    },
-  };
-}
 
 class TraceStore {
   constructor() {
@@ -224,6 +208,23 @@ const TimelineTrack = {
   }
 }
 
+function CreateD3Component(element, init, render) {
+  return {
+    oncreate: function(vnode) {
+      init(vnode.dom, vnode.attrs, vnode.state);
+      render(vnode.dom, vnode.attrs, vnode.state);
+    },
+
+    onupdate: function(vnode) {
+      render(vnode.dom, vnode.attrs, vnode.state);
+    },
+
+    view: function(vnode) {
+      return m(element, vnode.attrs);
+    },
+  };
+}
+
 const Overview = CreateD3Component('svg.overview', function(node, attrs, state) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
@@ -274,7 +275,12 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
   let width = rect.width - margin.left - margin.right;
   let height = +svg.attr("height") - margin.top - margin.bottom;
   state.g_update.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  state.x.range([0, width]).domain([0, 10000]);
+  if (TimelineTrackState.slices.length > 0) {
+    const traceBegin = TimelineTrackState.slices[0].start;
+    const traceEnd =
+          TimelineTrackState.slices[TimelineTrackState.slices.length - 1].end;
+    state.x.range([0, width]).domain([traceBegin, traceEnd]);
+  }
   state.x_axis_update
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(state.x));
@@ -285,7 +291,6 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
       state.x(TimelineTrackState.xStart),
       state.x(TimelineTrackState.xEnd),
   ]);
-
 });
 
 const SidePanel = {
@@ -335,10 +340,13 @@ TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
   for (const slice of api.slicesForCpu(trace, 0)) {
     slices.push(slice);
   }
+
   TimelineTrackState.slices = slices;
   TimelineTrackState.xStart = slices[0].start;
   TimelineTrackState.xEnd = slices[slices.length - 1].end;
-  // TODO: Remove(dproy).
+
+  // TODO: Remove(dproy). Useful for state debugging from devtools console.
   window.TimelineTrackState = TimelineTrackState;
+
   m.redraw();
 });
