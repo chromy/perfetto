@@ -147,12 +147,47 @@ document.addEventListener('keydown', (event) => {
   m.redraw();
 });
 
+function drawRect(ctx, x, y, w, h) {
+  // Make rects not blurry.
+  x = Math.round(x);
+  y = Math.round(y);
+  w = Math.round(w);
+  h = Math.round(h);
+  // ctx.strokeRect(x + 0.5 , y + 0.5, w, h);
+  // ctx.fillRect(x + 0.5 , y + 0.5, w, h);
+  ctx.fillRect(x, y, w, h);
+};
+
 const TimelineTrack = {
+  draw: function(vnode) {
+    // This works because this.dom points to the first item in the dom array.
+    const canvas = vnode.dom;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const x = TimelineTrackState.xStart * TimelineTrackState.zoomLevel;
+    const y = 10;
+    const w = 30 * TimelineTrackState.zoomLevel;
+    const h = 80
+    ctx.fillStyle = 'green';
+    ctx.strokeStyle = 'green';
+    drawRect(ctx, x, y, w, h);
+  },
+
+  oncreate: function(vnode) {
+    this.draw(vnode);
+  },
+
+  onupdate: function(vnode) {
+    this.draw(vnode);
+  },
+
   view: function() {
-    return m('div.timelineTrack',
-             `This is a timeline track. ` +
+    return [m('canvas.timelineTrack'),
+            m('div', `This is a timeline track. ` +
              `X offset: ${TimelineTrackState.xStart}. ` +
-             `Zoom level: ${TimelineTrackState.zoomLevel}  `);
+             `Zoom level: ${TimelineTrackState.zoomLevel}  `)];
   }
 }
 
