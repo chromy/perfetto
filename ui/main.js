@@ -133,8 +133,6 @@ const CANVAS_WIDTH = 500;
 
 
 function drawRect(ctx, x, y, w, h) {
-  // TODO: These should be compile time / debug asserts somehow for perf.
-
   // Make rects not blurry.
   x = Math.round(x);
   y = Math.round(y);
@@ -147,8 +145,6 @@ function drawRect(ctx, x, y, w, h) {
 };
 
 function drawText(ctx, text, x, y, maxWidth) {
-  // TODO: These should be compile time / debug asserts somehow for perf.
-
   if (ctx.measureText(text).width > maxWidth) return;
   ctx.save();
   ctx.fillStyle = 'black';
@@ -175,19 +171,19 @@ const TimelineTrack = {
   draw: function(vnode) {
     // This works because this.dom points to the first item in the dom array.
     const canvas = vnode.dom;
+    const xStart = TimelineTrackState.xStart;
+    const xEnd = xStart + canvas.width / TimelineTrackState.zoomLevel;
 
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const x = TimelineTrackState.xStart * TimelineTrackState.zoomLevel;
-    const y = 10;
-    const w = 30 * TimelineTrackState.zoomLevel;
-    const h = 80
     ctx.fillStyle = 'ivory';
     ctx.strokeStyle = 'black';
     ctx.font="12px sans serif";
     for (const slice of TimelineTrackState.slices) {
-      drawSlice(ctx, slice);
+      if (slice.end > xStart && slice.start < xEnd) {
+        drawSlice(ctx, slice);
+      }
     }
   },
 
@@ -196,12 +192,14 @@ const TimelineTrack = {
   },
 
   onupdate: function(vnode) {
+    vnode.dom.height = vnode.dom.clientHeight;
+    vnode.dom.width = vnode.dom.clientWidth;
     this.draw(vnode);
   },
 
   view: function() {
     return [m('canvas.timelineTrack', {
-               height: CANVAS_HEIGHT, width: CANVAS_WIDTH}),
+               height: CANVAS_HEIGHT}),
             m('div', `This is a timeline track. ` +
              `X offset: ${TimelineTrackState.xStart}. ` +
              `Zoom level: ${TimelineTrackState.zoomLevel}  `)];
