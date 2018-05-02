@@ -184,7 +184,6 @@ class TextRenderer {
       this.lengthToSize.push(this.measureText(t));
       t += 'a';
     }
-    console.log(this.lengthToSize);
   }
 
   measureText(text) {
@@ -203,7 +202,7 @@ class TextRenderer {
 }
 
 const FONT_SIZE = 12 * window.devicePixelRatio;
-const TheTextRenderer = new TextRenderer(`$(FONT_SIZE)px sans serif`);
+const TheTextRenderer = new TextRenderer(`${FONT_SIZE}px sans serif`);
 
 const TimelineTrack = {
   draw: function(vnode) {
