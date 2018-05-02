@@ -124,7 +124,6 @@ document.addEventListener('keydown', (event) => {
 
 const SLICE_VERTICAL_PADDING = 10;  // px
 const SLICE_TEXT_PADDING = 5;  // px
-const SLICE_TEXT_VERTICAL_ALIGNMENT = 6;  //px
 
 function drawRect(ctx, x, y, w, h) {
   // Make rects not blurry.
@@ -138,14 +137,12 @@ function drawRect(ctx, x, y, w, h) {
 
 };
 
-function drawText(ctx, text, x, y, maxWidth) {
+function drawText(ctx, text, sliceX, sliceY, sliceWidth, sliceHeight) {
   // TODO: These should be compile time / debug asserts somehow for perf.
-  if (ctx.measureText(text).width > maxWidth) return;
-  let height = ctx.measureText('M').width;
+  if (ctx.measureText(text).width > sliceWidth) return;
   ctx.save();
   ctx.fillStyle = 'black';
-  ctx.fillText(text, x + SLICE_TEXT_PADDING,
-               y + SLICE_TEXT_PADDING + height);
+  ctx.fillText(text, sliceX + SLICE_TEXT_PADDING, sliceY + (sliceHeight / 2));
   ctx.restore();
 }
 
@@ -159,8 +156,7 @@ function drawSlice(ctx, total_height, total_width, slice) {
   drawRect(ctx, x, y, w, h);
   // 3 just because it looks better than 2. Something weird here. Fix later.
   const textMaxWidth = w - 3 * SLICE_TEXT_PADDING;
-  drawText(ctx, slice.name, x + SLICE_TEXT_PADDING,
-               y + SLICE_TEXT_PADDING, textMaxWidth);
+  drawText(ctx, slice.name, x, y, w, h);
 }
 
 const TimelineTrack = {
@@ -178,6 +174,7 @@ const TimelineTrack = {
 
     ctx.fillStyle = 'ivory';
     ctx.strokeStyle = 'black';
+    ctx.textBaseline = 'middle';
     ctx.font = '' + 12 * ratio + "px sans serif";
     for (const slice of TimelineTrackState.slices) {
       if (slice.end > TimelineTrackState.xStart ||
