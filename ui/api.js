@@ -93,6 +93,8 @@ function* slicesForCpu(trace, cpu, opt_start, opt_end) {
     current = evt;
     if (!last)
       continue;
+    if (last.schedSwitch.nextPid === 0)
+      continue;
     const start = trace.absToRelative(last.timestamp);
     const end = trace.absToRelative(current.timestamp);
     yield new Slice(start, end, current.schedSwitch.prevComm);
