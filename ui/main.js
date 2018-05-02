@@ -148,11 +148,12 @@ function drawRect(ctx, x, y, w, h) {
 };
 
 function drawText(ctx, text, sliceX, sliceY, sliceWidth, sliceHeight) {
-  // TODO: These should be compile time / debug asserts somehow for perf.
-  if (ctx.measureText(text).width > sliceWidth) return;
+  const t = TheTextRenderer.fitText(text, sliceWidth - SLICE_TEXT_PADDING * 2);
+  if (t === null)
+    return;
   ctx.save();
   ctx.fillStyle = 'black';
-  ctx.fillText(text, sliceX + SLICE_TEXT_PADDING, sliceY + (sliceHeight / 2));
+  ctx.fillText(t, sliceX + SLICE_TEXT_PADDING, sliceY + (sliceHeight / 2));
   ctx.restore();
 }
 
@@ -168,6 +169,41 @@ function drawSlice(ctx, total_height, total_width, slice) {
   const textMaxWidth = w - 3 * SLICE_TEXT_PADDING;
   drawText(ctx, slice.name, x, y, w, h);
 }
+
+class TextRenderer {
+  constructor(font) {
+    this.font = font;
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.ctx.textBaseline = 'middle';
+    this.ctx.font = font;
+    this.minimum = this.measureText('M');
+    this.lengthToSize = [];
+    let t = '';
+    for (let i=0; i<100; i++) {
+      this.lengthToSize.push(this.measureText(t));
+      t += 'a';
+    }
+    console.log(this.lengthToSize);
+  }
+
+  measureText(text) {
+    return this.ctx.measureText(text).width;
+  }
+
+  fitText(text, width) {
+    if (width < this.minimum) return null;
+    if (this.lengthToSize[text.length] < width) return text;
+    for (let i=text.length; i >= 4; i--) {
+      if (this.lengthToSize[i] < width)
+        return text.slice(0, i-3) + '...';
+    }
+    return null;
+  }
+}
+
+const FONT_SIZE = 12 * window.devicePixelRatio;
+const TheTextRenderer = new TextRenderer(`$(FONT_SIZE)px sans serif`);
 
 const TimelineTrack = {
   draw: function(vnode) {
@@ -185,7 +221,7 @@ const TimelineTrack = {
     ctx.fillStyle = 'ivory';
     ctx.strokeStyle = 'black';
     ctx.textBaseline = 'middle';
-    ctx.font = '' + 12 * ratio + "px sans serif";
+    ctx.font = TheTextRenderer.font;
     for (const slice of TimelineTrackState.slices) {
       if (slice.end > TimelineTrackState.xStart ||
           slice.start < TimelineTrackState.xEnd) {
