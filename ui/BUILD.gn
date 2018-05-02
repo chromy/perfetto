@@ -39,7 +39,6 @@ template("protos_json") {
 template("js") {
   assert(defined(invoker.sources))
   invoker_sources = invoker.sources
-  
   copy(target_name) {
     sources = invoker_sources
     outputs = [ "$target_out_dir/{{source_file_part}}" ]
@@ -80,7 +79,7 @@ group("ui") {
   deps = [
     ":index",
     ":css",
-    ":js",
+    ":bundle",
     ":examples",
   ]
 }
