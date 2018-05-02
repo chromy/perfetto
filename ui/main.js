@@ -93,12 +93,15 @@ const TimelineTrackState = {
   sidePanelDisplayed: true,
   xStart: 0,
   xEnd: 0,
+  firstTimestamp: 0,
+  lastTimestamp: 0,
   zoomLevel: 1,
   slices: []
 };
 
 // keyboard event listeners.
 document.addEventListener('keydown', (event) => {
+  let width = TimelineTrackState.xEnd - TimelineTrackState.xStart;
   switch (event.code) {
   case 'KeyD':
     TimelineTrackState.xStart += PAN_STEP / TimelineTrackState.zoomLevel;
@@ -109,14 +112,21 @@ document.addEventListener('keydown', (event) => {
     TimelineTrackState.xEnd -= PAN_STEP / TimelineTrackState.zoomLevel;
     break;
   case 'KeyW':
-    TimelineTrackState.zoomLevel *= ZOOM_STEP;
+    TimelineTrackState.xStart += width / 100;
+    TimelineTrackState.xEnd -= width / 100;
     break;
   case 'KeyS':
-    TimelineTrackState.zoomLevel /= ZOOM_STEP;
+    TimelineTrackState.xStart -= width / 100;
+    TimelineTrackState.xEnd += width / 100;
     break;
   default:
     return;  // return without triggering a redraw.
   }
+
+  TimelineTrackState.xStart = Math.max(
+      TimelineTrackState.firstTimestamp, TimelineTrackState.xStart);
+  TimelineTrackState.xEnd = Math.min(
+      TimelineTrackState.lastTimestamp, TimelineTrackState.xEnd);
 
   // We had a switch match. Schedule a redraw.
   m.redraw();
@@ -196,8 +206,7 @@ const TimelineTrack = {
     return [
         m('canvas.timelineTrack'),
         m('div', `This is a timeline track. ` +
-             `X offset: ${TimelineTrackState.xStart}. ` +
-             `Zoom level: ${TimelineTrackState.zoomLevel}  `)];
+             `X offset: ${TimelineTrackState.xStart}.`)];
   }
 }
 
@@ -331,11 +340,13 @@ TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
 
   const trace = TheTraceStore.traces[TheTraceStore.traces.length - 1];
   const slices = [];
-  for (const slice of api.slicesForCpu(trace, 0)) {
+  for (const slice of api.slicesForCpu(trace, 6)) {
     slices.push(slice);
   }
   TimelineTrackState.slices = slices;
+  TimelineTrackState.firstTimestamp = trace.start();
   TimelineTrackState.xStart = trace.start();
+  TimelineTrackState.lastTimestamp = trace.end();
   TimelineTrackState.xEnd = trace.end();
 
   // TODO: Remove(dproy). Useful for state debugging from devtools console.
