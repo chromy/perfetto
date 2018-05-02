@@ -122,7 +122,7 @@ document.addEventListener('keydown', (event) => {
   m.redraw();
 });
 
-const SLICE_VERTICAL_PADDING = 5;  // px
+const SLICE_VERTICAL_PADDING = 10;  // px
 const SLICE_TEXT_PADDING = 5;  // px
 const SLICE_TEXT_VERTICAL_ALIGNMENT = 6;  //px
 
@@ -153,7 +153,7 @@ function drawSlice(ctx, total_height, total_width, slice) {
   let widthTime = TimelineTrackState.xEnd - TimelineTrackState.xStart;
   let d = total_width / widthTime;
   const x = (slice.start - TimelineTrackState.xStart) * d;
-  const y = SLICE_VERTICAL_PADDING;
+  const y = SLICE_VERTICAL_PADDING/2;
   const w = slice.duration * d;
   const h = total_height - SLICE_VERTICAL_PADDING;
   drawRect(ctx, x, y, w, h);
@@ -168,11 +168,12 @@ const TimelineTrack = {
     // This works because this.dom points to the first item in the dom array.
     const canvas = vnode.dom;
     const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
+    let [width, height] = [rect.width * 2, rect.height * 2];
+    canvas.width = width;
+    canvas.height = height;
 
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, width, height);
 
     ctx.fillStyle = 'ivory';
     ctx.strokeStyle = 'black';
@@ -180,7 +181,7 @@ const TimelineTrack = {
     for (const slice of TimelineTrackState.slices) {
       if (slice.end > TimelineTrackState.xStart ||
           slice.start < TimelineTrackState.xEnd) {
-        drawSlice(ctx, rect.height, rect.width, slice);
+        drawSlice(ctx, height, width, slice);
       }
     }
   },
