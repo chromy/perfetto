@@ -149,17 +149,18 @@ function drawText(ctx, text, x, y, maxWidth) {
   ctx.restore();
 }
 
-function drawSlice(ctx, height, slice) {
-  const x = (slice.start - TimelineTrackState.xStart)
-      * TimelineTrackState.zoomLevel;
+function drawSlice(ctx, total_height, total_width, slice) {
+  let widthTime = TimelineTrackState.xEnd - TimelineTrackState.xStart;
+  let d = total_width / widthTime;
+  const x = (slice.start - TimelineTrackState.xStart) * d;
   const y = SLICE_VERTICAL_PADDING;
-  const w = slice.duration * TimelineTrackState.zoomLevel;
-  const h = height - SLICE_VERTICAL_PADDING;
+  const w = slice.duration * d;
+  const h = total_height - SLICE_VERTICAL_PADDING;
   drawRect(ctx, x, y, w, h);
   // 3 just because it looks better than 2. Something weird here. Fix later.
   const textMaxWidth = w - 3 * SLICE_TEXT_PADDING;
   drawText(ctx, slice.name, x + SLICE_TEXT_PADDING,
-               y + SLICE_TEXT_PADDING);
+               y + SLICE_TEXT_PADDING, textMaxWidth);
 }
 
 const TimelineTrack = {
@@ -170,9 +171,6 @@ const TimelineTrack = {
     canvas.width = rect.width * 2;
     canvas.height = rect.height * 2;
 
-    const xStart = TimelineTrackState.xStart;
-    const xEnd = xStart + canvas.width / TimelineTrackState.zoomLevel;
-
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, rect.width, rect.height);
 
@@ -180,8 +178,9 @@ const TimelineTrack = {
     ctx.strokeStyle = 'black';
     ctx.font= "24px sans serif";
     for (const slice of TimelineTrackState.slices) {
-      if (slice.end > xStart && slice.start < xEnd) {
-        drawSlice(ctx, rect.height, slice);
+      if (slice.end > TimelineTrackState.xStart ||
+          slice.start < TimelineTrackState.xEnd) {
+        drawSlice(ctx, rect.height, rect.width, slice);
       }
     }
   },
@@ -191,8 +190,6 @@ const TimelineTrack = {
   },
 
   onupdate: function(vnode) {
-    vnode.dom.height = vnode.dom.clientHeight;
-    vnode.dom.width = vnode.dom.clientWidth;
     this.draw(vnode);
   },
 
