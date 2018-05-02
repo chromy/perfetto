@@ -213,6 +213,11 @@ def comment_count(*args):
 def code_count(*args):
   return jq_command('cloc/cloc.json', 'map({date: .left, data: .SUM.code})')(*args)
 
+@summary('cloc')
+def cpp(*args):
+  return jq_command('cloc/cloc.json', 
+      'map({ date: .left, data: (.["C/C++ Header"].code + .["C++"].code) })')(*args)
+
 @summary('commit_log')
 def insertions(*args):
   return jq_command('commit_log/commit_log.json', 
@@ -346,11 +351,19 @@ def main():
         raise argparse.ArgumentTypeError('"{}" is not a metric.'.format(metric))
     return metrics
 
-  start = BEGINING_OF_TIME
+  def valid_date(s):
+    try:
+      return datetime.strptime(s, '%Y-%m-%d')
+    except ValueError:
+      msg = 'Date ({}) not valid. Expected format, YYYY-MM-DD!'.format(s)
+      raise argparse.ArgumentTypeError(msg)
+
   now = datetime.utcnow()
   today = datetime.utcnow().replace(hour=4, minute=0,  second=0, microsecond=0)
   yesterday = today - timedelta(days=1)
   tomorrow = today + timedelta(days=1)
+
+  start = BEGINING_OF_TIME
   end = yesterday
 
   parser = argparse.ArgumentParser(description='Compute prefetto report.')
@@ -359,6 +372,19 @@ def main():
   compute = subparsers.add_parser('compute')
   summarise = subparsers.add_parser('summarise')
   upload  = subparsers.add_parser('upload')
+  parser.add_argument(
+      '--start',
+      dest='start',
+      action='store',
+      default=None,
+      type=valid_date,
+      help='start date (default: {})'.format(start.strftime('%Y-%m-%d')))
+  parser.add_argument('--end',
+      dest='end',
+      action='store',
+      default=None,
+      type=valid_date,
+      help='end date (default: {})'.format(end.strftime('%Y-%m-%d')))
   compute.add_argument(
       '--overwrite',
       dest='overwrite',
@@ -376,6 +402,8 @@ def main():
 
   args = parser.parse_args()
 
+  start = args.start if args.start else start
+  end = args.end if args.end else end
   app = App(start=start, end=end)
   if args.name == 'compute':
     return app.do_compute(args)

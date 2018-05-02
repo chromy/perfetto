@@ -3,18 +3,36 @@
 <style>
 body {
 }
+
 svg {
   width: 100%;
 }
+
 h1 {
   text-align: center;
   font-family: 'Spectral', serif;
   font-weight: 400;
   font-size: 60px;
 }
+
 text {
   font-family: 'Spectral', serif;
   font-variant-caps: small-caps;
+}
+
+.line {
+  fill: none;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.selected {
+  fill: red;
 }
 
 </style>
@@ -25,12 +43,23 @@ text {
 <script src="//d3js.org/d3.v5.js"></script>
 <script>
 let SUMMARY = [];
+let SELECTED_DATE = null;
+SELECTED_DATE = new Date(2018, 0, 1);
+
+function isSelectedDate(other) {
+  return other == SELECTED_DATE.toString();
+}
+
+const parseTime = d3.timeParse('%Y-%m-%d');
 
 m.request({
   method: "GET",
   url: "data/summary.json",
 }).then(data => {
   SUMMARY = data;
+  for (let item of SUMMARY) {
+    item.date = parseTime(item.date);
+  }
 })
 
 function CreateD3Component(element, render) {
@@ -49,6 +78,25 @@ function CreateD3Component(element, render) {
   };
 }
 
+let DateAxisComponent = CreateD3Component('svg', function(node, attrs) {
+  let rect = node.getBoundingClientRect();
+  let svg = d3.select(node);
+  let margin = {top: 20, right: 20, bottom: 30, left: 50};
+  let width = rect.width - margin.left - margin.right;
+  let height = +svg.attr("height") - margin.top - margin.bottom;
+  let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  let x = d3.scaleTime().rangeRound([0, width]);
+  x.domain(d3.extent(SUMMARY.map(d => d.date)));
+
+  let x_axis = g.selectAll('axis--x').data([0]);
+  x_axis.enter()
+      .append("g").attr("class", "axis axis--x")
+    .merge(x_axis)
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisTop(x));
+});
+
 let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
@@ -59,15 +107,10 @@ let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
   let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
   let y = d3.scaleLinear().rangeRound([height, 0]);
 
-  x.domain(SUMMARY.map(function(d) { return d.date; }));
-  y.domain([0, d3.max(SUMMARY, function(d) { return d.todo_count; })]);
+  let key = attrs['key'];
 
-  //let x_axis = g.selectAll('axis--x').data([0]);
-  //x_axis.enter()
-  //    .append("g").attr("class", "axis axis--x")
-  //  .merge(x_axis)
-  //    .attr("transform", "translate(0," + height + ")")
-  //    .call(d3.axisBottom(x));
+  x.domain(SUMMARY.map(d => d.date));
+  y.domain([0, d3.max(SUMMARY, d => d[key])]);
 
   let label = g.selectAll('.label').data([0]);
   label
@@ -86,14 +129,15 @@ let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
     .merge(y_axis)
       .call(d3.axisLeft(y).ticks(3))
 
-  g.selectAll(".bar")
-    .data(SUMMARY)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.date); })
-      .attr("y", function(d) { return y(d.todo_count); })
-      .attr("width", x.bandwidth())
-      .attr("height", function(d) { return height - y(d.todo_count); });
+  let bars = g.selectAll(".bar").data(SUMMARY);
+  bars.enter().append("rect")
+    .attr("class", "bar")
+    .merge(bars)
+    .attr("x", d => x(d.date))
+    .attr("y", d => y(d[key]))
+    .attr("class", d => isSelectedDate(d.date) ? "bar selected" : "bar")
+    .attr("width", x.bandwidth())
+    .attr("height", function(d) { return height - y(d[key]); });
 });
 
 let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
@@ -107,12 +151,27 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
     .append('g')
     .merge(g)
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+  let x = d3.scaleTime().rangeRound([0, width]);
   let y = d3.scaleLinear().rangeRound([height, 0]);
   let key = attrs['key'];
 
-  x.domain(SUMMARY.map(d => d.date));
+  x.domain(d3.extent(SUMMARY.map(d => d.date)));
   y.domain([0, d3.max(SUMMARY, d => d[key])]);
+
+  //let overlay = svg.selectAll('.overlay').data([0]);
+  //overlay.enter()
+  //  .append('rect')
+  //  .attr('class', 'overlay')
+  //  .merge(overlay)
+  //  .attr('width', width)
+  //  .attr('height', height)
+  //  .on('mousemove', () => '');
+  //  .on('mouseover', function() {console.log(d3.mouse(this))} )
+
+  let line = d3.line()
+    .defined(d => d[key] !== null)
+    .x(d => x(d.date))
+    .y(d => y(d[key]));
 
   let label = g.selectAll('.label').data([0]);
   label
@@ -126,29 +185,30 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
 
   let y_axis = g.selectAll('.axis--y').data([0]);
   y_axis.enter()
-    .append("g")
-      .attr("class", "axis axis--y")
+    .append('g')
+      .attr('class', 'axis axis--y')
     .merge(y_axis)
       .call(d3.axisLeft(y).ticks(3))
 
-  g.selectAll(".bar")
-    .data(SUMMARY)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.date); })
-      .attr("y", d => y(d[key]))
-      .attr("width", x.bandwidth())
-      .attr("height", function(d) { return height - y(d[key]); });
+  let line_selection = g.selectAll('.line').data([SUMMARY]);
+  line_selection
+    .enter()
+    .append('path')
+      .attr('class', 'line')
+      .merge(line_selection)
+      .attr('d', line);
 });
 
 let App = {
   view: function() {
     return [
       m('h1', 'The Perfetto Report'),
+      m(DateAxisComponent, {height: 100}),
       m(BarChartComponent, {height: 100, key: 'todo_count', label: 'Todo count'}),
-      m(LineChartComponent, {height: 100, key: 'comment_count', label: 'Comment count'}),
-      m(LineChartComponent, {height: 100, key: 'code_count', label: 'Code count'}),
-      m(LineChartComponent, {height: 100, key: 'insertions', label: 'Insertions'}),
+      // m(LineChartComponent, {height: 100, key: 'comment_count', label: 'Comment count'}),
+      // m(LineChartComponent, {height: 100, key: 'code_count', label: 'cloc'}),
+      m(LineChartComponent, {height: 100, key: 'cpp', label: 'Lines of C++'}),
+      m(BarChartComponent, {height: 100, key: 'insertions', label: 'Insertions'}),
     ];
   },
 };

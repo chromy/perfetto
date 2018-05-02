@@ -19,5 +19,5 @@ source $DIR/constants > /dev/null
 COMMITISH=$1
 
 echo "Checking out $COMMITISH into directory $OUTPUT_DIR"
-git -C $OUTPUT_DIR fetch || git clone $ROOT_DIR $OUTPUT_DIR
+#git -C $OUTPUT_DIR fetch || git clone $ROOT_DIR $OUTPUT_DIR
 git -C $OUTPUT_DIR checkout $COMMITISH
