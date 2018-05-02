@@ -224,7 +224,7 @@ function CreateD3Component(element, init, render) {
 const Overview = CreateD3Component('svg.overview', function(node, attrs, state) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
-  state.margin = {top: 20, right: 20, bottom: 30, left: 0};
+  state.margin = {top: 20, right: 10, bottom: 30, left: 10};
   let width = rect.width - state.margin.left - state.margin.right;
   let height = +svg.attr("height") - state.margin.top - state.margin.bottom;
   let g = svg.selectAll('g').data([0]);
@@ -277,8 +277,8 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
     state.x.domain([trace.start(), trace.end()]);
   }
   state.x_axis_update
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(state.x));
+      .attr("transform", "translate(0," + 0 + ")")
+      .call(d3.axisTop(state.x).tickFormat(v => '' + (v / 1000 / 1000) + 'ms'));
   state.brush.extent([[0, 0], [width, height]]);
   state.brush_update.call(state.brush);
 
@@ -308,7 +308,7 @@ const TraceDisplay = {
     if (TheTraceStore.traces.length == 0)
       return m('.loading');
 
-    return m('div',
+    return m('.tracks',
         {},
         m(Overview, {height: 100}),
         m(TimelineTrack),

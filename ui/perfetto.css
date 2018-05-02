@@ -39,6 +39,10 @@ body {
   height: 100%;
 }
 
+.tracks {
+  padding: 10px;
+}
+
 .sidepanel {
   position: relative;
 }
