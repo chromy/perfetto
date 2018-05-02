@@ -168,7 +168,8 @@ const TimelineTrack = {
     // This works because this.dom points to the first item in the dom array.
     const canvas = vnode.dom;
     const rect = canvas.getBoundingClientRect();
-    let [width, height] = [rect.width, rect.height];
+    const ratio = window.devicePixelRatio;
+    let [width, height] = [rect.width*ratio, rect.height*ratio];
     canvas.width = width;
     canvas.height = height;
 
@@ -177,7 +178,7 @@ const TimelineTrack = {
 
     ctx.fillStyle = 'ivory';
     ctx.strokeStyle = 'black';
-    ctx.font = "12px sans serif";
+    ctx.font = '' + 12 * ratio + "px sans serif";
     for (const slice of TimelineTrackState.slices) {
       if (slice.end > TimelineTrackState.xStart ||
           slice.start < TimelineTrackState.xEnd) {
