@@ -69,7 +69,7 @@ let FileUploader = {
       ondragenter: () => this.dragging = true,
       ondragleave: () => this.dragging = false,
       ondragover: e => e.preventDefault(),
-    }, this.dragging ? 'Drop trace file to load' : 'Drag and drop ui/trace.protobuf here');
+    }, this.dragging ? 'Drop trace file to load' : 'Drag and drop traces here');
   },
 };
 
@@ -85,7 +85,6 @@ let TraceList = {
     );
   },
 };
-
 
 const ZOOM_STEP = 1.25;
 const PAN_STEP = 5;
@@ -127,11 +126,6 @@ const SLICE_VERTICAL_PADDING = 5;  // px
 const SLICE_TEXT_PADDING = 5;  // px
 const SLICE_TEXT_VERTICAL_ALIGNMENT = 6;  //px
 
-// Change these if you change CSS if you don't want your canvas to be blurry.
-const CANVAS_HEIGHT = 50;
-const CANVAS_WIDTH = 500;
-
-
 function drawRect(ctx, x, y, w, h) {
   // Make rects not blurry.
   x = Math.round(x);
@@ -145,44 +139,49 @@ function drawRect(ctx, x, y, w, h) {
 };
 
 function drawText(ctx, text, x, y, maxWidth) {
+  // TODO: These should be compile time / debug asserts somehow for perf.
   if (ctx.measureText(text).width > maxWidth) return;
+  let height = ctx.measureText('M').width;
   ctx.save();
   ctx.fillStyle = 'black';
   ctx.fillText(text, x + SLICE_TEXT_PADDING,
-               y + SLICE_TEXT_PADDING + SLICE_TEXT_VERTICAL_ALIGNMENT);
+               y + SLICE_TEXT_PADDING + height);
   ctx.restore();
 }
 
-function drawSlice(ctx, slice) {
-  const duration = slice.end - slice.start;
+function drawSlice(ctx, height, slice) {
   const x = (slice.start - TimelineTrackState.xStart)
       * TimelineTrackState.zoomLevel;
   const y = SLICE_VERTICAL_PADDING;
-  const w = duration * TimelineTrackState.zoomLevel;
-  const h = CANVAS_HEIGHT - 2 * SLICE_VERTICAL_PADDING;
+  const w = slice.duration * TimelineTrackState.zoomLevel;
+  const h = height - SLICE_VERTICAL_PADDING;
   drawRect(ctx, x, y, w, h);
   // 3 just because it looks better than 2. Something weird here. Fix later.
   const textMaxWidth = w - 3 * SLICE_TEXT_PADDING;
   drawText(ctx, slice.name, x + SLICE_TEXT_PADDING,
-               y + SLICE_TEXT_PADDING, textMaxWidth);
+               y + SLICE_TEXT_PADDING);
 }
 
 const TimelineTrack = {
   draw: function(vnode) {
     // This works because this.dom points to the first item in the dom array.
     const canvas = vnode.dom;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = rect.height * 2;
+
     const xStart = TimelineTrackState.xStart;
     const xEnd = xStart + canvas.width / TimelineTrackState.zoomLevel;
 
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, rect.width, rect.height);
 
     ctx.fillStyle = 'ivory';
     ctx.strokeStyle = 'black';
-    ctx.font="12px sans serif";
+    ctx.font= "24px sans serif";
     for (const slice of TimelineTrackState.slices) {
       if (slice.end > xStart && slice.start < xEnd) {
-        drawSlice(ctx, slice);
+        drawSlice(ctx, rect.height, slice);
       }
     }
   },
@@ -198,9 +197,9 @@ const TimelineTrack = {
   },
 
   view: function() {
-    return [m('canvas.timelineTrack', {
-               height: CANVAS_HEIGHT}),
-            m('div', `This is a timeline track. ` +
+    return [
+        m('canvas.timelineTrack'),
+        m('div', `This is a timeline track. ` +
              `X offset: ${TimelineTrackState.xStart}. ` +
              `Zoom level: ${TimelineTrackState.zoomLevel}  `)];
   }
@@ -273,11 +272,10 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
   let width = rect.width - margin.left - margin.right;
   let height = +svg.attr("height") - margin.top - margin.bottom;
   state.g_update.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  if (TimelineTrackState.slices.length > 0) {
-    const traceBegin = TimelineTrackState.slices[0].start;
-    const traceEnd =
-          TimelineTrackState.slices[TimelineTrackState.slices.length - 1].end;
-    state.x.range([0, width]).domain([traceBegin, traceEnd]);
+  state.x.range([0, width]);
+  if (TheTraceStore.traces.length) {
+    let trace = TheTraceStore.traces[0];
+    state.x.domain([trace.start(), trace.end()]);
   }
   state.x_axis_update
       .attr("transform", "translate(0," + height + ")")
@@ -299,7 +297,6 @@ const SidePanel = {
         { class: open ? 'sidepanel-open' : 'sidepanel-closed' },
         m('button.sidepanel-button', { onclick: flip }, open ? '<' : '>'),
         m('.sidepanel-contents', open ? [
-          m('h1', 'Perfetto'),
           m(FileUploader),
           m(TraceList),
         ] : undefined),
@@ -309,6 +306,9 @@ const SidePanel = {
 
 const TraceDisplay = {
   view: function(vnode) {
+    if (TheTraceStore.traces.length == 0)
+      return m('.loading');
+
     return m('div',
         {},
         m(Overview, {height: 100}),
@@ -338,10 +338,9 @@ TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
   for (const slice of api.slicesForCpu(trace, 0)) {
     slices.push(slice);
   }
-
   TimelineTrackState.slices = slices;
-  TimelineTrackState.xStart = slices[0].start;
-  TimelineTrackState.xEnd = slices[slices.length - 1].end;
+  TimelineTrackState.xStart = trace.start();
+  TimelineTrackState.xEnd = trace.end();
 
   // TODO: Remove(dproy). Useful for state debugging from devtools console.
   window.TimelineTrackState = TimelineTrackState;
