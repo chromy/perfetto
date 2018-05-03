@@ -93,7 +93,6 @@ const TimelineTrackState = {
   xEnd: 0,
   firstTimestamp: 0,
   lastTimestamp: 0,
-  zoomLevel: 1,
   slices: []
 };
 
@@ -120,16 +119,21 @@ function zoomOut() {
   zoom(-3);
 }
 
+// Pan by a fraction of the width at time.
+const PAN_FRACTION = 1 / 30;
+
 // keyboard event listeners.
 document.addEventListener('keydown', (event) => {
+  const panStep = (TimelineTrackState.xEnd - TimelineTrackState.xStart)
+      * PAN_FRACTION;
   switch (event.code) {
   case 'KeyD':
-    TimelineTrackState.xStart += PAN_STEP / TimelineTrackState.zoomLevel;
-    TimelineTrackState.xEnd += PAN_STEP / TimelineTrackState.zoomLevel;
+    TimelineTrackState.xStart += panStep;
+    TimelineTrackState.xEnd += panStep;
     break;
   case 'KeyA':
-    TimelineTrackState.xStart -= PAN_STEP / TimelineTrackState.zoomLevel;
-    TimelineTrackState.xEnd -= PAN_STEP / TimelineTrackState.zoomLevel;
+    TimelineTrackState.xStart -= panStep;
+    TimelineTrackState.xEnd -= panStep;
     break;
   case 'KeyW':
     zoomIn();
