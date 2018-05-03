@@ -45,6 +45,10 @@ class Trace {
     return this.absToRelative(this._end);
   }
 
+  duration() {
+    return this.end() - this.start();
+  }
+
   absToRelative(timestamp) {
     return timestamp - this._start;
   }
@@ -66,16 +70,48 @@ class SlicesCache {
   }
 
   slicesForCpu(trace, cpu, opt_start, opt_end) {
-    const key = `${trace.id}-${cpu}-${opt_start}-${opt_end}`;
+    const key = `slices-${trace.id}-${cpu}-${opt_start}-${opt_end}`;
     if (!this.cache.has(key)) {
-      console.log(key);
       let slices = Array.from(computeSlicesForCpu(trace, cpu, opt_start, opt_end));
       this.cache.set(key, slices);
     }
     return this.cache.get(key);
   }
+
+  cpuTime(trace, bucket_size_ms) {
+    const key = `time-${trace.id}-${bucket_size_ms}`;
+    if (!this.cache.has(key)) {
+      let buckets = this.computeCpuTime(trace, bucket_size_ms);
+      this.cache.set(key, buckets);
+    }
+    return this.cache.get(key);
+  }
+
+  computeCpuTime(trace, bucket_size_ms) {
+    let bucket_size_ns = bucket_size_ms * 1000 * 1000;
+    let n = Math.ceil(trace.duration() / bucket_size_ns);
+    let buckets = [];
+    for (let i=0; i<n+10; i++) {
+      buckets.push(0);
+    }
+    for (let cpu=0; cpu<8; cpu++) {
+      for (let slice of this.slicesForCpu(trace, cpu)) {
+        let first_bucket = Math.floor(slice.start / bucket_size_ns);
+        let last_bucket = Math.ceil(slice.end / bucket_size_ns);
+        for (let i=first_bucket; i<=last_bucket; i++) {
+          let bucket_start = i * bucket_size_ns;
+          let bucket_end = bucket_start + bucket_size_ns;
+          let start = Math.max(bucket_start, slice.start);
+          let end = Math.min(bucket_end, slice.end);
+          buckets[i] += Math.max(0, end - start);
+        }
+      }
+    }
+    return buckets;
+  }
 }
 const TheSlicesCache = new SlicesCache();
+
 
 function computeTraceStartEnd(trace) {
   let start = Infinity;
@@ -127,5 +163,6 @@ module.exports = {
   Trace,
   Slice,
   slicesForCpu: TheSlicesCache.slicesForCpu.bind(TheSlicesCache),
+  cpuTime: TheSlicesCache.cpuTime.bind(TheSlicesCache),
 };
 

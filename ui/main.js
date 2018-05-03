@@ -320,7 +320,32 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
   if (TheTraceStore.traces.length) {
     let trace = TheTraceStore.traces[0];
     state.x.domain([trace.start(), trace.end()]);
+
+    let data = api.cpuTime(trace, 10);
+
+    state.y = d3.scaleLinear()
+        .rangeRound([height, 0])
+        .domain(d3.extent(data));
+
+    let line = d3.line()
+      .x((d, i) => state.x(i * 1000 * 1000 * 10))
+      .y(d => state.y(d));
+
+    let lines = state.g_update.selectAll('line')
+        .data([data]);
+    lines
+        .enter()
+        .append("path")
+        .attr("class", "line")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", 1.5)
+        .merge(lines)
+        .attr("d", line);
   }
+
   state.x_axis_update
       .attr("transform", "translate(0," + 0 + ")")
       .call(d3.axisTop(state.x).tickFormat(v => '' + (v / 1000 / 1000) + 'ms'));
