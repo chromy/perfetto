@@ -91,14 +91,14 @@ class SlicesCache {
     let bucket_size_ns = bucket_size_ms * 1000 * 1000;
     let n = Math.ceil(trace.duration() / bucket_size_ns);
     let buckets = [];
-    for (let i=0; i<n+10; i++) {
+    for (let i=0; i<n+1; i++) {
       buckets.push(0);
     }
     for (let cpu=0; cpu<8; cpu++) {
       for (let slice of this.slicesForCpu(trace, cpu)) {
         let first_bucket = Math.floor(slice.start / bucket_size_ns);
         let last_bucket = Math.ceil(slice.end / bucket_size_ns);
-        for (let i=first_bucket; i<=last_bucket; i++) {
+        for (let i=first_bucket; i<last_bucket; i++) {
           let bucket_start = i * bucket_size_ns;
           let bucket_end = bucket_start + bucket_size_ns;
           let start = Math.max(bucket_start, slice.start);

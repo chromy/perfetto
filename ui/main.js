@@ -342,7 +342,7 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
     let data = api.cpuTime(trace, 10);
 
     state.y = d3.scaleLinear()
-        .rangeRound([height, 0])
+        .rangeRound([height-2, 2])
         .domain(d3.extent(data));
 
     let line = d3.line()
