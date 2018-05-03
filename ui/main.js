@@ -336,19 +336,19 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
       .x((d, i) => state.x(i * 1000 * 1000 * 10))
       .y(d => state.y(d));
 
-    let lines = state.g_update.selectAll('line')
+    let lines = state.g_update.selectAll('.line')
         .data([data]);
     lines
         .enter()
-        .append("path")
-        .attr("class", "line")
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-linejoin", "round")
-        .attr("stroke-linecap", "round")
-        .attr("stroke-width", 1.5)
+        .append('path')
+        .attr('class', 'line')
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .attr('stroke-width', 1.5)
         .merge(lines)
-        .attr("d", line);
+        .attr('d', line);
   }
 
   state.x_axis_update
@@ -362,6 +362,8 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
       state.x(TimelineTrackState.xEnd),
   ]);
 });
+
+
 
 const SidePanel = {
   view: function(vnode) {
