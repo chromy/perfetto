@@ -3,6 +3,9 @@ let d3 = require("d3");
 let m = require("mithril");
 let api = require("./api.js");
 
+function pidToColor(pid) {
+  return d3.schemeCategory10[pid % 10];
+}
 
 class TraceStore {
   constructor() {
@@ -146,20 +149,15 @@ function drawRect(ctx, x, y, w, h) {
   y = Math.round(y);
   w = Math.round(w);
   h = Math.round(h);
-
   ctx.fillRect(x, y, w, h);
-  ctx.strokeRect(x + 0.5 , y + 0.5, w, h);
-
 };
 
 function drawText(ctx, text, sliceX, sliceY, sliceWidth, sliceHeight) {
   const t = TheTextRenderer.fitText(text, sliceWidth - SLICE_TEXT_PADDING * 2);
   if (t === null)
     return;
-  ctx.save();
   ctx.fillStyle = 'black';
   ctx.fillText(t, sliceX + SLICE_TEXT_PADDING, sliceY + (sliceHeight / 2));
-  ctx.restore();
 }
 
 function drawSlice(ctx, total_height, total_width, slice) {
@@ -169,6 +167,7 @@ function drawSlice(ctx, total_height, total_width, slice) {
   const y = SLICE_VERTICAL_PADDING/2;
   const w = slice.duration * d;
   const h = total_height - SLICE_VERTICAL_PADDING;
+  ctx.fillStyle = pidToColor(slice.pid);
   drawRect(ctx, x, y, w, h);
   // 3 just because it looks better than 2. Something weird here. Fix later.
   const textMaxWidth = w - 3 * SLICE_TEXT_PADDING;

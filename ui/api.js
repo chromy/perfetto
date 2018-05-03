@@ -51,11 +51,12 @@ class Trace {
 }
 
 class Slice {
-  constructor(start, end, name) {
+  constructor(start, end, name, pid) {
     this.start = start;
     this.end = end;
     this.name = name;
     this.duration = end - start;
+    this.pid = pid;
   }
 }
 
@@ -116,7 +117,7 @@ function* computeSlicesForCpu(trace, cpu, opt_start, opt_end) {
       continue;
     const start = trace.absToRelative(last.timestamp);
     const end = trace.absToRelative(current.timestamp);
-    yield new Slice(start, end, last.schedSwitch.nextComm);
+    yield new Slice(start, end, last.schedSwitch.nextComm, last.schedSwitch.nextPid);
   }
 }
 
