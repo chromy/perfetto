@@ -252,7 +252,16 @@ const TimelineTrack = {
   view: function() {
     return m('canvas.timelineTrack');
   }
-}
+};
+
+const TimelineTrackWrapper = {
+  view: function(vnode) {
+    return m('.track-wrapper', {},
+      m('.label', `cpu ${vnode.attrs.cpu}`),
+      m(TimelineTrack, vnode.attrs),
+    );
+  }
+};
 
 function CreateD3Component(element, init, render) {
   return {
@@ -274,7 +283,7 @@ function CreateD3Component(element, init, render) {
 const Overview = CreateD3Component('svg.overview', function(node, attrs, state) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
-  state.margin = {top: 20, right: 10, bottom: 30, left: 10};
+  state.margin = {top: 20, right: 10, bottom: 30, left: 100};
   let width = rect.width - state.margin.left - state.margin.right;
   let height = +svg.attr("height") - state.margin.top - state.margin.bottom;
   let g = svg.selectAll('g').data([0]);
@@ -363,8 +372,6 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
   ]);
 });
 
-
-
 const SidePanel = {
   view: function(vnode) {
     const open = TimelineTrackState.sidePanelDisplayed;
@@ -388,14 +395,14 @@ const TraceDisplay = {
     return m('.tracks',
         {},
         m(Overview, {height: 100}),
-        m(TimelineTrack, {trace: 0, cpu: 0}),
-        m(TimelineTrack, {trace: 0, cpu: 1}),
-        m(TimelineTrack, {trace: 0, cpu: 2}),
-        m(TimelineTrack, {trace: 0, cpu: 3}),
-        m(TimelineTrack, {trace: 0, cpu: 4}),
-        m(TimelineTrack, {trace: 0, cpu: 5}),
-        m(TimelineTrack, {trace: 0, cpu: 6}),
-        m(TimelineTrack, {trace: 0, cpu: 7}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 0}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 1}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 2}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 3}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 4}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 5}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 6}),
+        m(TimelineTrackWrapper, {trace: 0, cpu: 7}),
     );
   },
 };
