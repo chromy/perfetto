@@ -7,12 +7,14 @@ root = protobuf.Root.fromJSON(trace_json_descriptor, root);
 let TraceConfigProto = root.lookupType("perfetto.TraceConfig")
 let TraceProto = root.lookupType("perfetto.Trace")
 
+let LAST_TRACE_ID = 0;
 class Trace {
   constructor(name, protobuf) {
     this.name = name;
     this.protobuf = protobuf;
     this._start = null;
     this._end = null;
+    this.id = LAST_TRACE_ID++;
   }
 
   tracePacketCount() {
@@ -57,6 +59,23 @@ class Slice {
   }
 }
 
+class SlicesCache {
+  constructor() {
+    this.cache = new Map();
+  }
+
+  slicesForCpu(trace, cpu, opt_start, opt_end) {
+    const key = `${trace.id}-${cpu}-${opt_start}-${opt_end}`;
+    if (!this.cache.has(key)) {
+      console.log(key);
+      let slices = Array.from(computeSlicesForCpu(trace, cpu, opt_start, opt_end));
+      this.cache.set(key, slices);
+    }
+    return this.cache.get(key);
+  }
+}
+const TheSlicesCache = new SlicesCache();
+
 function computeTraceStartEnd(trace) {
   let start = Infinity;
   let end = -Infinity;
@@ -85,7 +104,7 @@ function* schedSwitchEventsForCpu(trace, cpu, opt_start, opt_end) {
   }
 }
 
-function* slicesForCpu(trace, cpu, opt_start, opt_end) {
+function* computeSlicesForCpu(trace, cpu, opt_start, opt_end) {
   let last = null;
   let current = null;
   for (const evt of schedSwitchEventsForCpu(trace, cpu, opt_start, opt_end)) {
@@ -106,6 +125,6 @@ module.exports = {
   TraceProto,
   Trace,
   Slice,
-  slicesForCpu,
+  slicesForCpu: TheSlicesCache.slicesForCpu.bind(TheSlicesCache),
 };
 

@@ -27,11 +27,6 @@ class TraceStore {
       let decoded = api.TraceProto.decode(uint8array);
       console.info(`Finished parsing ${name}`);
       this.traces.push(new api.Trace(name, decoded));
-      // TODO(hjd): Remove.
-      let slices = [];
-      for (const slice of api.slicesForCpu(this.traces[this.traces.length-1], 0)) {
-        slices.push(slice);
-      }
       m.redraw();
     });
   }
@@ -99,9 +94,26 @@ const TimelineTrackState = {
   slices: []
 };
 
+function zoom(percent) {
+  let width = TimelineTrackState.xEnd - TimelineTrackState.xStart;
+  TimelineTrackState.xStart += percent * (width / 100);
+  TimelineTrackState.xEnd -= percent * (width / 100);
+  TimelineTrackState.xStart = Math.max(
+      TimelineTrackState.firstTimestamp, TimelineTrackState.xStart);
+  TimelineTrackState.xEnd = Math.min(
+      TimelineTrackState.lastTimestamp, TimelineTrackState.xEnd);
+}
+
+function zoomIn() {
+  zoom(3);
+}
+
+function zoomOut() {
+  zoom(-3);
+}
+
 // keyboard event listeners.
 document.addEventListener('keydown', (event) => {
-  let width = TimelineTrackState.xEnd - TimelineTrackState.xStart;
   switch (event.code) {
   case 'KeyD':
     TimelineTrackState.xStart += PAN_STEP / TimelineTrackState.zoomLevel;
@@ -112,21 +124,14 @@ document.addEventListener('keydown', (event) => {
     TimelineTrackState.xEnd -= PAN_STEP / TimelineTrackState.zoomLevel;
     break;
   case 'KeyW':
-    TimelineTrackState.xStart += width / 100;
-    TimelineTrackState.xEnd -= width / 100;
+    zoomIn();
     break;
   case 'KeyS':
-    TimelineTrackState.xStart -= width / 100;
-    TimelineTrackState.xEnd += width / 100;
+    zoomOut();
     break;
   default:
     return;  // return without triggering a redraw.
   }
-
-  TimelineTrackState.xStart = Math.max(
-      TimelineTrackState.firstTimestamp, TimelineTrackState.xStart);
-  TimelineTrackState.xEnd = Math.min(
-      TimelineTrackState.lastTimestamp, TimelineTrackState.xEnd);
 
   // We had a switch match. Schedule a redraw.
   m.redraw();
@@ -367,7 +372,9 @@ const TraceDisplay = {
 const App = {
   view: function(vnode) {
     return m('.app',
-        {},
+        {
+          onmousewheel: () => zoomIn(),
+        },
         m(SidePanel),
         m(TraceDisplay),
     );
