@@ -98,13 +98,18 @@ const TimelineTrackState = {
 };
 
 function zoom(percent) {
-  let width = TimelineTrackState.xEnd - TimelineTrackState.xStart;
-  TimelineTrackState.xStart += percent * (width / 100);
-  TimelineTrackState.xEnd -= percent * (width / 100);
-  TimelineTrackState.xStart = Math.max(
-      TimelineTrackState.firstTimestamp, TimelineTrackState.xStart);
-  TimelineTrackState.xEnd = Math.min(
-      TimelineTrackState.lastTimestamp, TimelineTrackState.xEnd);
+  if (percent === 0)
+    return;
+  let start = TimelineTrackState.xStart;
+  let end = TimelineTrackState.xEnd;
+  let width = end - start;
+  start += percent * (width / 100);
+  end -= percent * (width / 100);
+  start = Math.max(TimelineTrackState.firstTimestamp, start);
+  end = Math.min(TimelineTrackState.lastTimestamp, end);
+
+  TimelineTrackState.xStart = Math.min(start, end);
+  TimelineTrackState.xEnd = Math.max(start, end);
 }
 
 function zoomIn() {
@@ -206,7 +211,7 @@ class TextRenderer {
 }
 
 const FONT_SIZE = 12 * window.devicePixelRatio;
-const TheTextRenderer = new TextRenderer(`${FONT_SIZE}px sans serif`);
+const TheTextRenderer = new TextRenderer(`${FONT_SIZE}px Helvetica`);
 
 const TimelineTrack = {
   draw: function(vnode) {
@@ -397,7 +402,10 @@ const App = {
   view: function(vnode) {
     return m('.app',
         {
-          onmousewheel: () => zoomIn(),
+          onmousewheel: e => {
+            e.preventDefault();
+            zoom(e.deltaY);
+          },
         },
         m(SidePanel),
         m(TraceDisplay),
