@@ -214,6 +214,9 @@ const TimelineTrack = {
     canvas.width = width;
     canvas.height = height;
 
+    const trace = TheTraceStore.traces[vnode.attrs.trace];
+    const cpu = vnode.attrs.cpu;
+
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, width, height);
 
@@ -221,7 +224,7 @@ const TimelineTrack = {
     ctx.strokeStyle = 'black';
     ctx.textBaseline = 'middle';
     ctx.font = TheTextRenderer.font;
-    for (const slice of TimelineTrackState.slices) {
+    for (const slice of api.slicesForCpu(trace, cpu)) {
       if (slice.end > TimelineTrackState.xStart ||
           slice.start < TimelineTrackState.xEnd) {
         drawSlice(ctx, height, width, slice);
@@ -238,10 +241,7 @@ const TimelineTrack = {
   },
 
   view: function() {
-    return [
-        m('canvas.timelineTrack'),
-        m('div', `This is a timeline track. ` +
-             `X offset: ${TimelineTrackState.xStart}.`)];
+    return m('canvas.timelineTrack');
   }
 }
 
@@ -352,7 +352,14 @@ const TraceDisplay = {
     return m('.tracks',
         {},
         m(Overview, {height: 100}),
-        m(TimelineTrack),
+        m(TimelineTrack, {trace: 0, cpu: 0}),
+        m(TimelineTrack, {trace: 0, cpu: 1}),
+        m(TimelineTrack, {trace: 0, cpu: 2}),
+        m(TimelineTrack, {trace: 0, cpu: 3}),
+        m(TimelineTrack, {trace: 0, cpu: 4}),
+        m(TimelineTrack, {trace: 0, cpu: 5}),
+        m(TimelineTrack, {trace: 0, cpu: 6}),
+        m(TimelineTrack, {trace: 0, cpu: 7}),
     );
   },
 };
@@ -374,11 +381,6 @@ TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
   if (TheTraceStore.traces.length === 0) return;
 
   const trace = TheTraceStore.traces[TheTraceStore.traces.length - 1];
-  const slices = [];
-  for (const slice of api.slicesForCpu(trace, 6)) {
-    slices.push(slice);
-  }
-  TimelineTrackState.slices = slices;
   TimelineTrackState.firstTimestamp = trace.start();
   TimelineTrackState.xStart = trace.start();
   TimelineTrackState.lastTimestamp = trace.end();
