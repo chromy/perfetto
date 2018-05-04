@@ -7,6 +7,19 @@ function pidToColor(pid) {
   return d3.schemeCategory10[pid % 10];
 }
 
+// Sets route with a delay, and coalesces calls if multiple calls are within the
+// delay.
+const SET_ROUTE_BATCHING_DELAY = 100;  // ms.
+const delayedSetRoute = (() => {
+  // timeoutID in closure;
+  let timeoutID;
+  return function(route, data, options) {
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => m.route.set(route, data, options),
+        SET_ROUTE_BATCHING_DELAY);
+  }
+})();
+
 class TraceStore {
   constructor() {
     this.pending = new Set();
@@ -50,8 +63,8 @@ class TraceStore {
       for (let i = 0; i < e.dataTransfer.files.length; i++) {
         return this.loadFromFile(e.dataTransfer.files[i]);
       }
-    } 
-  } 
+    }
+  }
 }
 
 let TheTraceStore = new TraceStore();
@@ -84,9 +97,6 @@ let TraceList = {
   },
 };
 
-const ZOOM_STEP = 1.25;
-const PAN_STEP = 5;
-
 const TimelineTrackState = {
   sidePanelDisplayed: true,
   xStart: 0,
@@ -97,10 +107,12 @@ const TimelineTrackState = {
 };
 
 function updateStartEnd(start, end) {
-  start = Math.max(TimelineTrackState.firstTimestamp, start);
-  end = Math.min(TimelineTrackState.lastTimestamp, end);
-  TimelineTrackState.xStart = Math.min(start, end);
-  TimelineTrackState.xEnd = Math.max(start, end);
+  xStart = Math.max(TimelineTrackState.firstTimestamp, start);
+  xEnd = Math.min(TimelineTrackState.lastTimestamp, end);
+  TimelineTrackState.xStart = xStart;
+  TimelineTrackState.xEnd = xEnd;
+  m.redraw();
+  delayedSetRoute(m.route.get(), {xStart, xEnd}, {replace: true})
 }
 
 function zoom(percent) {
@@ -152,9 +164,6 @@ document.addEventListener('keydown', (event) => {
     return;  // return without triggering a redraw.
   }
 
-
-  // We had a switch match. Schedule a redraw.
-  m.redraw();
 });
 
 const SLICE_VERTICAL_PADDING = 10;  // px
@@ -292,7 +301,7 @@ function CreateD3Component(element, init, render) {
   };
 }
 
-const Overview = CreateD3Component('svg.overview', function(node, attrs, state) {
+const Overview = CreateD3Component('svg.overview', function init(node, attrs, state) {
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
   state.margin = {top: 20, right: 10, bottom: 30, left: 100};
@@ -313,9 +322,7 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
     if (TimelineTrackState.xStart === left && TimelineTrackState.xEnd === right)
       return;
 
-    TimelineTrackState.xStart = left;
-    TimelineTrackState.xEnd = right;
-    m.redraw();
+    updateStartEnd(left, right);
   }
 
   let brush = d3.brushX()
@@ -335,7 +342,7 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
       .attr("class", "brush")
       .call(brush).merge(brush_selection);
 
-}, function(node, attrs, state) {
+}, function render(node, attrs, state) {
   const margin = state.margin;
   let rect = node.getBoundingClientRect();
   let svg = d3.select(node);
@@ -387,7 +394,11 @@ const Overview = CreateD3Component('svg.overview', function(node, attrs, state) 
 const SidePanel = {
   view: function(vnode) {
     const open = TimelineTrackState.sidePanelDisplayed;
-    const flip = () => TimelineTrackState.sidePanelDisplayed = !open;
+    const flip = (e) => {
+      m.route.set(m.route.get(), {sidePanelDisplayed: !open});
+      // The route change will automatically trigger a redraw.
+      e.redraw = false;
+    }
     return m('.sidepanel',
         { class: open ? 'sidepanel-open' : 'sidepanel-closed' },
         m('button.sidepanel-button', { onclick: flip }, open ? '<' : '>'),
@@ -435,7 +446,30 @@ const App = {
 };
 
 let root = document.querySelector('main');
-m.mount(root, App);
+
+m.route(root, "/", {
+  '/': {
+    onmatch: (args) => {
+      attrs = args;
+      const xStart = parseFloat(attrs.xStart);
+      const xEnd = parseFloat(attrs.xEnd);
+
+      if (!isNaN(xStart) &&
+          Math.abs(TimelineTrackState.xStart - xStart) > Number.EPSILON) {
+        TimelineTrackState.xStart = xStart;
+      }
+
+      if (!isNaN(xEnd) &&
+          Math.abs(TimelineTrackState.xEnd - xEnd) > Number.EPSILON) {
+        TimelineTrackState.xEnd = xEnd;
+      }
+
+      // Mithril auto converts from string to booleans.
+      TimelineTrackState.sidePanelDisplayed = attrs.sidePanelDisplayed;
+      return App;
+    },
+  },
+});
 
 TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
   if (TheTraceStore.traces.length === 0) return;
