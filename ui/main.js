@@ -96,6 +96,13 @@ const TimelineTrackState = {
   slices: []
 };
 
+function updateStartEnd(start, end) {
+  start = Math.max(TimelineTrackState.firstTimestamp, start);
+  end = Math.min(TimelineTrackState.lastTimestamp, end);
+  TimelineTrackState.xStart = Math.min(start, end);
+  TimelineTrackState.xEnd = Math.max(start, end);
+}
+
 function zoom(percent) {
   if (percent === 0)
     return;
@@ -104,11 +111,7 @@ function zoom(percent) {
   let width = end - start;
   start += percent * (width / 100);
   end -= percent * (width / 100);
-  start = Math.max(TimelineTrackState.firstTimestamp, start);
-  end = Math.min(TimelineTrackState.lastTimestamp, end);
-
-  TimelineTrackState.xStart = Math.min(start, end);
-  TimelineTrackState.xEnd = Math.max(start, end);
+  updateStartEnd(start, end);
 }
 
 function zoomIn() {
@@ -124,16 +127,20 @@ const PAN_FRACTION = 1 / 30;
 
 // keyboard event listeners.
 document.addEventListener('keydown', (event) => {
+  let start = 0;
+  let end = 0;
   const panStep = (TimelineTrackState.xEnd - TimelineTrackState.xStart)
       * PAN_FRACTION;
   switch (event.code) {
   case 'KeyD':
-    TimelineTrackState.xStart += panStep;
-    TimelineTrackState.xEnd += panStep;
+    start = TimelineTrackState.xStart + panStep;
+    end = TimelineTrackState.xEnd + panStep;
+    updateStartEnd(start, end);
     break;
   case 'KeyA':
-    TimelineTrackState.xStart -= panStep;
-    TimelineTrackState.xEnd -= panStep;
+    start = TimelineTrackState.xStart - panStep;
+    end = TimelineTrackState.xEnd - panStep;
+    updateStartEnd(start, end);
     break;
   case 'KeyW':
     zoomIn();
@@ -144,6 +151,7 @@ document.addEventListener('keydown', (event) => {
   default:
     return;  // return without triggering a redraw.
   }
+
 
   // We had a switch match. Schedule a redraw.
   m.redraw();
