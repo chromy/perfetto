@@ -255,7 +255,7 @@ const TimelineTrack = {
     ctx.textBaseline = 'middle';
     ctx.font = TheTextRenderer.font;
     for (const slice of api.slicesForCpu(trace, cpu)) {
-      if (slice.end > TimelineTrackState.xStart ||
+      if (slice.end > TimelineTrackState.xStart &&
           slice.start < TimelineTrackState.xEnd) {
         drawSlice(ctx, height, width, slice);
       }
