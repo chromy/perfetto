@@ -447,25 +447,28 @@ const App = {
 
 let root = document.querySelector('main');
 
+function setStateFromURLAttrs(attrs) {
+  const xStart = parseFloat(attrs.xStart);
+  const xEnd = parseFloat(attrs.xEnd);
+
+  if (!isNaN(xStart) &&
+      Math.abs(TimelineTrackState.xStart - xStart) > Number.EPSILON) {
+    TimelineTrackState.xStart = xStart;
+  }
+
+  if (!isNaN(xEnd) &&
+      Math.abs(TimelineTrackState.xEnd - xEnd) > Number.EPSILON) {
+    TimelineTrackState.xEnd = xEnd;
+  }
+
+  // Mithril auto converts from string to booleans.
+  TimelineTrackState.sidePanelDisplayed = attrs.sidePanelDisplayed;
+}
+
 m.route(root, "/", {
   '/': {
     onmatch: (args) => {
-      attrs = args;
-      const xStart = parseFloat(attrs.xStart);
-      const xEnd = parseFloat(attrs.xEnd);
-
-      if (!isNaN(xStart) &&
-          Math.abs(TimelineTrackState.xStart - xStart) > Number.EPSILON) {
-        TimelineTrackState.xStart = xStart;
-      }
-
-      if (!isNaN(xEnd) &&
-          Math.abs(TimelineTrackState.xEnd - xEnd) > Number.EPSILON) {
-        TimelineTrackState.xEnd = xEnd;
-      }
-
-      // Mithril auto converts from string to booleans.
-      TimelineTrackState.sidePanelDisplayed = attrs.sidePanelDisplayed;
+      setStateFromURLAttrs(args);
       return App;
     },
   },
@@ -476,10 +479,8 @@ TheTraceStore.loadFromUrl('/examples/trace.protobuf').then(() => {
 
   const trace = TheTraceStore.traces[TheTraceStore.traces.length - 1];
   TimelineTrackState.firstTimestamp = trace.start();
-  TimelineTrackState.xStart = trace.start();
   TimelineTrackState.lastTimestamp = trace.end();
-  TimelineTrackState.xEnd = trace.end();
-
+  setStateFromURLAttrs(m.route.params());
   // TODO: Remove(dproy). Useful for state debugging from devtools console.
   window.TimelineTrackState = TimelineTrackState;
 
