@@ -1,15 +1,22 @@
 import {LitElement, html} from '@polymer/lit-element';
+import {TrackTreeState} from './state';
 
 export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
   trackContentData: TrackContentData;
+  s: TrackTreeState | undefined;
+
   get height() {
     return -1;
   }
   set context(context: CanvasRenderingContext2D) {
     this.ctx = context;
+  }
+
+  set state(state: TrackTreeState) {
+    this.s = state;
   }
 
   constructor()
@@ -37,4 +44,4 @@ export class Track extends LitElement {
 
 
 
-customElements.define('track', Track);
+customElements.define('trace-track', Track);

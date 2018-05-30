@@ -1,4 +1,4 @@
-interface State {
+export interface State {
   loadedTraces: string[]; // Handles to traces
   gps: {
     startVisibleWindow: number,
@@ -15,7 +15,7 @@ interface State {
 }
 
 
-interface TrackTreeState {
+export interface TrackTreeState {
   metadata: {
     name: string,
     shellColor: string
@@ -25,7 +25,7 @@ interface TrackTreeState {
 
 
 
-interface TrackState {
+export interface TrackState {
   metadata: {};
   trackData: TrackDataSpec;
 }

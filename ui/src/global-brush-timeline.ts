@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 
-class GlobalBrushTimeline extends LitElement {
+export class GlobalBrushTimeline extends LitElement {
 
   static get properties() { return { mood: String }}
 

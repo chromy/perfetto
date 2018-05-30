@@ -16,6 +16,7 @@
 
 import { TraceUi } from './trace-ui';
 import {html, render} from 'lit-html';
+import {State} from './state';
 
 console.log('Hello world!');
 
@@ -46,4 +47,36 @@ const ui = document.createElement('trace-ui');
 document.body.appendChild(ui);
 
 // Without using TraceUi in this code, it is not transpiled into bundle.js.
-console.log(ui instanceof TraceUi);
+if(ui instanceof TraceUi)
+{
+  const state: State = {
+    loadedTraces: [], // Handles to traces
+    gps: {
+      startVisibleWindow: 10,
+      endVisibleWindow: 2000
+    },
+    trackTree: {
+      metadata: {
+        name: 'foo',
+        shellColor: 'red'
+      },
+      children: [{
+        metadata: {
+          name: 'bar 1',
+          shellColor: 'blue'
+        },
+        children: []
+      }, {
+        metadata: {
+          name: 'bar 2',
+          shellColor: 'yellow'
+        },
+        children: []
+      }]
+    },
+    sliceTrackDataSpec: {}
+  };
+
+  ui.state = state;
+}
+

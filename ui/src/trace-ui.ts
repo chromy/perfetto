@@ -1,13 +1,20 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {TrackTree} from './track-tree';
 import {TrackCanvasController} from './track-canvas-controller';
+import {State} from './state';
+import {GlobalBrushTimeline} from './global-brush-timeline';
 
 export class TraceUi extends LitElement {
 
-  static get properties() { return { mood: String }}
+  static get properties() { return { s: String }}
 
   private cc: TrackCanvasController;
-  private state: State | undefined;
+  private s: State | undefined;
+
+  set state(state: State)
+  {
+    this.s = state;
+  }
 
   constructor()
   {
@@ -17,18 +24,25 @@ export class TraceUi extends LitElement {
   }
 
   _render() {
-    if(!this.state)
+    if(!this.s)
     {
       throw new Error('State not defined!');
     }
 
+    console.log('Rendering Trace UI.');
     const trackTree: TrackTree = new TrackTree(); //document.getElementsByTagName('track-tree')[0]; // = document.get...
-    trackTree.state = this.state.trackTree; // Root tree
+    trackTree.state = this.s.trackTree; // Root tree
     trackTree.context = this.cc.getContext2D();
 
-    return html`<div id='ui'>
-      <global-brush-timeline />
-      <track-tree/>
+    // Just doing this so the file is included in the build..
+    if({} instanceof GlobalBrushTimeline)
+    {
+
+    }
+
+    return html`<div id='ui'><h1>Trace UI</h1>
+      <global-brush-timeline></global-brush-timeline>
+      <track-tree></track-tree>
     </div>`;
     //<track-tree tree=rootTree modifiedCtx=cc.getCanvasContext('2D')/>
   }
