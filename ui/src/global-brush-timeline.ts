@@ -5,7 +5,7 @@ export class GlobalBrushTimeline extends LitElement {
   static get properties() { return { mood: String }}
 
   _render() {
-    return html`<h2>Global Brush Timeline</h2>`;
+    return html`<svg style="width: 100%; background:#ccc"><text y="20" x="10">Global Brush Timeline</text></svg>`;
   }
 
 }

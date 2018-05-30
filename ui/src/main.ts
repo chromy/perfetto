@@ -17,6 +17,8 @@
 import { TraceUi } from './trace-ui';
 import {html, render} from 'lit-html';
 import {State} from './state';
+import {GlobalBrushTimeline} from './global-brush-timeline';
+import {TrackTree} from './track-tree';
 
 console.log('Hello world!');
 
@@ -80,3 +82,8 @@ if(ui instanceof TraceUi)
   ui.state = state;
 }
 
+// Just doing this so these files are included in the build..
+if({} instanceof GlobalBrushTimeline || {} instanceof  TrackTree)
+{
+
+}

@@ -7,7 +7,7 @@ export class TrackTree extends LitElement {
   s: TrackTreeState | undefined;
   ctx: CanvasRenderingContext2D | undefined;
 
-  static get properties() { return { trackChildren: [String] }}
+  static get properties() { return { s: String, trackChildren: [String] }}
 
   constructor()
   {
@@ -45,6 +45,11 @@ export class TrackTree extends LitElement {
     return 'children' in state;
   }
 
+  set sss(sss) {
+    console.log('ssssssss');
+    console.log(sss);
+  }
+
   get height() : number {
     return 100;
   }
@@ -78,14 +83,11 @@ export class TrackTree extends LitElement {
     return ctx;
   }
 
-  _render({trackChildren}) {
+  _render({s, trackChildren}) {
+    console.log(s);
     console.log(trackChildren);
-    return html`<div><h2>Track Tree</h2>
-      ${trackChildren.map(c =>
-        /*c instanceof TrackTree ? html`<track-tree></track-tree>` :
-            `<trace-track></trace-track>`*/
-        c
-      )}
+    return html`<div style="background: ${s.metadata.shellColor}; padding: 20px"><h2>Track Tree: ${s.metadata.name}</h2>
+      ${trackChildren}
     </div>`;
   }
 }
