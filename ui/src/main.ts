@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { TraceUi } from './trace-ui';
 import {html, render} from 'lit-html';
 
 console.log('Hello world!');
@@ -40,3 +41,9 @@ const container = document.getElementById('app-container');
 if (container) {
   render(myTemplate('Hello world from lit-html!'), container);
 }
+
+const ui = document.createElement('trace-ui');
+document.body.appendChild(ui);
+
+// Without using TraceUi in this code, it is not transpiled into bundle.js.
+console.log(ui instanceof TraceUi);

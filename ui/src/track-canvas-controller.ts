@@ -1,4 +1,4 @@
-class TrackCanvasController {
+export class TrackCanvasController {
   // Owns the canvas.
 
   private canvas: HTMLCanvasElement;
@@ -9,6 +9,7 @@ class TrackCanvasController {
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('height', '1000');
     this.canvas.setAttribute('width', '1000');
+    console.log('Canvas created.');
 
     //TODO: getContext can return null. Need better solution.
     this.ctx = <CanvasRenderingContext2D> this.canvas.getContext('2d');

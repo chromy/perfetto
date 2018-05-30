@@ -2,14 +2,17 @@ import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
 
 export class TrackTree extends LitElement {
-  children: (TrackTree|Track)[];
+  cs: (TrackTree|Track)[] | undefined;
   s: TrackTreeState | undefined;
   ctx: CanvasRenderingContext2D | undefined;
 
-  constructor(children: (TrackTree|Track)[])
+  constructor()
   {
     super();
-    this.children = children;
+  }
+
+  set children(children: (TrackTree|Track)[]) {
+    this.cs = children;
   }
 
   set context(context: CanvasRenderingContext2D) {
@@ -51,6 +54,7 @@ export class TrackTree extends LitElement {
   private createMCtx(offset: number, ctx: CanvasRenderingContext2D)
   {
     //TODO: Use offset.
+    ctx.translate(0, offset);
     return ctx;
   }
 

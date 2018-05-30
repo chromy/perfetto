@@ -1,6 +1,6 @@
 class SliceTrackContent extends TrackContent {
-  private state: TrackState | undefined;
-  private vis: TrackContent;
+  //private state: TrackState | undefined;
+  //private vis: TrackContent;
 
   private getData() {
     // TraceDataStore..
@@ -8,11 +8,13 @@ class SliceTrackContent extends TrackContent {
   constructor() {
     super();
 
-    this.vis = new SliceTrackContent();
+    //this.vis = new SliceTrackContent();
   }
   draw(ctx: CanvasRenderingContext2D) {
 
-    const data = this.getData();
+    this.getData();
+
+    ctx.fillStyle = 'red';
 
     //TODO Draw stuff with data.
 
