@@ -9,9 +9,14 @@ export class TrackTree extends LitElement {
 
   static get properties() { return { s: String, trackChildren: [String] }}
 
-  constructor()
+  constructor(state?: TrackTreeState)
   {
     super();
+
+    if(state)
+    {
+      this.state = state;
+    }
   }
 
   set context(context: CanvasRenderingContext2D) {
@@ -26,33 +31,22 @@ export class TrackTree extends LitElement {
     // Define children
     for(let childState of this.s.children)
     {
-      if(this.isTrackTreeState(childState))
-      {
-        const child = new TrackTree();
-        child.state = childState;
-        this.trackChildren.push(child);
-      }
-      else
-      {
-        const child = new Track();
-        child.state = childState;
-        this.trackChildren.push(child);
-      }
+      const child = TrackTree.isTrackTreeState(childState) ?
+          new TrackTree(childState) : new Track(childState);
+
+      this.trackChildren.push(child);
     }
   }
 
-  isTrackTreeState(state: (TrackTreeState | TrackState)): state is TrackTreeState {
+  static isTrackTreeState(state: (TrackTreeState | TrackState)): state is TrackTreeState {
     return 'children' in state;
-  }
-
-  set sss(sss) {
-    console.log('ssssssss');
-    console.log(sss);
   }
 
   get height() : number {
     return 100;
   }
+
+  // This is not yet in use.
   render() {
     let offset =  0;
     if(!this.ctx)
@@ -73,7 +67,6 @@ export class TrackTree extends LitElement {
         offset += c.height;
       }
     }
-
   }
 
   private createMCtx(offset: number, ctx: CanvasRenderingContext2D)
@@ -84,8 +77,6 @@ export class TrackTree extends LitElement {
   }
 
   _render({s, trackChildren}) {
-    console.log(s);
-    console.log(trackChildren);
     return html`<div style="background: ${s.metadata.shellColor}; padding: 20px"><h2>Track Tree: ${s.metadata.name}</h2>
       ${trackChildren}
     </div>`;

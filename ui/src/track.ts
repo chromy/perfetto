@@ -1,12 +1,12 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {TrackTreeState} from './state';
+import {TrackState} from './state';
 
 export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
   trackContentData: TrackContentData;
-  s: TrackTreeState | undefined;
+  s: TrackState | undefined;
 
   get height() {
     return -1;
@@ -15,13 +15,18 @@ export class Track extends LitElement {
     this.ctx = context;
   }
 
-  set state(state: TrackTreeState) {
+  set state(state: TrackState) {
     this.s = state;
   }
 
-  constructor()
+  constructor(state?: TrackState)
   {
     super();
+
+    if(state)
+    {
+      this.state = state;
+    }
 
     this.shell = new TrackShell();
     this.content = new SliceTrackContent(); //TODO: Infer
