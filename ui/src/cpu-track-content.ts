@@ -1,0 +1,3 @@
+class CpuUsageTrackContent extends TrackContent {
+
+}
