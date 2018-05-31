@@ -12,8 +12,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@polymer/lit-element": "^0.5.1",
+    "@types/d3": "^5.0.0",
     "@types/polymer": "^1.2.4",
     "ajv": "^6.5.0",
+    "d3": "^5.4.0",
     "lit-html": "^0.10.0",
     "protobufjs": "^6.8.6"
   },
