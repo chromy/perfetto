@@ -1,8 +1,9 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {TrackCanvasController} from './track-canvas-controller';
 import {State} from './state';
-import {GlobalBrushTimeline} from './global-brush-timeline';
+import {GlobalBrushTimeline} from './overview-timeline/global-brush-timeline';
 import {TrackTree} from './track-tree';
+import {FramesTimeline} from './overview-timeline/frames-timeline';
 
 export class TraceUi extends LitElement {
 
@@ -18,7 +19,11 @@ export class TraceUi extends LitElement {
     console.log('Trace UI initialized.');
 
     this.cc = new TrackCanvasController();
+
     this.overview = new GlobalBrushTimeline(this.state);
+    this.frameTimeline = new FramesTimeline(this.state);
+    this.overview.appendChild(this.frameTimeline);
+
     this.root = new TrackTree(this.state.trackTree, this.cc.getContext2D());
   }
 
