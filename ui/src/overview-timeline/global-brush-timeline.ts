@@ -60,7 +60,7 @@ export class GlobalBrushTimeline extends LitElement {
         background:#ccc;
       }
     </style>
-    <div class="wrap">
+    <div class="wrap" style="padding: ${this.margin.top}px ${this.margin.right}px ${this.margin.bottom}px ${this.margin.left}px">
       <svg>
         ${svgContent}
       </svg>

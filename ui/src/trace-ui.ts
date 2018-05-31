@@ -3,7 +3,7 @@ import {TrackCanvasController} from './track-canvas-controller';
 import {State} from './state';
 import {GlobalBrushTimeline} from './overview-timeline/global-brush-timeline';
 import {TrackTree} from './track-tree';
-import {FramesTimeline} from './overview-timeline/frames-timeline';
+import {CpuTimeline} from './overview-timeline/cpu-timeline';
 
 export class TraceUi extends LitElement {
 
@@ -11,6 +11,7 @@ export class TraceUi extends LitElement {
 
   private cc: TrackCanvasController;
   private overview: GlobalBrushTimeline;
+  private cpuTimeline: CpuTimeline;
   private root: TrackTree;
 
   constructor(private state: State)
@@ -21,8 +22,8 @@ export class TraceUi extends LitElement {
     this.cc = new TrackCanvasController();
 
     this.overview = new GlobalBrushTimeline(this.state);
-    this.frameTimeline = new FramesTimeline(this.state);
-    this.overview.appendChild(this.frameTimeline);
+    this.cpuTimeline = new CpuTimeline(this.state);
+    this.overview.appendChild(this.cpuTimeline);
 
     this.root = new TrackTree(this.state.trackTree, this.cc.getContext2D());
   }
