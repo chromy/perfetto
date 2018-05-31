@@ -2,8 +2,20 @@ import {LitElement, html} from '@polymer/lit-element';
 import {State} from '../state';
 import * as d3 from 'd3';
 import {svg} from 'lit-html';
+import {ScaleTime} from 'd3-scale';
 
 export class GlobalBrushTimeline extends LitElement {
+
+  private x: ScaleTime<number, number>;
+  private xAxis: any;
+  private axisEl: any;
+  private brush: any;
+  private brushEl: any;
+
+  private start = 0;
+  private end = 10000;
+  private width = 1000;
+  private height = 150;
 
   constructor(private state: State)
   {
@@ -16,9 +28,6 @@ export class GlobalBrushTimeline extends LitElement {
       bottom: 20,
       left: 20
     };
-
-    this.start = 0;
-    this.end = 10000;
 
     this.x = d3.scaleTime().range([this.margin.left, 1000 - this.margin.right]);
     this.x.domain([this.start, this.end]);
@@ -34,12 +43,29 @@ export class GlobalBrushTimeline extends LitElement {
     this.axisEl
         .call(this.xAxis);
 
+    this.brush = d3.brushX()
+        .extent([[0,0], [this.width , this.height - this.margin.bottom ]])
+        .on("brush end", () =>
+        {
+          // const start = this.x.invert(+d3.event.selection[0]).getTime();
+          // const end = this.x.invert(+d3.event.selection[1]).getTime();
+          //
+          // console.log(start, end);
+          //this.dispatchEvent(new CustomEvent(brushEventName, { detail: [start, end]}));
+        });
+
+    this.brushEl = d3.select(this.g).append("g")
+        .attr("class", "brush");
+
+    let brushStart = 500;
+    let brushEnd = 3000;
+
+    this.brushEl
+        .call(this.brush)
+        .call(this.brush.move, [this.x(brushStart), this.x(brushEnd)]);
   }
 
   _render() {
-
-    // I'd like to do this, but I get 'TypeError: Cannot assign to read only property 'transform'".
-    // <g class="axis axis--g" transform="translate(0, ${150-this.margin.bottom})"></g>
 
     const svgContent = svg`
         ${this.g}
@@ -50,6 +76,7 @@ export class GlobalBrushTimeline extends LitElement {
       .wrap {
         position: relative;
         height: 150px;
+        background:#eee;
       }
       svg {
         position: absolute;
@@ -57,17 +84,16 @@ export class GlobalBrushTimeline extends LitElement {
         left: 0;
         width: 100%;
         height: 100%;
-        background:#ccc;
       }
+      .brush .selection { stroke: none; }
     </style>
     <div class="wrap" style="padding: ${this.margin.top}px ${this.margin.right}px ${this.margin.bottom}px ${this.margin.left}px">
+      <slot></slot>
       <svg>
         ${svgContent}
       </svg>
-      <slot></slot>
     </div>`;
   }
-
 }
 
 customElements.define('global-brush-timeline', GlobalBrushTimeline);
