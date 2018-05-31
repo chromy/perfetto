@@ -11,10 +11,13 @@
   "author": "Perfetto Team",
   "license": "Apache-2.0",
   "dependencies": {
+    "@types/mithril": "^1.1.12",
+    "mithril": "^1.1.6",
     "protobufjs": "^6.8.6",
-    "sorcery": "^0.10.0"
+    "tslib": "^1.9.2"
   },
   "devDependencies": {
+    "sorcery": "^0.10.0",
     "@types/jest": "^22.2.3",
     "jest": "^23.1.0",
     "lite-server": "^2.3.0",
