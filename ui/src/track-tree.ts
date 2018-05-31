@@ -4,35 +4,22 @@ import { TrackTreeState, TrackState } from './state'
 
 export class TrackTree extends LitElement {
   trackChildren: (TrackTree|Track)[] = [];
-  s: TrackTreeState | undefined;
-  ctx: CanvasRenderingContext2D | undefined;
 
-  static get properties() { return { s: String, trackChildren: [String] }}
+  static get properties() { return { state: String, trackChildren: [String] }}
 
-  constructor(state?: TrackTreeState)
+  constructor(private state: TrackTreeState,
+              private ctx: CanvasRenderingContext2D)
   {
     super();
 
-    if(state)
-    {
-      this.state = state;
-    }
+    this.updateChildren();
   }
 
-  set context(context: CanvasRenderingContext2D) {
-    this.ctx = context;
-  }
-
-  set state(state: TrackTreeState) {
-    this.s = state;
-
-    console.log(state);
-
-    // Define children
-    for(let childState of this.s.children)
+  private updateChildren() {
+    for(let childState of this.state.children)
     {
       const child = TrackTree.isTrackTreeState(childState) ?
-          new TrackTree(childState) : new Track(childState);
+          new TrackTree(childState, this.createMCtx(10)) : new Track(childState);
 
       this.trackChildren.push(child);
     }
@@ -46,38 +33,16 @@ export class TrackTree extends LitElement {
     return 100;
   }
 
-  // This is not yet in use.
-  render() {
-    let offset =  0;
-    if(!this.ctx)
-    {
-      throw new Error('Context not defined.');
-    }
-    else
-    {
-      let modifiedCtx = this.ctx;
-      for (let c of this.trackChildren) {
-        modifiedCtx = this.createMCtx(offset, modifiedCtx);
-        //<c modifiedCtx/>.render();
-
-        c.context = modifiedCtx;
-
-        c.render();
-
-        offset += c.height;
-      }
-    }
-  }
-
-  private createMCtx(offset: number, ctx: CanvasRenderingContext2D)
+  private createMCtx(offset: number)
   {
     //TODO: Use offset.
-    ctx.translate(0, offset);
-    return ctx;
+    this.ctx.translate(0, offset);
+    return this.ctx;
   }
 
-  _render({s, trackChildren}) {
-    return html`<div style="background: ${s.metadata.shellColor}; padding: 20px"><h2>Track Tree: ${s.metadata.name}</h2>
+  _render({state, trackChildren}) {
+    return html`<div style="background: ${state.metadata.shellColor};padding: 20px">
+      <h2>Track Tree: ${state.metadata.name}</h2>
       ${trackChildren}
     </div>`;
   }

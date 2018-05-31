@@ -6,28 +6,17 @@ export class Track extends LitElement {
   content: TrackContent;
   type: string; //? Class? something;
   trackContentData: TrackContentData;
-  s: TrackState | undefined;
+  state: TrackState;
 
   get height() {
     return -1;
   }
-  set context(context: CanvasRenderingContext2D) {
-    this.ctx = context;
-  }
 
-  set state(state: TrackState) {
-    this.s = state;
-  }
-
-  constructor(state?: TrackState)
+  constructor(s: TrackState)
   {
     super();
 
-    if(state)
-    {
-      this.state = state;
-    }
-
+    this.state = s;
     this.shell = new TrackShell();
     this.content = new SliceTrackContent(); //TODO: Infer
     this.type = 'slice'; //TODO: Infer
@@ -41,8 +30,8 @@ export class Track extends LitElement {
   render() {
     //const TrackContentClass = getTrackContentClass(this.type);
     return html`<div>
-      <TrackShell name="test" />
-      <TrackContentClass data="trackContentData" />
+      ${this.shell}
+      ${this.content}
     </div>`;
   }
 }

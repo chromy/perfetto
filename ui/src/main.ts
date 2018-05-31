@@ -17,8 +17,6 @@
 import { TraceUi } from './trace-ui';
 import {html, render} from 'lit-html';
 import {State} from './state';
-import {GlobalBrushTimeline} from './global-brush-timeline';
-import {TrackTree} from './track-tree';
 
 console.log('Hello world!');
 
@@ -39,18 +37,8 @@ function writeToUIConsole(line:string) {
     printErr: writeToUIConsole,
 };
 
-const myTemplate = (msg: string) => html`<p>${msg}</p>`;
 const container = document.getElementById('app-container');
 if (container) {
-  render(myTemplate('Hello world from lit-html!'), container);
-}
-
-const ui = document.createElement('trace-ui');
-document.body.appendChild(ui);
-
-// Without using TraceUi in this code, it is not transpiled into bundle.js.
-if(ui instanceof TraceUi)
-{
   const state: State = {
     loadedTraces: [], // Handles to traces
     gps: {
@@ -78,12 +66,7 @@ if(ui instanceof TraceUi)
     },
     sliceTrackDataSpec: {}
   };
+  const ui = new TraceUi(state);
 
-  ui.state = state;
-}
-
-// Just doing this so these files are included in the build..
-if({} instanceof GlobalBrushTimeline || {} instanceof  TrackTree)
-{
-
+  render(html`${ui}`, container);
 }
