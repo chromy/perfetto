@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
-console.log('Hello from the worker!');
+import { main } from './backend';
+
+main();
 
