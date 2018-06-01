@@ -3,6 +3,7 @@ import {State} from '../state';
 import * as d3 from 'd3';
 import {svg} from 'lit-html';
 import {ScaleTime} from 'd3-scale';
+import {CpuTimeline} from './cpu-timeline';
 
 export class GlobalBrushTimeline extends LitElement {
 
@@ -29,7 +30,7 @@ export class GlobalBrushTimeline extends LitElement {
       left: 20
     };
 
-    this.x = d3.scaleTime().range([this.margin.left, 1000 - this.margin.right]);
+    this.x = d3.scaleTime().range([this.margin.left, this.width - this.margin.right]);
     this.x.domain([this.start, this.end]);
 
     this.xAxis = d3.axisBottom(this.x);
@@ -38,7 +39,7 @@ export class GlobalBrushTimeline extends LitElement {
 
     this.axisEl = d3.select(this.g).append("g")
         .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + (150 - this.margin.bottom) + ")");
+        .attr("transform", "translate(0," + (this.height - this.margin.bottom) + ")");
 
     this.axisEl
         .call(this.xAxis);
@@ -65,6 +66,13 @@ export class GlobalBrushTimeline extends LitElement {
         .call(this.brush.move, [this.x(brushStart), this.x(brushEnd)]);
   }
 
+  private getChildContent()
+  {
+    this.cpuTimeline = new CpuTimeline(this.state, this.x);
+
+    return html`${this.cpuTimeline}`;
+  }
+
   _render() {
 
     const svgContent = svg`
@@ -77,6 +85,7 @@ export class GlobalBrushTimeline extends LitElement {
         position: relative;
         height: 150px;
         background:#eee;
+        box-sizing: border-box;
       }
       svg {
         position: absolute;
@@ -87,8 +96,8 @@ export class GlobalBrushTimeline extends LitElement {
       }
       .brush .selection { stroke: none; }
     </style>
-    <div class="wrap" style="padding: ${this.margin.top}px ${this.margin.right}px ${this.margin.bottom}px ${this.margin.left}px">
-      <slot></slot>
+    <div class="wrap" style="padding: ${this.margin.top}px 0px ${this.margin.bottom}px 0px">
+      ${this.getChildContent()}
       <svg>
         ${svgContent}
       </svg>

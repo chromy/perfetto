@@ -5,10 +5,9 @@ import {render, svg} from 'lit-html';
 export class CpuTimeline extends LitElement {
 
   private height = 100;
-  private width = 1000 - 40;
   private cpuData: { time: number, cpu: number}[];
 
-  constructor(private state: State)
+  constructor(private state: State, private x)
   {
     super();
 
@@ -16,7 +15,6 @@ export class CpuTimeline extends LitElement {
 
     const start = 0;
     const end = 10000;
-    this.x = (time) => { return (time - start) / (end - start)* this.width };
     this.y = (cpu) => { return this.height - cpu * this.height };
 
     this.cpuData = [];
@@ -69,8 +67,8 @@ export class CpuTimeline extends LitElement {
     </style>
     <div class="wrap">
       <svg>
-        <text y="20" x="10">Cpu Timeline</text>
         ${g}
+        <text y="20" x="20">Cpu Timeline</text>
       </svg>
     </div>`;
   }
