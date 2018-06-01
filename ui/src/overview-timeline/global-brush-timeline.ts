@@ -17,6 +17,11 @@ export class GlobalBrushTimeline extends LitElement {
   private end = 10000;
   private width = 1000;
   private height = 150;
+  private margin: {top: number, right: number, bottom: number, left: number};
+
+  private cpuTimeline: CpuTimeline;
+
+  static get properties() { return { width: Number }}
 
   constructor(private state: State)
   {
@@ -64,12 +69,22 @@ export class GlobalBrushTimeline extends LitElement {
     this.brushEl
         .call(this.brush)
         .call(this.brush.move, [this.x(brushStart), this.x(brushEnd)]);
+
+    setTimeout(() => setInterval(() => {
+      this.width = 500 + Math.round(Math.random() * 1000);
+      this.x.range([this.margin.left, this.width - this.margin.right]);
+      this.axisEl
+          .transition()
+          .call(this.xAxis);
+
+      this.cpuTimeline._invalidateProperties();
+    }, 2000), 1000);
+
+    this.cpuTimeline = new CpuTimeline(this.state, this.x);
   }
 
   private getChildContent()
   {
-    this.cpuTimeline = new CpuTimeline(this.state, this.x);
-
     return html`${this.cpuTimeline}`;
   }
 
