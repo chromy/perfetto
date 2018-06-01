@@ -61,7 +61,18 @@ if (container) {
           name: 'bar 2',
           shellColor: 'yellow'
         },
-        children: []
+        children: [{
+          metadata: {
+            name: 'subbar 2-1',
+            shellColor: 'green'
+          },
+          children: []
+        }, {
+          metadata: {
+
+          },
+          trackData: {}
+        }]
       }]
     },
     sliceTrackDataSpec: {}

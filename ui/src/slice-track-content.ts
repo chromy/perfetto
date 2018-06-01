@@ -1,4 +1,7 @@
-class SliceTrackContent extends TrackContent {
+import {TrackContent} from './track-content';
+import {html} from 'lit-html';
+
+export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
   //private vis: TrackContent;
 
@@ -25,8 +28,18 @@ class SliceTrackContent extends TrackContent {
     }*/
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  _render(ctx: CanvasRenderingContext2D) {
     this.draw(ctx);  // This makes it not a pure function since this is a side effect.
-    return `<div>blah blah</div>`;
+
+    return html`
+    <style>
+      .wrap {
+        background: #fff;
+        padding: 20px;
+      }
+    </style>
+    <div class="wrap">Slice Track Content</div>`;
   }
 }
+
+customElements.define('track-track-content', SliceTrackContent);

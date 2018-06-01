@@ -1,5 +1,8 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {TrackState} from './state';
+import {TrackShell} from './track-shell';
+import {SliceTrackContent} from './slice-track-content';
+import {TrackContent} from './track-content';
 
 export class Track extends LitElement {
   shell: TrackShell;
@@ -27,15 +30,23 @@ export class Track extends LitElement {
     };
   }
 
-  render() {
+  _render() {
     //const TrackContentClass = getTrackContentClass(this.type);
-    return html`<div>
+    return html`
+    
+    <style>
+      .wrap {
+        background: orange;
+        padding: 20px;
+      }
+    </style>
+    
+    <div class="wrap">
+      <h2>Track</h2>
       ${this.shell}
       ${this.content}
     </div>`;
   }
 }
-
-
 
 customElements.define('trace-track', Track);
