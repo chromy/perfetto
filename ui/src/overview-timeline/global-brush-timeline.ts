@@ -76,6 +76,9 @@ export class GlobalBrushTimeline extends LitElement {
       this.axisEl
           .transition()
           .call(this.xAxis);
+      this.brushEl
+          .transition()
+          .call(this.brush.move, [this.x(brushStart), this.x(brushEnd)]);
 
       this.cpuTimeline._invalidateProperties();
     }, 2000), 1000);
