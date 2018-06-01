@@ -1,11 +1,15 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {State} from '../state';
 import {render, svg} from 'lit-html';
+import * as d3 from 'd3';
 
 export class CpuTimeline extends LitElement {
 
   private height = 100;
-  private cpuData: { time: number, cpu: number}[];
+  private cpuData: { time: number, cpu: number}[] = [];
+  private path: SVGPathElement;
+
+  static get properties() { return { height: Number, cpuData: [String] }}
 
   constructor(private state: State, private x)
   {
@@ -13,10 +17,21 @@ export class CpuTimeline extends LitElement {
 
     console.log(this.state);
 
-    const start = 0;
-    const end = 10000;
     this.y = (cpu) => { return this.height - cpu * this.height };
 
+    this.setRandomCpuData();
+
+    setInterval(() => this.setRandomCpuData(), 800);
+
+    this.path = document.createElementNS('http://www.w3.org/2000/svg', "path");
+    this.path.setAttribute('stroke', '#d70');
+    this.path.setAttribute('fill', 'none');
+  }
+
+  private setRandomCpuData()
+  {
+    const start = 0;
+    const end = 10000;
     this.cpuData = [];
 
     for(let time = start; time <= end; time += (end - start) / 100)
@@ -27,7 +42,6 @@ export class CpuTimeline extends LitElement {
 
   private getPathD()
   {
-    // Adding new data
     let d = 'M';
 
     for(const dataPoint of this.cpuData)
@@ -43,9 +57,9 @@ export class CpuTimeline extends LitElement {
 
     const d = this.getPathD();
 
-    const svgContent = svg`
-      <path stroke="#d70" fill="none" d='${d}' />
-    `;
+    d3.select(this.path).transition().attr('d', d);
+
+    const svgContent = svg`${this.path}`;
 
     const g = document.createElementNS('http://www.w3.org/2000/svg', "g");
     render(svgContent, g);
