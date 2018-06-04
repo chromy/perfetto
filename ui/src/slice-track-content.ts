@@ -6,9 +6,18 @@ export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
   //private vis: TrackContent;
 
-  private getData() {
-    return [{start: 10, end: 50}];
+  private * getData() {
+    const slices = [{start: 10, end: 50},
+                    {start: 10, end: 50},
+                    {start: 10, end: 50},
+                    {start: 10, end: 50},
+                    {start: 10, end: 50},
+                   ];
+    for (const s of slices) {
+      yield s;
+    }
   }
+
   constructor(private tCtx: TrackCanvasContext) {
     super();
 
