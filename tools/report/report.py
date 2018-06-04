@@ -225,11 +225,13 @@ def insertions(*args):
 
 def jq_command(suffix, command):
   def f(date_dir_pairs):
+    paths = [os.path.join(path, suffix) for date, path in date_dir_pairs if path]
+    paths = [path for path in paths if os.path.isfile(path)]
     args = [
       'jq',
       '--slurp',
       command,
-    ] + [os.path.join(path, suffix) for date, path in date_dir_pairs if path]
+    ] + paths
     try:
       output = subprocess.check_output(args)
     except ValueError:
@@ -301,6 +303,7 @@ class App(object):
   def do_compute(self, args):
     chosen_metrics = args.metrics
     overwrite = args.overwrite
+    subprocess.check_call(['tools/report/fetch', ], stdout=DEVNULL)
     for date in dates_in_range(self.start, self.end):
       if overwrite or any((not is_metric_computed(self.output_dir, date, metric) for metric in chosen_metrics)):
         commit = best_commit_for_day(date)

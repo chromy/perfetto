@@ -6,6 +6,12 @@ body {
 
 svg {
   width: 100%;
+  shape-rendering: crispedges;
+}
+
+.circle {
+  fill: none;
+    stroke: black;
 }
 
 h1 {
@@ -13,6 +19,15 @@ h1 {
   font-family: 'Spectral', serif;
   font-weight: 400;
   font-size: 60px;
+  margin: 0;
+}
+
+h2 {
+  text-align: center;
+  font-family: 'Spectral', serif;
+  font-weight: 400;
+  font-size: 30px;
+  margin: 0;
 }
 
 text {
@@ -44,13 +59,23 @@ text {
 <script>
 let SUMMARY = [];
 let SELECTED_DATE = null;
-SELECTED_DATE = new Date(2018, 0, 1);
+let SELECTED_DATUM = null;
+
+function normalizeDate(d) {
+  let result = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  return result;
+}
 
 function isSelectedDate(other) {
-  return other == SELECTED_DATE.toString();
+  if (!other || !SELECTED_DATE)
+    return false;
+  return other.getYear() === SELECTED_DATE.getYear()
+  && other.getMonth() === SELECTED_DATE.getMonth()
+  && other.getDate() === SELECTED_DATE.getDate();
 }
 
 const parseTime = d3.timeParse('%Y-%m-%d');
+const formatTime = d3.timeFormat('%Y-%m-%d');
 
 m.request({
   method: "GET",
@@ -61,6 +86,31 @@ m.request({
     item.date = parseTime(item.date);
   }
 })
+
+function getDate() {
+}
+
+function chooseDate(d) {
+  m.route.set('/:date', { date: formatTime(d) });
+}
+
+function getDatumByDate(d) {
+  for (const datum of SUMMARY) {
+    if (formatTime(d) === formatTime(datum.date)) {
+      return datum;
+    }
+  }
+  return null;
+}
+
+function setDate(d) {
+  let normalized = normalizeDate(d);
+  if (isSelectedDate(normalized))
+    return;
+  SELECTED_DATE = normalized;
+  SELECTED_DATUM = getDatumByDate(SELECTED_DATE);
+  m.redraw();
+}
 
 function CreateD3Component(element, render) {
   return {
@@ -84,12 +134,16 @@ let DateAxisComponent = CreateD3Component('svg', function(node, attrs) {
   let margin = {top: 20, right: 20, bottom: 30, left: 50};
   let width = rect.width - margin.left - margin.right;
   let height = +svg.attr("height") - margin.top - margin.bottom;
-  let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  let g = svg.selectAll('g').data([0])
+  g.enter()
+    .append('g')
+    .merge(g)
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   let x = d3.scaleTime().rangeRound([0, width]);
   x.domain(d3.extent(SUMMARY.map(d => d.date)));
 
-  let x_axis = g.selectAll('axis--x').data([0]);
+  let x_axis = svg.select('g').selectAll('.axis--x').data([0]);
   x_axis.enter()
       .append("g").attr("class", "axis axis--x")
     .merge(x_axis)
@@ -103,8 +157,12 @@ let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
   let margin = {top: 20, right: 20, bottom: 30, left: 50};
   let width = rect.width - margin.left - margin.right;
   let height = +svg.attr("height") - margin.top - margin.bottom;
-  let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  let x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+  let g = svg.selectAll('g').data([0])
+  g.enter()
+    .append('g')
+    .merge(g)
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  let x = d3.scaleBand().range([0, width]).padding(0.1);
   let y = d3.scaleLinear().rangeRound([height, 0]);
 
   let key = attrs['key'];
@@ -122,7 +180,7 @@ let BarChartComponent = CreateD3Component('svg', function(node, attrs) {
     .attr('x', '10')
     .attr('y', '10');
 
-  let y_axis = g.selectAll('axis--y').data([0]);
+  let y_axis = svg.select('g').selectAll('.axis--y').data([0]);
   y_axis.enter()
     .append("g")
       .attr("class", "axis axis--y")
@@ -158,22 +216,12 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
   x.domain(d3.extent(SUMMARY.map(d => d.date)));
   y.domain([0, d3.max(SUMMARY, d => d[key])]);
 
-  //let overlay = svg.selectAll('.overlay').data([0]);
-  //overlay.enter()
-  //  .append('rect')
-  //  .attr('class', 'overlay')
-  //  .merge(overlay)
-  //  .attr('width', width)
-  //  .attr('height', height)
-  //  .on('mousemove', () => '');
-  //  .on('mouseover', function() {console.log(d3.mouse(this))} )
-
   let line = d3.line()
     .defined(d => d[key] !== null)
     .x(d => x(d.date))
     .y(d => y(d[key]));
 
-  let label = g.selectAll('.label').data([0]);
+  let label = svg.select('g').selectAll('.label').data([0]);
   label
     .enter()
     .append('text')
@@ -183,28 +231,56 @@ let LineChartComponent = CreateD3Component('svg', function(node, attrs) {
     .attr('x', '10')
     .attr('y', '10');
 
-  let y_axis = g.selectAll('.axis--y').data([0]);
+  let y_axis = svg.select('g').selectAll('.axis--y').data([0]);
   y_axis.enter()
     .append('g')
       .attr('class', 'axis axis--y')
     .merge(y_axis)
       .call(d3.axisLeft(y).ticks(3))
 
-  let line_selection = g.selectAll('.line').data([SUMMARY]);
+  let line_selection = svg.select('g').selectAll('.line').data([SUMMARY]);
   line_selection
     .enter()
     .append('path')
       .attr('class', 'line')
       .merge(line_selection)
       .attr('d', line);
+
+  let circle_selection = svg.select('g').selectAll('.circle').data([0]);
+  circle_selection.enter()
+    .append('circle')
+    .attr('class', 'circle')
+    .attr('r', 4)
+    .merge(circle_selection)
+    .attr('cx', d => SELECTED_DATE ? x(SELECTED_DATE) : 0)
+    .attr('cy', d => SELECTED_DATUM ? y(SELECTED_DATUM[key]) : 0);
+
+  let overlay = svg.select('g').selectAll('.overlay').data([0]);
+  overlay.enter()
+    .append('rect')
+    .attr('class', 'overlay')
+    .merge(overlay)
+    .attr('y', -margin.top)
+    .attr('width', width)
+    .attr('height', height+margin.top+margin.bottom)
+    .on('mousemove', function() {
+      let mx = d3.mouse(this)[0];
+      setDate(x.invert(mx));
+    })
+    .on('click', function() {
+      let mx = d3.mouse(this)[0];
+      chooseDate(x.invert(mx));
+    });
+
+
 });
 
-let App = {
+const Overview = {
   view: function() {
     return [
       m('h1', 'The Perfetto Report'),
       m(DateAxisComponent, {height: 100}),
-      m(BarChartComponent, {height: 100, key: 'todo_count', label: 'Todo count'}),
+      m(LineChartComponent, {height: 100, key: 'todo_count', label: 'Todo count'}),
       // m(LineChartComponent, {height: 100, key: 'comment_count', label: 'Comment count'}),
       // m(LineChartComponent, {height: 100, key: 'code_count', label: 'cloc'}),
       m(LineChartComponent, {height: 100, key: 'cpp', label: 'Lines of C++'}),
@@ -213,7 +289,38 @@ let App = {
   },
 };
 
+function tommorow(d) {
+  let result = new Date(d);
+  result.setDate(d.getDate()+1);
+  return result;
+}
+
+function yesterday(d) {
+  let result = new Date(d);
+  result.setDate(d.getDate()-1);
+  return result;
+}
+
+const Day = {
+  view: function() {
+    let d = parseTime(m.route.param('date'));
+    let datum = getDatumByDate(datum);
+    
+    return [
+      m('h1[href=/]', { oncreate: m.route.link }, 'The Perfetto Report'),
+      m('h2', formatTime(d)),
+      m('a[href=/]', { oncreate: m.route.link }, 'Overview'),
+      m('a', { href: '/'+formatTime(yesterday(d)), oncreate: m.route.link }, '<<'),
+      m('a', { href: '/'+formatTime(tommorow(d)), oncreate: m.route.link }, '>>'),
+
+    ];
+  },
+};
+
 let root = document.querySelector('main');
-m.mount(root, App);
+m.route(root, '/', {
+  '/': Overview,
+  '/:date': Day,
+});
 
 </script>

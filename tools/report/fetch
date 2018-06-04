@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+usage() {
+    cat <<EOM
+usage: $(basename $0)
+  Fetches this repo to OUTPUT_DIR ("$OUTPUT_DIR")
+  OUTPUT_DIR defaults to "$DEFAULT_OUTPUT_DIR" if the environment variable is not set.
+EOM
+    exit 0
+}
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $DIR/constants > /dev/null
+
+echo "Fetching into directory $OUTPUT_DIR"
+git -C $OUTPUT_DIR fetch || git clone $ROOT_DIR $OUTPUT_DIR
