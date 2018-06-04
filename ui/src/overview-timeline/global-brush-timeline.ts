@@ -23,7 +23,7 @@ export class GlobalBrushTimeline extends LitElement {
 
   static get properties() { return { width: Number }}
 
-  constructor(private state: State)
+  constructor(private state: State, onBrushed: () => void)
   {
     super();
     console.log(this.state);
@@ -49,16 +49,15 @@ export class GlobalBrushTimeline extends LitElement {
     this.axisEl
         .call(this.xAxis);
 
-    let brushStart = 500;
-    let brushEnd = 3000;
-
     this.brush = d3.brushX()
         .extent([[0,0], [this.width , this.height - this.margin.bottom ]])
         .on("brush end", () =>
         {
-          brushStart = this.x.invert(+d3.event.selection[0]).getTime();
-          brushEnd = this.x.invert(+d3.event.selection[1]).getTime();
-          //
+          //TODO: This should be communicated to some central place and then to the worker.
+          this.state.gps.startVisibleWindow = this.x.invert(+d3.event.selection[0]).getTime();
+          this.state.gps.endVisibleWindow = this.x.invert(+d3.event.selection[1]).getTime();
+
+          onBrushed();
           // console.log(start, end);
           //this.dispatchEvent(new CustomEvent(brushEventName, { detail: [start, end]}));
         });
@@ -68,9 +67,13 @@ export class GlobalBrushTimeline extends LitElement {
 
     this.brushEl
         .call(this.brush)
-        .call(this.brush.move, [this.x(brushStart), this.x(brushEnd)]);
+        .call(this.brush.move, [
+          this.x(this.state.gps.startVisibleWindow),
+          this.x(this.state.gps.endVisibleWindow)]);
 
-    setTimeout(() => setInterval(() => {
+    this.cpuTimeline = new CpuTimeline(this.state, this.x);
+
+    /*setTimeout(() => setInterval(() => {
       this.width = 500 + Math.round(Math.random() * 1000);
       this.x.range([this.margin.left, this.width - this.margin.right]);
       this.axisEl
@@ -78,12 +81,12 @@ export class GlobalBrushTimeline extends LitElement {
           .call(this.xAxis);
       this.brushEl
           .transition()
-          .call(this.brush.move, [this.x(brushStart), this.x(brushEnd)]);
+          .call(this.brush.move, [
+          this.x(this.state.gps.startVisibleWindow),
+          this.x(this.state.gps.endVisibleWindow)]);
 
       this.cpuTimeline._invalidateProperties();
-    }, 2000), 1000);
-
-    this.cpuTimeline = new CpuTimeline(this.state, this.x);
+    }, 2000), 1000);*/
   }
 
   private getChildContent()

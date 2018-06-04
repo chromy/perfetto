@@ -1,32 +1,40 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {TrackState} from './state';
+import {State, TrackState} from './state';
 import {TrackShell} from './track-shell';
 import {SliceTrackContent} from './slice-track-content';
 import {TrackContent} from './track-content';
 import { TrackCanvasContext } from './track-canvas-controller';
+import {TrackContentData} from './track-content-data';
 
 export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
   trackContentData: TrackContentData;
-  state: TrackState;
 
-  constructor(s: TrackState, private tCtx: TrackCanvasContext)
+  constructor(private state: TrackState,
+              private globalState: State,
+              private tCtx: TrackCanvasContext)
   {
     super();
 
-    this.state = s;
-
     const cp = this.contentPosition;
     const contentCtx = new TrackCanvasContext(this.tCtx, cp.left, cp.top);
-    this.content = new SliceTrackContent(contentCtx); //TODO: Infer
+
     this.type = 'slice'; //TODO: Infer
     this.trackContentData = {
       trace: 'abc',
       thread: 'def',
-      process: 'ghi'
+      process: 'ghi',
+      slices: [{start:   0, end:  160},
+        {start: 180, end: 260},
+        {start: 280, end: 320},
+        {start: 340, end: 360},
+        {start: 380, end: 390},
+        {start: 410, end: 415},
+        {start: 435, end: 437}]
     };
+    this.content = new SliceTrackContent(contentCtx, this.trackContentData); //TODO: Infer
 
     this.shell = new TrackShell(this.content.height);
   }
@@ -41,6 +49,8 @@ export class Track extends LitElement {
 
   _render() {
     //const TrackContentClass = getTrackContentClass(this.type);
+    console.log('rendering track', this.state, this.globalState.gps, this.type);
+
     return html`
     
     <style>

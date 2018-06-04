@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
-import { TrackTreeState, TrackState } from './state'
+import {TrackTreeState, TrackState, State} from './state'
 import { TrackCanvasContext } from './track-canvas-controller';
 
 export class TrackTree extends LitElement {
@@ -9,6 +9,7 @@ export class TrackTree extends LitElement {
   static get properties() { return { state: String, trackChildren: [String] }}
 
   constructor(private state: TrackTreeState,
+              private globalState: State,
               private tCtx: TrackCanvasContext)
   {
     super();
@@ -25,8 +26,8 @@ export class TrackTree extends LitElement {
       const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
 
       const child = TrackTree.isTrackTreeState(childState) ?
-        new TrackTree(childState, tCtx) :
-        new Track(childState, tCtx);
+        new TrackTree(childState, this.globalState, tCtx) :
+        new Track(childState, this.globalState, tCtx);
 
       this.trackChildren.push(child);
 
@@ -53,7 +54,14 @@ export class TrackTree extends LitElement {
     return new TrackCanvasContext(this.tCtx, xOffset, yOffset);
   }
 
-  _render({state, trackChildren}) {
+  _render({state, trackChildren}:
+              {state: TrackTreeState, trackChildren: (TrackTree|Track)[]}) {
+    for(const child of trackChildren)
+    {
+      //TODO: This is an ugly way of propagating changes.
+      child._invalidateProperties();
+    }
+
     return html`
     <style>
       .wrap {

@@ -1,39 +1,33 @@
 import {TrackContent} from './track-content';
 import {html} from 'lit-html';
 import { TrackCanvasContext } from './track-canvas-controller';
+import {SliceTrackContentData} from './slice-track-content-data';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
   //private vis: TrackContent;
+  static get properties() { return { data: [String] }}
 
-  private * getData() {
-    const slices = [{start:   0, end:  160},
-                    {start: 180, end: 260},
-                    {start: 280, end: 320},
-                    {start: 340, end: 360},
-                    {start: 380, end: 390},
-                    {start: 410, end: 415},
-                    {start: 435, end: 437},
+  /*private * getData() {
+    const slices = [,
                    ];
     for (const s of slices) {
       yield s;
     }
-  }
+  }*/
 
-  constructor(private tCtx: TrackCanvasContext) {
+  constructor(private tCtx: TrackCanvasContext, private data: SliceTrackContentData) {
     super();
 
     //this.vis = new SliceTrackContent();
   }
   draw() {
 
-    const slices = this.getData();
-
     this.tCtx.fillStyle = 'black';
     this.tCtx.fillRect(0, 0, 1000, this.height);
 
     this.tCtx.fillStyle = 'pink';
-    for (const slice of slices) {
+    for (const slice of this.data.slices) {
       this.tCtx.fillRect(slice.start, 0, (slice.end - slice.start), 20);
     }
 
@@ -51,6 +45,8 @@ export class SliceTrackContent extends TrackContent {
   }
 
   _render() {
+
+    console.log('rendering slice track content');
     this.draw();  // This makes it not a pure function since this is a side effect.
 
     return html`
