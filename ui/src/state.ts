@@ -30,12 +30,8 @@ export interface TrackState {
   trackData: TrackDataSpec;
 }
 
-type TrackDataSpec = CpuTrackDataSpec | SliceTrackDataSpec;
+export interface TrackDataSpec {};
 
-interface CpuTrackDataSpec {
+export interface CpuTrackDataSpec extends TrackDataSpec {}
 
-}
-
-interface SliceTrackDataSpec {
-
-}
+export interface SliceTrackDataSpec extends TrackDataSpec {}
