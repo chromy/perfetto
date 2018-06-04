@@ -26,17 +26,25 @@ export class Track extends LitElement {
       trace: 'abc',
       thread: 'def',
       process: 'ghi',
-      slices: [{start:   0, end:  160},
-        {start: 180, end: 260},
-        {start: 280, end: 320},
-        {start: 340, end: 360},
-        {start: 380, end: 390},
-        {start: 410, end: 415},
-        {start: 435, end: 437}]
+      slices: this.getMockSlices()
     };
     this.content = new SliceTrackContent(contentCtx, this.trackContentData); //TODO: Infer
 
     this.shell = new TrackShell(this.content.height);
+  }
+
+  getMockSlices()
+  {
+    const mocks: {start: number, end: number}[] = [];
+    let nextStart = 0;
+
+    for(let t = 0; t <= 250; t += 1)
+    {
+      const mock = {start: nextStart, end: nextStart + Math.round(Math.abs(Math.sin(t)*50))};
+      mocks.push(mock);
+      nextStart = mock.end + Math.round(Math.abs(Math.sin(t)*20));
+    }
+    return mocks;
   }
 
   get height() {
@@ -48,8 +56,16 @@ export class Track extends LitElement {
   }
 
   _render() {
-    //const TrackContentClass = getTrackContentClass(this.type);
-    console.log('rendering track', this.state, this.globalState.gps, this.type);
+
+    if(this.state)
+    {
+      // This is here just so this.state is used.
+    }
+
+    this.content.setLimits(this.globalState.gps.startVisibleWindow,
+        this.globalState.gps.endVisibleWindow);
+
+    this.content._invalidateProperties();
 
     return html`
     
