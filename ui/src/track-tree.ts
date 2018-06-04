@@ -18,11 +18,11 @@ export class TrackTree extends LitElement {
 
   private updateChildren() {
 
-    let yOffset = this.selfHeightTop;
+    let yOffset = this.contentPosition.top;
 
     for(let childState of this.state.children)
     {
-      const tCtx = this.createTrackCtx(20, yOffset);
+      const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
 
       const child = TrackTree.isTrackTreeState(childState) ?
         new TrackTree(childState, tCtx) :
@@ -38,20 +38,14 @@ export class TrackTree extends LitElement {
     return 'children' in state;
   }
 
-  get height() : number {
-    return this.selfHeight + this.trackChildren.map(c => c.height).reduce((a,b) => a+b, 0);
+  get height() {
+    const childrenHeight = this.trackChildren
+        .map(c => c.height).reduce((a,b) => a+b, 0);
+    return this.contentPosition.top + childrenHeight + this.contentPosition.bottom;
   }
 
-  get selfHeight() : number {
-    return this.selfHeightTop + this.selfHeightBottom;
-  }
-
-  get selfHeightTop() : number {
-    return 92;
-  }
-
-  get selfHeightBottom() : number {
-    return 20;
+  get contentPosition() : { top: number, right: number, bottom: number, left: number } {
+    return { top: 92, right: 0, bottom: 20, left: 50 };
   }
 
   private createTrackCtx(xOffset: number, yOffset: number)
@@ -61,10 +55,27 @@ export class TrackTree extends LitElement {
 
   _render({state, trackChildren}) {
     return html`
-    <div style="background: ${state.metadata.shellColor};padding: 20px"
+    <style>
+      .wrap {
+        background: ${state.metadata.shellColor};
+        padding: 20px;
+        height: ${this.height}px;
+        box-sizing: border-box;
+        position: relative;
+      }
+      .content {
+        position: absolute;
+        top: ${this.contentPosition.top}px;
+        left: ${this.contentPosition.left}px;
+        width: 1000px;
+      }
+    </style>
+    <div class="wrap"
       on-click=${(e) => {console.log(state.metadata.name, this.height); e.stopPropagation(); } }>
       <h2>Track Tree: ${state.metadata.name}</h2>
-      ${trackChildren}
+      <div class="content">
+        ${trackChildren}
+      </div>
     </div>`;
   }
 }

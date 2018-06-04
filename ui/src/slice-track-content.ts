@@ -7,11 +7,13 @@ export class SliceTrackContent extends TrackContent {
   //private vis: TrackContent;
 
   private * getData() {
-    const slices = [{start:   0, end:  50},
-                    {start: 100, end: 150},
-                    {start: 200, end: 250},
-                    {start: 300, end: 350},
-                    {start: 400, end: 450},
+    const slices = [{start:   0, end:  160},
+                    {start: 180, end: 260},
+                    {start: 280, end: 320},
+                    {start: 340, end: 360},
+                    {start: 380, end: 390},
+                    {start: 410, end: 415},
+                    {start: 435, end: 437},
                    ];
     for (const s of slices) {
       yield s;
@@ -27,12 +29,13 @@ export class SliceTrackContent extends TrackContent {
 
     const slices = this.getData();
 
+    this.tCtx.fillStyle = 'black';
+    this.tCtx.fillRect(0, 0, 1000, this.height);
+
     this.tCtx.fillStyle = 'pink';
     for (const slice of slices) {
       this.tCtx.fillRect(slice.start, 0, (slice.end - slice.start), 20);
     }
-
-
 
     //TODO Draw stuff with data.
 
@@ -43,6 +46,10 @@ export class SliceTrackContent extends TrackContent {
     }*/
   }
 
+  get height() : number {
+    return 150;
+  }
+
   _render() {
     this.draw();  // This makes it not a pure function since this is a side effect.
 
@@ -51,9 +58,18 @@ export class SliceTrackContent extends TrackContent {
       .wrap {
         background: #fff;
         padding: 20px;
+        height: ${this.height}px;
+        box-sizing: border-box;
+      }
+      .content {
+        color: #fff;
+        z-index: 10;
+        position: relative;
       }
     </style>
-    <div class="wrap">Slice Track Content</div>`;
+    <div class="wrap">
+      <div class="content">Slice Track Content</div>
+    </div>`;
   }
 }
 
