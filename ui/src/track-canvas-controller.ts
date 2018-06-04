@@ -1,4 +1,7 @@
-export class CanvasController {
+import {LitElement} from '@polymer/lit-element';
+import {html} from 'lit-html';
+
+export class CanvasController  extends LitElement {
   // Owns the canvas.
 
   private canvas: HTMLCanvasElement;
@@ -6,6 +9,8 @@ export class CanvasController {
 
   constructor()
   {
+    super();
+
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('height', '1000');
     this.canvas.setAttribute('width', '1000');
@@ -27,7 +32,21 @@ export class CanvasController {
   {
     //TODO
   }
+
+  _render()
+  {
+    return html`
+      <style>
+        :host {
+          position: absolute;
+          top: 0;
+        }
+      </style>
+      ${this.canvas}`;
+  }
 }
+
+customElements.define('canvas-controller', CanvasController);
 
 export class TrackCanvasContext {
   //TODO: Implement.

@@ -27,7 +27,7 @@ export class SliceTrackContent extends TrackContent {
 
     const slices = this.getData();
 
-    this.tCtx.fillStyle = 'red';
+    this.tCtx.fillStyle = 'pink';
     for (const slice of slices) {
       this.tCtx.fillRect(slice.start, 0, (slice.end - slice.start), 10);
     }

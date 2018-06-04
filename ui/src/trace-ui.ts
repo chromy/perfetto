@@ -27,9 +27,22 @@ export class TraceUi extends LitElement {
   _render() {
     console.log('Rendering Trace UI.');
 
-    return html`<div id='ui' style="border: 1px solid #999;"><h1>Trace UI</h1>
+    return html`
+    <style>
+      .ui {
+        border: 1px solid #999;
+      }
+      .tracks-list {
+        position: relative;
+      }
+    </style>
+    <div id='ui' class="ui">
+      <h1>Trace UI</h1>
       ${this.overview}
-      ${this.root}
+      <div class="tracks-list">
+        ${this.root}
+        ${this.cc}
+      </div>
     </div>`;
     //<track-tree tree=rootTree modifiedCtx=cc.getCanvasContext('2D')/>
   }
