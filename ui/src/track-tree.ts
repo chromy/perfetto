@@ -1,6 +1,7 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
 import { TrackTreeState, TrackState } from './state'
+import { TrackCanvasContext } from './track-canvas-controller';
 
 export class TrackTree extends LitElement {
   trackChildren: (TrackTree|Track)[] = [];
@@ -8,7 +9,7 @@ export class TrackTree extends LitElement {
   static get properties() { return { state: String, trackChildren: [String] }}
 
   constructor(private state: TrackTreeState,
-              private ctx: CanvasRenderingContext2D)
+              private tCtx: TrackCanvasContext)
   {
     super();
 
@@ -19,7 +20,8 @@ export class TrackTree extends LitElement {
     for(let childState of this.state.children)
     {
       const child = TrackTree.isTrackTreeState(childState) ?
-          new TrackTree(childState, this.createMCtx(10)) : new Track(childState);
+        new TrackTree(childState, this.createTrackCtx(5, 10)) :
+        new Track(childState, this.createTrackCtx(5, 10));
 
       this.trackChildren.push(child);
     }
@@ -33,11 +35,9 @@ export class TrackTree extends LitElement {
     return 100;
   }
 
-  private createMCtx(offset: number)
+  private createTrackCtx(xOfffset: number, yOffset: number)
   {
-    //TODO: Use offset.
-    this.ctx.translate(0, offset);
-    return this.ctx;
+    return new TrackCanvasContext(this.tCtx, xOfffset, yOffset);
   }
 
   _render({state, trackChildren}) {

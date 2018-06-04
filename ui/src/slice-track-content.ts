@@ -1,23 +1,29 @@
 import {TrackContent} from './track-content';
 import {html} from 'lit-html';
+import { TrackCanvasContext } from './track-canvas-controller';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
   //private vis: TrackContent;
 
   private getData() {
-    // TraceDataStore..
+    return [{start: 10, end: 50}];
   }
-  constructor() {
+  constructor(private tCtx: TrackCanvasContext) {
     super();
 
     //this.vis = new SliceTrackContent();
   }
-  draw(ctx: CanvasRenderingContext2D) {
+  draw() {
 
-    this.getData();
+    const slices = this.getData();
 
-    ctx.fillStyle = 'red';
+    this.tCtx.fillStyle = 'red';
+    for (const slice of slices) {
+      this.tCtx.fillRect(slice.start, 0, (slice.end - slice.start), 10);
+    }
+
+
 
     //TODO Draw stuff with data.
 
@@ -28,8 +34,8 @@ export class SliceTrackContent extends TrackContent {
     }*/
   }
 
-  _render(ctx: CanvasRenderingContext2D) {
-    this.draw(ctx);  // This makes it not a pure function since this is a side effect.
+  _render() {
+    this.draw();  // This makes it not a pure function since this is a side effect.
 
     return html`
     <style>

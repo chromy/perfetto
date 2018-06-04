@@ -1,4 +1,4 @@
-export class TrackCanvasController {
+export class CanvasController {
   // Owns the canvas.
 
   private canvas: HTMLCanvasElement;
@@ -26,5 +26,24 @@ export class TrackCanvasController {
   onResize()
   {
     //TODO
+  }
+}
+
+export class TrackCanvasContext {
+  //TODO: Implement.
+  constructor(private ctx: CanvasRenderingContext2D | TrackCanvasContext,
+              private xOffset: number,
+              private yOffset: number) {}
+
+  fillRect(x: number, y: number, width: number, height: number) {
+    this.ctx.fillRect(x + this.xOffset, y + this.yOffset, width, height);
+  }
+
+  set strokeStyle(v: string) {
+    this.ctx.strokeStyle = v;
+  }
+
+  set fillStyle(v: string) {
+    this.ctx.fillStyle = v;
   }
 }
