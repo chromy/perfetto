@@ -49,12 +49,15 @@ export class GlobalBrushTimeline extends LitElement {
     this.axisEl
         .call(this.xAxis);
 
+    let brushStart = 500;
+    let brushEnd = 3000;
+
     this.brush = d3.brushX()
         .extent([[0,0], [this.width , this.height - this.margin.bottom ]])
         .on("brush end", () =>
         {
-          // const start = this.x.invert(+d3.event.selection[0]).getTime();
-          // const end = this.x.invert(+d3.event.selection[1]).getTime();
+          brushStart = this.x.invert(+d3.event.selection[0]).getTime();
+          brushEnd = this.x.invert(+d3.event.selection[1]).getTime();
           //
           // console.log(start, end);
           //this.dispatchEvent(new CustomEvent(brushEventName, { detail: [start, end]}));
@@ -62,9 +65,6 @@ export class GlobalBrushTimeline extends LitElement {
 
     this.brushEl = d3.select(this.g).append("g")
         .attr("class", "brush");
-
-    let brushStart = 500;
-    let brushEnd = 3000;
 
     this.brushEl
         .call(this.brush)
