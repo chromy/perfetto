@@ -13,7 +13,7 @@ export class Track extends LitElement {
   state: TrackState;
 
   get height() {
-    return -1;
+    return 233;
   }
 
   constructor(s: TrackState, private tCtx: TrackCanvasContext)
@@ -22,13 +22,18 @@ export class Track extends LitElement {
 
     this.state = s;
     this.shell = new TrackShell();
-    this.content = new SliceTrackContent(this.tCtx); //TODO: Infer
+    const contentCtx = new TrackCanvasContext(this.tCtx, 20, this.selfHeightTop);
+    this.content = new SliceTrackContent(contentCtx); //TODO: Infer
     this.type = 'slice'; //TODO: Infer
     this.trackContentData = {
       trace: 'abc',
       thread: 'def',
       process: 'ghi'
     };
+  }
+
+  get selfHeightTop() : number {
+    return 152;
   }
 
   _render() {

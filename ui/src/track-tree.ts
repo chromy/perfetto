@@ -17,13 +17,20 @@ export class TrackTree extends LitElement {
   }
 
   private updateChildren() {
+
+    let yOffset = this.selfHeightTop;
+
     for(let childState of this.state.children)
     {
+      const tCtx = this.createTrackCtx(20, yOffset);
+
       const child = TrackTree.isTrackTreeState(childState) ?
-        new TrackTree(childState, this.createTrackCtx(5, 10)) :
-        new Track(childState, this.createTrackCtx(5, 10));
+        new TrackTree(childState, tCtx) :
+        new Track(childState, tCtx);
 
       this.trackChildren.push(child);
+
+      yOffset += child.height;
     }
   }
 
@@ -32,16 +39,30 @@ export class TrackTree extends LitElement {
   }
 
   get height() : number {
-    return 100;
+    return this.selfHeight + this.trackChildren.map(c => c.height).reduce((a,b) => a+b, 0);
   }
 
-  private createTrackCtx(xOfffset: number, yOffset: number)
+  get selfHeight() : number {
+    return this.selfHeightTop + this.selfHeightBottom;
+  }
+
+  get selfHeightTop() : number {
+    return 92;
+  }
+
+  get selfHeightBottom() : number {
+    return 20;
+  }
+
+  private createTrackCtx(xOffset: number, yOffset: number)
   {
-    return new TrackCanvasContext(this.tCtx, xOfffset, yOffset);
+    return new TrackCanvasContext(this.tCtx, xOffset, yOffset);
   }
 
   _render({state, trackChildren}) {
-    return html`<div style="background: ${state.metadata.shellColor};padding: 20px">
+    return html`
+    <div style="background: ${state.metadata.shellColor};padding: 20px"
+      on-click=${(e) => {console.log(state.metadata.name, this.height); e.stopPropagation(); } }>
       <h2>Track Tree: ${state.metadata.name}</h2>
       ${trackChildren}
     </div>`;

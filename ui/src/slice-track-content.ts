@@ -7,11 +7,11 @@ export class SliceTrackContent extends TrackContent {
   //private vis: TrackContent;
 
   private * getData() {
-    const slices = [{start: 10, end: 50},
-                    {start: 10, end: 50},
-                    {start: 10, end: 50},
-                    {start: 10, end: 50},
-                    {start: 10, end: 50},
+    const slices = [{start:   0, end:  50},
+                    {start: 100, end: 150},
+                    {start: 200, end: 250},
+                    {start: 300, end: 350},
+                    {start: 400, end: 450},
                    ];
     for (const s of slices) {
       yield s;
@@ -29,7 +29,7 @@ export class SliceTrackContent extends TrackContent {
 
     this.tCtx.fillStyle = 'pink';
     for (const slice of slices) {
-      this.tCtx.fillRect(slice.start, 0, (slice.end - slice.start), 10);
+      this.tCtx.fillRect(slice.start, 0, (slice.end - slice.start), 20);
     }
 
 

@@ -40,6 +40,7 @@ export class CanvasController  extends LitElement {
         :host {
           position: absolute;
           top: 0;
+          pointer-events: none;
         }
       </style>
       ${this.canvas}`;
