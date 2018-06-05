@@ -127,3 +127,22 @@ if (container) {
 
   render(html`${ui}`, container);
 }
+
+const mainThreadWaitTimeInMs = 0;
+
+const wait = function(ms)
+{
+  const start = Date.now();
+  while(Date.now() - start < ms)
+  {
+
+  }
+};
+
+const raf = () => {
+  wait(mainThreadWaitTimeInMs);
+
+  requestAnimationFrame(raf);
+};
+
+raf();
