@@ -18,10 +18,10 @@ export class SliceTrackContent extends TrackContent {
   private x: (number) => number = () => 0;
   private start = 0;
   private end = 1000;
-  private width = 1000;
 
   constructor(private tCtx: TrackCanvasContext,
-              private data: SliceTrackContentData
+              private data: SliceTrackContentData,
+              private width: number
   ) {
     super();
 

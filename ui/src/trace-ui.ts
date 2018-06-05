@@ -12,16 +12,16 @@ export class TraceUi extends LitElement {
   private overview: GlobalBrushTimeline;
   private root: TrackTree;
 
-  constructor(private state: State)
+  constructor(private state: State, private width: number)
   {
     super();
     console.log('Trace UI initialized.');
 
-    this.cc = new CanvasController();
+    this.cc = new CanvasController(this.width);
     const tCtx = new TrackCanvasContext(this.cc.getContext2D(), 0, 0);
-    this.root = new TrackTree(this.state.trackTree, this.state, tCtx);
+    this.root = new TrackTree(this.state.trackTree, this.state, tCtx, this.width);
 
-    this.overview = new GlobalBrushTimeline(this.state, () => {
+    this.overview = new GlobalBrushTimeline(this.state, this.width, () => {
       this.root._invalidateProperties();
     });
   }

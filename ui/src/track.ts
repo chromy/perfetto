@@ -12,14 +12,17 @@ export class Track extends LitElement {
   type: string; //? Class? something;
   trackContentData: TrackContentData;
 
+  private shellWidth = 200;
+
   constructor(private state: TrackState,
               private globalState: State,
-              private tCtx: TrackCanvasContext)
+              private tCtx: TrackCanvasContext,
+              private width: number)
   {
     super();
 
     const cp = this.contentPosition;
-    const contentCtx = new TrackCanvasContext(this.tCtx, cp.left, cp.top);
+    const contentCtx = new TrackCanvasContext(this.tCtx, cp.left + this.shellWidth, cp.top);
 
     this.type = 'slice'; //TODO: Infer
     this.trackContentData = {
@@ -28,9 +31,11 @@ export class Track extends LitElement {
       process: 'ghi',
       slices: this.getMockSlices()
     };
-    this.content = new SliceTrackContent(contentCtx, this.trackContentData); //TODO: Infer
 
-    this.shell = new TrackShell(this.content.height);
+    const contentWidth = this.width - this.shellWidth -
+        this.contentPosition.left - this.contentPosition.right;
+    this.content = new SliceTrackContent(contentCtx, this.trackContentData, contentWidth); //TODO: Infer
+    this.shell = new TrackShell(this.content.height, this.shellWidth);
   }
 
   getMockSlices()
@@ -52,7 +57,7 @@ export class Track extends LitElement {
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 92, right: 0, bottom: 20, left: 220 };
+    return { top: 92, right: 20, bottom: 20, left: 20 };
   }
 
   _render() {
@@ -81,15 +86,27 @@ export class Track extends LitElement {
         position: absolute;
         top: ${this.contentPosition.top}px;
         left: ${this.contentPosition.left}px;
-        width: 1000px;
+        width: ${this.width - 
+    this.contentPosition.left - this.contentPosition.right + 'px'};
+      }
+      .trackcontent {
+        position: absolute;
+        top: 0px;
+        left: ${this.shellWidth + 'px'};
+        width: ${this.width - this.shellWidth -
+    this.contentPosition.left - this.contentPosition.right + 'px'};
+      }
       }
     </style>
     
     <div class="wrap">
       <h2>Track</h2>
-      ${this.shell}
+      
       <div class="content">
-        ${this.content}
+        ${this.shell}
+        <div class="trackcontent">
+          ${this.content}
+        </div>
       </div>
     </div>`;
   }

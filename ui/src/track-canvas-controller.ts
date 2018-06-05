@@ -7,13 +7,13 @@ export class CanvasController  extends LitElement {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
-  constructor()
+  constructor(private width: number)
   {
     super();
 
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('height', '1000');
-    this.canvas.setAttribute('width', '1000');
+    this.canvas.setAttribute('width', this.width.toString());
     console.log('Canvas created.');
 
     //TODO: getContext can return null. Need better solution.

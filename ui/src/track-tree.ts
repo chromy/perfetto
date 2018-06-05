@@ -10,7 +10,8 @@ export class TrackTree extends LitElement {
 
   constructor(private state: TrackTreeState,
               private globalState: State,
-              private tCtx: TrackCanvasContext)
+              private tCtx: TrackCanvasContext,
+              private width: number)
   {
     super();
 
@@ -25,9 +26,10 @@ export class TrackTree extends LitElement {
     {
       const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
 
+      const sidePadding = this.contentPosition.left + this.contentPosition.right;
       const child = TrackTree.isTrackTreeState(childState) ?
-        new TrackTree(childState, this.globalState, tCtx) :
-        new Track(childState, this.globalState, tCtx);
+        new TrackTree(childState, this.globalState, tCtx, this.width - sidePadding) :
+        new Track(childState, this.globalState, tCtx, this.width - sidePadding);
 
       this.trackChildren.push(child);
 
@@ -46,7 +48,7 @@ export class TrackTree extends LitElement {
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 92, right: 0, bottom: 20, left: 50 };
+    return { top: 92, right: 10, bottom: 20, left: 10 };
   }
 
   private createTrackCtx(xOffset: number, yOffset: number)
@@ -75,7 +77,8 @@ export class TrackTree extends LitElement {
         position: absolute;
         top: ${this.contentPosition.top}px;
         left: ${this.contentPosition.left}px;
-        width: 1000px;
+        width: ${this.width - 
+    this.contentPosition.left - this.contentPosition.right + 'px'};
       }
     </style>
     <div class="wrap"

@@ -77,7 +77,9 @@ if (container) {
     },
     sliceTrackDataSpec: {}
   };
-  const ui = new TraceUi(state);
+
+  const bcr = container.getBoundingClientRect()
+  const ui = new TraceUi(state, bcr.width);
 
   render(html`${ui}`, container);
 }

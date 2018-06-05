@@ -15,7 +15,6 @@ export class GlobalBrushTimeline extends LitElement {
 
   private start = 0;
   private end = 10000;
-  private width = 1000;
   private height = 150;
   private margin: {top: number, right: number, bottom: number, left: number};
 
@@ -23,7 +22,7 @@ export class GlobalBrushTimeline extends LitElement {
 
   static get properties() { return { width: Number }}
 
-  constructor(private state: State, onBrushed: () => void)
+  constructor(private state: State, private width: number, onBrushed: () => void)
   {
     super();
     console.log(this.state);
