@@ -61,7 +61,6 @@ export class Track extends LitElement {
   }
 
 
-
   _render() {
 
     if(this.state) {

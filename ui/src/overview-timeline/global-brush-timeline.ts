@@ -19,6 +19,7 @@ export class GlobalBrushTimeline extends LitElement {
   private margin: {top: number, right: number, bottom: number, left: number};
 
   private cpuTimeline: CpuTimeline;
+  private manualBrushSet = 0;
 
   static get properties() { return { width: Number }}
 
@@ -52,23 +53,28 @@ export class GlobalBrushTimeline extends LitElement {
         .extent([[0,0], [this.width , this.height - this.margin.bottom ]])
         .on("brush end", () =>
         {
-          //TODO: This should be communicated to some central place and then to the worker.
-          this.state.gps.startVisibleWindow = this.x.invert(+d3.event.selection[0]).getTime();
-          this.state.gps.endVisibleWindow = this.x.invert(+d3.event.selection[1]).getTime();
+          if(this.manualBrushSet === 0)
+          {
+            //TODO: This should be communicated to some central place and then to the worker.
+            this.state.gps.startVisibleWindow = this.x.invert(+d3.event.selection[0]).getTime();
+            this.state.gps.endVisibleWindow = this.x.invert(+d3.event.selection[1]).getTime();
 
-          onBrushed();
-          // console.log(start, end);
-          //this.dispatchEvent(new CustomEvent(brushEventName, { detail: [start, end]}));
+            onBrushed();
+            //this.dispatchEvent(new CustomEvent(brushEventName, { detail: [start, end]}));
+          }
+          else
+          {
+            this.manualBrushSet--;
+          }
         });
 
     this.brushEl = d3.select(this.g).append("g")
         .attr("class", "brush");
 
     this.brushEl
-        .call(this.brush)
-        .call(this.brush.move, [
-          this.x(this.state.gps.startVisibleWindow),
-          this.x(this.state.gps.endVisibleWindow)]);
+        .call(this.brush);
+
+    this.setBrush();
 
     this.cpuTimeline = new CpuTimeline(this.state, this.x);
 
@@ -88,6 +94,17 @@ export class GlobalBrushTimeline extends LitElement {
     }, 2000), 1000);*/
   }
 
+  private setBrush()
+  {
+    // onBrushEnd is called twice after this.
+    this.manualBrushSet += 2;
+
+    this.brushEl
+        .call(this.brush.move, [
+          this.x(this.state.gps.startVisibleWindow),
+          this.x(this.state.gps.endVisibleWindow)]);
+  }
+
   private getChildContent()
   {
     return html`${this.cpuTimeline}`;
@@ -98,6 +115,8 @@ export class GlobalBrushTimeline extends LitElement {
     const svgContent = svg`
         ${this.g}
         `;
+
+    this.setBrush();
 
     return html`
     <style>

@@ -72,7 +72,6 @@ export class SliceTrackContent extends TrackContent {
       }
     </style>
     <div class="wrap">
-      ${this.eventTemplate}
       <div class="content">
         Slice Track Content
       </div>
