@@ -17,7 +17,7 @@ export class TraceUi extends LitElement {
   constructor(private state: State, private width: number)
   {
     super();
-    console.log('Trace UI initialized.');
+    console.log('Trace UI initialized.', this.width);
 
     this.cc = new CanvasController(this.width);
     const tCtx = new TrackCanvasContext(this.cc.getContext2D(), 0, 0);
@@ -38,7 +38,7 @@ export class TraceUi extends LitElement {
     return html`
     <style>
       .ui {
-        border: 1px solid #999;
+        /*border: 1px solid #999;*/
       }
       .tracks-list {
         position: relative;

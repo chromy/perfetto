@@ -122,8 +122,9 @@ if (container) {
     sliceTrackDataSpec: {}
   };
 
-  const bcr = container.getBoundingClientRect()
-  const ui = new TraceUi(state, bcr.width);
+  const bcr = container.getBoundingClientRect();
+  const width = bcr.width - 20; // For scroll bar
+  const ui = new TraceUi(state, width);
 
   render(html`${ui}`, container);
 }
