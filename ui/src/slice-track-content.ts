@@ -87,4 +87,4 @@ export class SliceTrackContent extends TrackContent {
   }
 }
 
-customElements.define('track-track-content', SliceTrackContent);
+customElements.define('trace-track-content', SliceTrackContent);

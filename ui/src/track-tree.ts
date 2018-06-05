@@ -81,8 +81,7 @@ export class TrackTree extends LitElement {
     this.contentPosition.left - this.contentPosition.right + 'px'};
       }
     </style>
-    <div class="wrap"
-      on-click=${(e) => {console.log(state.metadata.name, this.height); e.stopPropagation(); } }>
+    <div class="wrap">
       <h2>Track Tree: ${state.metadata.name}</h2>
       <div class="content">
         ${trackChildren}
