@@ -23,6 +23,8 @@ export class TraceUi extends LitElement {
     const tCtx = new TrackCanvasContext(this.cc.getContext2D(), 0, 0);
     this.root = new TrackTree(this.state.trackTree, this.state, tCtx, this.width);
 
+    this.cc.setHeight(this.root.height);
+
     const reRender = () => this._invalidateProperties();
     this.overview = new GlobalBrushTimeline(this.state, this.width, reRender);
     this.pc = new PanContent(this.width, this.root.height, this.state, reRender);

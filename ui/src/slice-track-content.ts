@@ -8,6 +8,8 @@ export class SliceTrackContent extends TrackContent {
   //private vis: TrackContent;
   static get properties() { return { data: [String] }}
 
+  private color: string;
+
   /*private * getData() {
     const slices = [,
                    ];
@@ -22,6 +24,8 @@ export class SliceTrackContent extends TrackContent {
   ) {
     super(width);
 
+    this.color = this.getRandomColor();
+
     //this.vis = new SliceTrackContent();
   }
   draw() {
@@ -29,7 +33,7 @@ export class SliceTrackContent extends TrackContent {
     this.tCtx.fillStyle = 'black';
     this.tCtx.fillRect(0, 0, this.width, this.height);
 
-    this.tCtx.fillStyle = 'pink';
+    this.tCtx.fillStyle = '#' + this.color;
     for (const slice of this.data.slices) {
       this.tCtx.fillRect(this.x(slice.start), 0,
           this.x(slice.end) - this.x(slice.start), 20);
@@ -44,7 +48,13 @@ export class SliceTrackContent extends TrackContent {
     }*/
   }
 
-
+  private getRandomColor(): string
+  {
+    const alphabet = '0123456789abcdef';
+    return [1,2,3,4,5,6].map(() =>
+        alphabet[Math.round(Math.random()*(alphabet.length - 1))]
+    ).join('');
+  }
 
   getHeight() : number {
     return 150;
