@@ -1,5 +1,5 @@
 import {TrackContent} from './track-content';
-import {html} from 'lit-html';
+import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
 import {SliceTrackContentData} from './slice-track-content-data';
 
@@ -15,15 +15,12 @@ export class SliceTrackContent extends TrackContent {
       yield s;
     }
   }*/
-  private x: (number) => number = () => 0;
-  private start = 0;
-  private end = 1000;
 
   constructor(private tCtx: TrackCanvasContext,
               private data: SliceTrackContentData,
-              private width: number
+              protected width: number
   ) {
-    super();
+    super(width);
 
     //this.vis = new SliceTrackContent();
   }
@@ -47,19 +44,9 @@ export class SliceTrackContent extends TrackContent {
     }*/
   }
 
-  setLimits(start: number, end: number)
-  {
-    this.start = start;
-    this.end = end;
 
-    this.x = (t: number) => {
-      if(t < this.start) return 0;
-      if(t > this.end) return this.width;
-      return (t - this.start) / (this.end - this.start) * this.width;
-    }
-  }
 
-  get height() : number {
+  getHeight() : number {
     return 150;
   }
 
@@ -71,18 +58,24 @@ export class SliceTrackContent extends TrackContent {
     <style>
       .wrap {
         background: #fff;
-        padding: 20px;
         height: ${this.height}px;
         box-sizing: border-box;
+        position: relative;
+        width: ${this.width}px;
       }
       .content {
         color: #fff;
         z-index: 10;
-        position: relative;
+        position: absolute;
+        top: 20px;
+        left: 20px;
       }
     </style>
     <div class="wrap">
-      <div class="content">Slice Track Content</div>
+      ${this.eventTemplate}
+      <div class="content">
+        Slice Track Content
+      </div>
     </div>`;
   }
 }

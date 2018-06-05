@@ -13,7 +13,6 @@ export class Track extends LitElement {
   trackContentData: TrackContentData;
 
   private shellWidth = 200;
-  private mouseDownX = -1;
 
   constructor(private state: TrackState,
               private globalState: State,
@@ -61,21 +60,7 @@ export class Track extends LitElement {
     return { top: 92, right: 20, bottom: 20, left: 20 };
   }
 
-  onMouseDown(e: MouseEvent) {
-    this.mouseDownX = e.clientX;
-  }
 
-  onMouseMove(e: MouseEvent)
-  {
-    if(this.mouseDownX !== -1) {
-      const moved = e.clientX - this.mouseDownX;
-      console.log('move', moved);
-    }
-  }
-
-  onMouseUp() {
-    this.mouseDownX = -1;
-  }
 
   _render() {
 
@@ -87,6 +72,8 @@ export class Track extends LitElement {
         this.globalState.gps.endVisibleWindow);
 
     this.content._invalidateProperties();
+
+    //this.eventTemplate.innerHTML = this.content;
 
     return html`
     
@@ -120,11 +107,7 @@ export class Track extends LitElement {
       
       <div class="content">
         ${this.shell}
-        <div class="trackcontent"
-         on-mousedown=${(e) => { this.onMouseDown(e); } }
-         on-mousemove=${(e) => { this.onMouseMove(e); } }
-         on-mouseup=${() => { this.onMouseUp(); } }
-        >
+        <div class="trackcontent">
           ${this.content}
         </div>
       </div>
