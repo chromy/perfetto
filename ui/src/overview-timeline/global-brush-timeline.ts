@@ -121,10 +121,12 @@ export class GlobalBrushTimeline extends LitElement {
     return html`
     <style>
       .wrap {
-        position: relative;
+        position: sticky;
+        top: -1px;
         height: 150px;
         background:#eee;
         box-sizing: border-box;
+        z-index: 500;
       }
       svg {
         position: absolute;
