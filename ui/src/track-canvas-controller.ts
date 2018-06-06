@@ -77,13 +77,29 @@ export class CanvasController  extends LitElement {
 customElements.define('canvas-controller', CanvasController);
 
 export class TrackCanvasContext {
-  //TODO: Implement.
+
+  private width = 0;
+  private height = 0;
+
   constructor(private ctx: CanvasRenderingContext2D | TrackCanvasContext,
               private xOffset: number,
               private yOffset: number) {}
 
   fillRect(x: number, y: number, width: number, height: number) {
+
+    if(x < 0 || x + width > this.width ||
+       y < 0 || y + height > this.height) {
+      throw new OutOfBoundsDrawingError('Rect out of bounds ' +
+          this.width + ', ' + this.height);
+    }
+
     this.ctx.fillRect(x + this.xOffset, y + this.yOffset, width, height);
+  }
+
+  public setDimensions(width: number, height: number)
+  {
+    this.width = width;
+    this.height = height;
   }
 
   public setYOffset(offset: number) {
@@ -97,4 +113,8 @@ export class TrackCanvasContext {
   set fillStyle(v: string) {
     this.ctx.fillStyle = v;
   }
+}
+
+export class OutOfBoundsDrawingError extends Error {
+
 }
