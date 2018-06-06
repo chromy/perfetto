@@ -8,7 +8,7 @@ export abstract class TrackContent extends LitElement {
   protected end = 1000;
 
   public height: number;
-  protected x: (number) => number = () => 0;
+  protected x: (v: number) => number = () => 0;
 
   constructor(protected width: number) {
     super();

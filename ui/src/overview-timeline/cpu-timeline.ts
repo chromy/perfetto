@@ -8,10 +8,11 @@ export class CpuTimeline extends LitElement {
   private height = 100;
   private cpuData: { time: number, cpu: number}[] = [];
   private path: SVGPathElement;
+  private y: ((v: number) => number);
 
   static get properties() { return { height: Number, cpuData: [String] }}
 
-  constructor(private state: State, private x)
+  constructor(private state: State, private x: ((v: number) => number))
   {
     super();
 

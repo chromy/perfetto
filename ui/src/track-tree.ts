@@ -41,7 +41,7 @@ export class TrackTree extends LitElement {
     return 'children' in state;
   }
 
-  get height() {
+  get height() : number {
     const childrenHeight = this.trackChildren
         .map(c => c.height).reduce((a,b) => a+b, 0);
     return this.contentPosition.top + childrenHeight + this.contentPosition.bottom;

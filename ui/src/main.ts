@@ -16,6 +16,7 @@
 
 console.log('Hello from the main thread!');
 
+
 import { TraceUi } from './trace-ui';
 import {html, render} from 'lit-html';
 import {State} from './state';
@@ -140,7 +141,7 @@ if (container) {
 
 const mainThreadWaitTimeInMs = 0;
 
-const wait = function(ms)
+const wait = function(ms: number)
 {
   const start = Date.now();
   while(Date.now() - start < ms)

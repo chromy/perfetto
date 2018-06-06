@@ -12,6 +12,7 @@ export class GlobalBrushTimeline extends LitElement {
   private axisEl: any;
   private brush: any;
   private brushEl: any;
+  private g: SVGGElement;
 
   private start = 0;
   private end = 10000;

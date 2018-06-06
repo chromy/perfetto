@@ -58,8 +58,8 @@ export class PanContent extends LitElement {
     </style>
     
     <div class="event-capture"
-         on-mousedown=${(e) => { this.onMouseDown(e); } }
-         on-mousemove=${(e) => { this.onMouseMove(e); } }
+on-mousedown=${(e: MouseEvent) => { this.onMouseDown(e); } }
+         on-mousemove=${(e: MouseEvent) => { this.onMouseMove(e); } }
          on-mouseup=${() => { this.onMouseUp(); } }
         >
     </div>`;
