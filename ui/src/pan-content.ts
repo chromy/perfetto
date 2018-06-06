@@ -15,6 +15,8 @@ export class PanContent extends LitElement {
 
     this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
         this.state.gps.startVisibleWindow) / this.width;
+
+    window.addEventListener('scroll', (e: UIEvent) => this.onScroll(e));
   }
 
   protected onMouseDown(e: MouseEvent) {
@@ -38,6 +40,25 @@ export class PanContent extends LitElement {
     this.mouseDownX = -1;
   }
 
+  protected onScroll(e: UIEvent) {
+    //console.log(e);
+    if(PanContent.isMouseWheelEvent(e))
+    {
+      if(e.deltaX) {
+        const total = this.state.gps.endVisibleWindow -
+            this.state.gps.startVisibleWindow;
+
+        this.state.gps.startVisibleWindow += total * 0.1;
+        this.state.gps.endVisibleWindow += total * 0.1;
+      }
+    }
+
+  }
+
+  static isMouseWheelEvent(e: UIEvent): e is MouseWheelEvent {
+    return 'deltaX' in e;
+  }
+
   _render() {
 
     this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
@@ -58,7 +79,7 @@ export class PanContent extends LitElement {
     </style>
     
     <div class="event-capture"
-on-mousedown=${(e: MouseEvent) => { this.onMouseDown(e); } }
+         on-mousedown=${(e: MouseEvent) => { this.onMouseDown(e); } }
          on-mousemove=${(e: MouseEvent) => { this.onMouseMove(e); } }
          on-mouseup=${() => { this.onMouseUp(); } }
         >
