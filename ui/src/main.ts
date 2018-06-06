@@ -16,6 +16,10 @@
 
 console.log('Hello from the main thread!');
 
+import { TraceUi } from './trace-ui';
+import {html, render} from 'lit-html';
+import {State} from './state';
+
 function writeToUIConsole(line:string) {
   const lineElement = document.createElement('div');
   lineElement.innerText = line;
@@ -33,7 +37,6 @@ function writeToUIConsole(line:string) {
     printErr: writeToUIConsole,
 };
 
-
 function main() {
   const worker = new Worker("worker_bundle.js");
   worker.onerror = e => {
@@ -42,3 +45,114 @@ function main() {
 }
 
 main();
+
+const container = document.getElementById('app-container');
+if (container) {
+  const state: State = {
+    loadedTraces: [], // Handles to traces
+    gps: {
+      startVisibleWindow: 10,
+      endVisibleWindow: 2000
+    },
+    trackTree: {
+      metadata: {
+        name: 'foo',
+        shellColor: 'red'
+      },
+      children: [{
+        metadata: {
+          name: 'bar 1',
+          shellColor: 'blue'
+        },
+        children: []
+      }, {
+        metadata: {
+          name: 'bar 2',
+          shellColor: 'yellow'
+        },
+        children: [{
+          metadata: {
+            name: 'subbar 2-1',
+            shellColor: 'green'
+          },
+          children: []
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }, {
+          metadata: {},
+          trackData: {}
+        }
+        ]
+      }]
+    },
+    sliceTrackDataSpec: {}
+  };
+
+  const bcr = container.getBoundingClientRect();
+  const width = bcr.width - 20; // For scroll bar
+  const ui = new TraceUi(state, width);
+
+  render(html`${ui}`, container);
+}
+
+const mainThreadWaitTimeInMs = 0;
+
+const wait = function(ms)
+{
+  const start = Date.now();
+  while(Date.now() - start < ms)
+  {
+
+  }
+};
+
+const raf = () => {
+  wait(mainThreadWaitTimeInMs);
+
+  requestAnimationFrame(raf);
+};
+
+raf();

@@ -84,6 +84,7 @@ node_bin("main_bundle") {
   outputs = [
     "$target_out_dir/main_bundle.js",
   ]
+  suppress_stdout = true
   args = [
     "-c",
     rebase_path("rollup.config.js", root_build_dir),

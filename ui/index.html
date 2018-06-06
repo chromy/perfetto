@@ -5,9 +5,14 @@
   <style type="text/css">
     html {
       font-family: Roboto, verdana, sans-serif;
-      padding: 20px;
+      /*padding: 20px;*/
+      padding: 0;
+    }
+    body {
+      margin: 0;
     }
     #console {
+      display: none;
       border: 1px solid #333;
       width: auto;
       height: 200px;
@@ -31,6 +36,7 @@
   <div id="console">
     WASM output goes here
   </div>
+  <div id="app-container"></div>
   <script src="main_bundle.js" type="text/javascript"></script>
   <script src="wasm/trace_processor.js" type="text/javascript"></script>
 </body>

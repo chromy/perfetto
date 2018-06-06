@@ -52,12 +52,8 @@ def main():
   stderr = devnull if args.suppress_stderr else None
 
   try:
-    proc = subprocess.Popen(
-        [exe] + args.cmd[1:],
-        cwd=args.chdir,
-        env=env,
-        stderr=stderr,
-        stdout=stdout)
+    proc = subprocess.Popen([exe] + args.cmd[1:], cwd=args.chdir, env=env,
+                            stderr=stderr, stdout=stdout)
     ret = proc.wait()
     if ret == 0 and args.stamp:
       with open(args.stamp, 'w'):
