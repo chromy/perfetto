@@ -36,6 +36,9 @@ export class Track extends LitElement {
         this.contentPosition.left - this.contentPosition.right;
     this.content = new SliceTrackContent(contentCtx, this.trackContentData, contentWidth); //TODO: Infer
     this.shell = new TrackShell(this.content.height, this.shellWidth);
+
+    //console.log(this.width, this.height);
+    contentCtx.setDimensions(this.width, this.height);
   }
 
   getMockSlices()

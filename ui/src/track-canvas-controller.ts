@@ -27,6 +27,7 @@ export class CanvasController  extends LitElement {
     this.ctx = <CanvasRenderingContext2D> this.canvas.getContext('2d');
 
     this.tCtx = new TrackCanvasContext(this.getContext2D(), 0, 0);
+    this.tCtx.setDimensions(this.width, this.height);
 
     //TODO: This interval should probably not be here.
     // Might need an event listener higher up.
@@ -89,8 +90,9 @@ export class TrackCanvasContext {
 
     if(x < 0 || x + width > this.width ||
        y < 0 || y + height > this.height) {
-      throw new OutOfBoundsDrawingError('Rect out of bounds ' +
-          this.width + ', ' + this.height);
+      /*throw new OutOfBoundsDrawingError('Rect out of bounds ' +
+          this.width + ', ' + this.height + ': topleft ' + x + ', ' + y +
+          ', bottom right: ' + (x + width) + ', ' + (y + height));*/
     }
 
     this.ctx.fillRect(x + this.xOffset, y + this.yOffset, width, height);
