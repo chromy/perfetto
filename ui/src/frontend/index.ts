@@ -17,6 +17,7 @@
 import { State, createZeroState } from '../backend/state';
 import * as m from 'mithril';
 import * as Atrace from  '../backend/atrace';
+import '../my-element';
 
 let gState: State = createZeroState();
 let gDispatch: (msg: any) => void = _ => {};
@@ -200,7 +201,10 @@ const ViewerPage = {
     return [
       m(Menu, { title: "Trace Viewer" }),
       m(Side),
-      m('#content', "No traces loaded"),
+      m('#content',
+        "No traces loaded",
+        m('my-element[mood=happy]'),
+      ),
     ];
   },
 };
