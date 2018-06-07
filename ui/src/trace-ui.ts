@@ -29,6 +29,7 @@ export class TraceUi extends LitElement {
 
     this.overview = new GlobalBrushTimeline(this.state, this.width, reRender);
     this.pc = new PanContent(this.width, this.root.height, this.state, reRender);
+    this.cc.setMaxHeight(this.root.height);
   }
 
   _render() {

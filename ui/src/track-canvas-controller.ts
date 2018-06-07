@@ -10,6 +10,7 @@ export class CanvasController  extends LitElement {
   private ctx: CanvasRenderingContext2D;
   private tCtx : TrackCanvasContext;
   private top = 0;
+  private maxHeight = 100000;
 
   constructor(private width: number,
               private height: number,
@@ -56,9 +57,12 @@ export class CanvasController  extends LitElement {
     //TODO: Defines height/width etc.
   }
 
-  onResize()
-  {
+  onResize() {
     //TODO
+  }
+
+  setMaxHeight(maxHeight: number) {
+    this.maxHeight = maxHeight;
   }
 
   _render()
@@ -66,12 +70,22 @@ export class CanvasController  extends LitElement {
     return html`
       <style>
         :host {
+          width: ${this.width}px;
+          height: ${this.maxHeight}px;
+          pointer-events: none;
+          overflow: hidden;
+          display: block;
+          position: absolute;
+          top: 0;
+        }
+        .wrap {
           position: absolute;
           top: ${this.top}px;
-          pointer-events: none;
         }
       </style>
-      ${this.canvas}`;
+      <div class="wrap">
+        ${this.canvas}
+      </div>`;
   }
 }
 
