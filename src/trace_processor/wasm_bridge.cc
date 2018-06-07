@@ -20,9 +20,16 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/trace_processor/sched.pb.h"
+#include "src/trace_processor/emscripten_task_runner.h"
 
 namespace perfetto {
 namespace trace_processor {
+
+namespace {
+
+EmscriptenTaskRunner* g_task_runner;
+
+}
 
 // +---------------------------------------------------------------------------+
 // | Exported functions called by the JS/TS running in the worker.             |
@@ -30,6 +37,8 @@ namespace trace_processor {
 extern "C" {
 void EMSCRIPTEN_KEEPALIVE main();
 void main() {
+  PERFETTO_ILOG("Initializing WASM bridge\n");
+  g_task_runner = new EmscriptenTaskRunner();
   protos::Sched sched;
   PERFETTO_ILOG("Hello from TraceProcessor C++ code (%d)\n", sched.ByteSize());
 }
