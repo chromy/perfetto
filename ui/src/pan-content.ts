@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {State} from './state';
-//import {html} from 'lit-html/lib/lit-extended';
+import {render} from 'lit-html';
 
 export class PanContent extends LitElement {
 
@@ -21,12 +21,8 @@ export class PanContent extends LitElement {
     this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
         this.state.gps.startVisibleWindow) / this.width;
 
-
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
-    const overflowContent = document.createElement('div');
-    overflowContent.className = 'overflow-content';
-    this.scroller.appendChild(overflowContent);
     this.scroller.addEventListener('scroll', () => this.onScroll());
   }
 
@@ -74,11 +70,28 @@ export class PanContent extends LitElement {
     this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
         this.state.gps.startVisibleWindow) / this.width;
 
+    const scrollerContent = html`
+    <style>
+    .overflow-content {
+        width: ${this.width + PanContent.MAX_SCROLL + 'px'};
+        height: 1px;
+      }
+      .scroller-content {
+        width: ${this.width + 'px'};
+        position: relative;
+        left: ${PanContent.NEUTRAL_POSITION + 'px'};
+      }
+    </style>
+    <div class="overflow-content"></div>
+    <div class="scroller-content">
+      <slot></slot>
+    </div>
+    `;
+
+    render(scrollerContent, this.scroller);
+
     return html`<style>
       :host {
-        position: fixed;
-        top: 0;
-        left: 0;
         width: ${this.width}px;
         height: ${this.height}px;
         overflow: hidden;
@@ -86,20 +99,19 @@ export class PanContent extends LitElement {
       }
       .event-capture {
         width: ${this.width}px;
-        height: ${this.height + PanContent.SCROLL_BAR_HEIGHT}px;
+        height: ${this.height}px;
         position: relative;
+        overflow: hidden;
       }
       .scroller {
         overflow-x: scroll;
-        width: ${this.width}px;
+        overflow-y: hidden;
+        width: ${this.width + 'px'};
         height: ${this.height + PanContent.SCROLL_BAR_HEIGHT}px;
       }
-      .overflow-content {
-        width: ${this.width + PanContent.MAX_SCROLL + 'px'};
-        height: 1px;
-      }
     </style>
-    <div class="event-capture" on-mousedown=${(e: MouseEvent) => { this.onMouseDown(e); } }
+    <div class="event-capture"
+           on-mousedown=${(e: MouseEvent) => { this.onMouseDown(e); } }
            on-mousemove=${(e: MouseEvent) => { this.onMouseMove(e); } }
            on-mouseup=${() => { this.onMouseUp(); } }>
       ${this.scroller}

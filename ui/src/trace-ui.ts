@@ -4,6 +4,7 @@ import {State} from './state';
 import {GlobalBrushTimeline} from './overview-timeline/global-brush-timeline';
 import {TrackTree} from './track-tree';
 import {PanContent} from './pan-content';
+import {render} from 'lit-html';
 
 export class TraceUi extends LitElement {
 
@@ -27,13 +28,20 @@ export class TraceUi extends LitElement {
     this.root = new TrackTree(this.state.trackTree, this.state, tCtx, this.width);
 
     this.overview = new GlobalBrushTimeline(this.state, this.width, reRender);
-    this.pc = new PanContent(this.width, window.innerHeight, this.state, reRender);
+    this.pc = new PanContent(this.width, this.root.height, this.state, reRender);
   }
 
   _render() {
     this.overview._invalidateProperties();
     this.root._invalidateProperties();
     this.pc._invalidateProperties();
+
+    const panContentContent = html`
+        ${this.root}
+        ${this.cc}
+    `;
+
+    render(panContentContent, this.pc);
 
     return html`
     <style>
@@ -45,14 +53,12 @@ export class TraceUi extends LitElement {
         position: relative;
       }
     </style>
-    ${this.pc}
+    
     <div id='ui' class="ui">
       <h1>Trace UI</h1>
       ${this.overview}
       <div class="tracks-list">
-        ${this.root}
-        ${this.cc}
-        
+        ${this.pc}
       </div>
     </div>`;
     //<track-tree tree=rootTree modifiedCtx=cc.getCanvasContext('2D')/>
