@@ -72,7 +72,7 @@ export class PanContent extends LitElement {
 
     const scrollerContent = html`
     <style>
-    .overflow-content {
+      .overflow-content {
         width: ${this.width + PanContent.MAX_SCROLL + 'px'};
         height: 1px;
       }
@@ -91,16 +91,9 @@ export class PanContent extends LitElement {
     render(scrollerContent, this.scroller);
 
     return html`<style>
-      :host {
-        width: ${this.width}px;
-        height: ${this.height}px;
-        overflow: hidden;
-        z-index: 100;
-      }
       .event-capture {
         width: ${this.width}px;
         height: ${this.height}px;
-        position: relative;
         overflow: hidden;
       }
       .scroller {
@@ -116,7 +109,6 @@ export class PanContent extends LitElement {
            on-mouseup=${() => { this.onMouseUp(); } }>
       ${this.scroller}
     </div>`;
-    //<track-tree tree=rootTree modifiedCtx=cc.getCanvasContext('2D')/>
   }
 
 }
