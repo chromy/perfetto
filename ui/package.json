@@ -12,9 +12,17 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@types/mithril": "^1.1.12",
+    "@polymer/lit-element": "^0.5.1",
+    "@types/d3": "^5.0.0",
+    "@types/polymer": "^1.2.4",
     "mithril": "^1.1.6",
     "protobufjs": "^6.8.6",
-    "tslib": "^1.9.2"
+    "tslib": "^1.9.2",
+    "ajv": "^6.5.0",
+    "d3": "^5.4.0",
+    "lit-html": "^0.10.0",
+    "protobufjs": "^6.8.6",
+    "sorcery": "^0.10.0"
   },
   "devDependencies": {
     "sorcery": "^0.10.0",
