@@ -78,7 +78,7 @@ export class SliceTrackContent extends TrackContent {
         z-index: 10;
         position: absolute;
         top: 20px;
-        left: 20px;
+        left: ${this.x(100)}px;
       }
     </style>
     <div class="wrap">
