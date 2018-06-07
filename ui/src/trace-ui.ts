@@ -27,7 +27,7 @@ export class TraceUi extends LitElement {
     this.root = new TrackTree(this.state.trackTree, this.state, tCtx, this.width);
 
     this.overview = new GlobalBrushTimeline(this.state, this.width, reRender);
-    this.pc = new PanContent(this.width, this.root.height, this.state, reRender);
+    this.pc = new PanContent(this.width, window.innerHeight, this.state, reRender);
   }
 
   _render() {
@@ -39,18 +39,20 @@ export class TraceUi extends LitElement {
     <style>
       .ui {
         /*border: 1px solid #999;*/
+        position: relative;
       }
       .tracks-list {
         position: relative;
       }
     </style>
+    ${this.pc}
     <div id='ui' class="ui">
       <h1>Trace UI</h1>
       ${this.overview}
       <div class="tracks-list">
         ${this.root}
         ${this.cc}
-        ${this.pc}
+        
       </div>
     </div>`;
     //<track-tree tree=rootTree modifiedCtx=cc.getCanvasContext('2D')/>
