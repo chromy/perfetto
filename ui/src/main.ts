@@ -133,8 +133,7 @@ if (container) {
   };
 
   const bcr = container.getBoundingClientRect();
-  const width = bcr.width - 20; // For scroll bar
-  const ui = new TraceUi(state, width);
+  const ui = new TraceUi(state, bcr.width);
 
   render(html`${ui}`, container);
 }

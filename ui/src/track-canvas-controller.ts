@@ -15,7 +15,7 @@ export class CanvasController  extends LitElement {
   constructor(private width: number,
               private height: number,
               private winHeight: number,
-              reRender: () => void)
+              private reRender: () => void)
   {
     super();
 
@@ -29,20 +29,16 @@ export class CanvasController  extends LitElement {
 
     this.tCtx = new TrackCanvasContext(this.getContext2D(), 0, 0);
     this.tCtx.setDimensions(this.width, this.height);
+  }
 
-    //TODO: This interval should probably not be here.
-    // Might need an event listener higher up.
-    setInterval(() => {
+  setScrollTop(scrollTop: number)
+  {
+    const extraHeight = this.height - this.winHeight;
+    this.top = scrollTop - Math.round(extraHeight / 2);
+    this.tCtx.setYOffset(this.top * -1);
 
-      const scrollTop = document.documentElement.scrollTop;
-      const extraHeight = this.height - this.winHeight;
-      this.top = scrollTop - Math.round(extraHeight / 2);
-      this.tCtx.setYOffset(this.top * -1);
-
-      this.ctx.clearRect(0,0,this.width, this.height);
-      reRender(); //TODO the update should be handled differently.
-
-    }, 100);
+    this.ctx.clearRect(0,0,this.width, this.height);
+    this.reRender(); //TODO the update should be handled differently.
   }
 
   getContext2D() {

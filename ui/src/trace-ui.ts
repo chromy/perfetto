@@ -28,7 +28,13 @@ export class TraceUi extends LitElement {
     this.root = new TrackTree(this.state.trackTree, this.state, tCtx, this.width);
 
     this.overview = new GlobalBrushTimeline(this.state, this.width, reRender);
-    this.pc = new PanContent(this.width, this.root.height, this.state, reRender);
+    //const totalHeight = this.overview.height + this.root.height;
+    this.pc = new PanContent(this.width,
+        window.innerHeight,
+        this.state,
+        reRender,
+        (scrollTop: number) => this.cc.setScrollTop(scrollTop)
+        );
     this.cc.setMaxHeight(this.root.height);
   }
 
@@ -38,16 +44,12 @@ export class TraceUi extends LitElement {
     this.pc._invalidateProperties();
 
     const panContentContent = html`
-        ${this.root}
-        ${this.cc}
-    `;
-
-    render(panContentContent, this.pc);
-
-    return html`
-    <style>
+        
+      <style>
+      :host {
+        display: block;
+      }
       .ui {
-        /*border: 1px solid #999;*/
         position: relative;
       }
       .tracks-list {
@@ -59,9 +61,17 @@ export class TraceUi extends LitElement {
       <h1>Trace UI</h1>
       ${this.overview}
       <div class="tracks-list">
-        ${this.pc}
+        ${this.root}
+        ${this.cc}
       </div>
-    </div>`;
+    </div>
+    `;
+
+    render(panContentContent, this.pc);
+
+    return html`
+    ${this.pc}
+    `;
     //<track-tree tree=rootTree modifiedCtx=cc.getCanvasContext('2D')/>
   }
 

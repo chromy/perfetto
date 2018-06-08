@@ -11,11 +11,13 @@ export class PanContent extends LitElement {
   static MAX_SCROLL = 600;
   static SCROLL_BAR_HEIGHT = 16;
   static NEUTRAL_POSITION = PanContent.MAX_SCROLL / 2;
+  static SCROLL_SPEED = 10;
 
   constructor(private width: number,
-              private height: number,
+              private windowHeight: number,
               private state: State,
-              private onPanned: () => void) {
+              private onPanned: () => void,
+              private onScrolled: (scrollTop: number) => void) {
     super();
 
     this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
@@ -23,7 +25,7 @@ export class PanContent extends LitElement {
 
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
-    this.scroller.addEventListener('scroll', () => this.onScroll());
+    this.scroller.addEventListener('scroll', () => this.onScroll(), {passive: true});
   }
 
   protected onMouseDown(e: MouseEvent) {
@@ -52,12 +54,22 @@ export class PanContent extends LitElement {
   }
 
   protected onScroll() {
-    const scrollX = this.scroller.scrollLeft;
-    if(scrollX) {
-      const movedPx = scrollX - PanContent.NEUTRAL_POSITION;
-      this.scroller.scrollLeft = PanContent.NEUTRAL_POSITION;
 
-      this.panByPx(movedPx);
+    /*const start = Date.now();
+    let i = 0;
+    while(Date.now() - start < 200)
+    {
+      i++;
+    }
+    console.log(i);*/
+
+    const movedPx = this.scroller.scrollLeft - PanContent.NEUTRAL_POSITION;
+    if(movedPx) {
+      this.scroller.scrollLeft = PanContent.NEUTRAL_POSITION;
+      this.panByPx(movedPx * PanContent.SCROLL_SPEED);
+    }
+    else {
+      this.onScrolled(this.scroller.scrollTop);
     }
   }
 
@@ -93,14 +105,13 @@ export class PanContent extends LitElement {
     return html`<style>
       .event-capture {
         width: ${this.width}px;
-        height: ${this.height}px;
+        height: ${this.windowHeight}px;
         overflow: hidden;
       }
       .scroller {
-        overflow-x: scroll;
-        overflow-y: hidden;
+        overflow: scroll;
         width: ${this.width + 'px'};
-        height: ${this.height + PanContent.SCROLL_BAR_HEIGHT}px;
+        height: ${this.windowHeight + PanContent.SCROLL_BAR_HEIGHT}px;
       }
     </style>
     <div class="event-capture"

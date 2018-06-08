@@ -16,7 +16,7 @@ export class GlobalBrushTimeline extends LitElement {
 
   private start = 0;
   private end = 10000;
-  private height = 150;
+  public height = 150;
   private margin: {top: number, right: number, bottom: number, left: number};
 
   private cpuTimeline: CpuTimeline;
@@ -128,6 +128,7 @@ export class GlobalBrushTimeline extends LitElement {
         background:#eee;
         box-sizing: border-box;
         z-index: 500;
+        will-change: transform;
       }
       svg {
         position: absolute;
