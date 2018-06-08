@@ -4,14 +4,15 @@ import {render} from 'lit-html';
 
 export class PanContent extends LitElement {
 
-  protected mouseDownX = -1;
-  protected timeToWidthRatio : number;
-  private scroller: HTMLDivElement;
-
   static MAX_SCROLL = 600;
   static SCROLL_BAR_HEIGHT = 16;
   static NEUTRAL_POSITION = PanContent.MAX_SCROLL / 2;
   static SCROLL_SPEED = 10;
+
+  protected mouseDownX = -1;
+  protected timeToWidthRatio : number;
+  private scroller: HTMLDivElement;
+  private lastScrollX = PanContent.NEUTRAL_POSITION;
 
   constructor(private width: number,
               private windowHeight: number,
@@ -26,6 +27,7 @@ export class PanContent extends LitElement {
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
     this.scroller.addEventListener('scroll', () => this.onScroll(), {passive: true});
+    this.scroller.scrollLeft = PanContent.NEUTRAL_POSITION;
   }
 
   protected onMouseDown(e: MouseEvent) {
@@ -63,14 +65,13 @@ export class PanContent extends LitElement {
     }
     console.log(i);*/
 
-    const movedPx = this.scroller.scrollLeft - PanContent.NEUTRAL_POSITION;
+    const movedPx = this.scroller.scrollLeft - this.lastScrollX;
     if(movedPx) {
-      this.scroller.scrollLeft = PanContent.NEUTRAL_POSITION;
       this.panByPx(movedPx * PanContent.SCROLL_SPEED);
+      this.lastScrollX = this.scroller.scrollLeft;
     }
-    else {
-      this.onScrolled(this.scroller.scrollTop);
-    }
+
+    this.onScrolled(this.scroller.scrollTop);
   }
 
   _firstRendered() {
@@ -91,7 +92,7 @@ export class PanContent extends LitElement {
       .scroller-content {
         width: ${this.width + 'px'};
         position: relative;
-        left: ${PanContent.NEUTRAL_POSITION + 'px'};
+        left: ${this.scroller.scrollLeft + 'px'};
       }
     </style>
     <div class="overflow-content"></div>
