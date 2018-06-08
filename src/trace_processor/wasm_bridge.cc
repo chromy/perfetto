@@ -39,8 +39,7 @@ void EMSCRIPTEN_KEEPALIVE main();
 void main() {
   PERFETTO_ILOG("Initializing WASM bridge\n");
   g_task_runner = new EmscriptenTaskRunner();
-  protos::Sched sched;
-  PERFETTO_ILOG("Hello from TraceProcessor C++ code (%d)\n", sched.ByteSize());
+  // TODO(hjd): Patch.
 }
 
 }  // extern "C"
