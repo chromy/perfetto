@@ -272,6 +272,10 @@ function updateState(new_state: State): void {
 
 function main() {
   console.log('Hello from the main thread!');
+  const processor = new Worker("processor_bundle.js");
+  processor.onerror = e => {
+    console.error(e);
+  }
   const worker = new Worker("worker_bundle.js");
   worker.onerror = e => {
     console.error(e);

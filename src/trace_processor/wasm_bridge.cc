@@ -21,13 +21,29 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/trace_processor/sched.pb.h"
 #include "src/trace_processor/emscripten_task_runner.h"
+#include "src/trace_processor/trace_database.h"
 
 namespace perfetto {
 namespace trace_processor {
 
+// ReadTrace(): reads a portion of the trace file. Ca
+// Invoked by the C++ code in the trace processor to ask the embedder (e.g. the
+// JS code for the case of the UI) to get read a chunk of the trace file.
+// Args:
+//   offset: the start offset (in bytes) in the trace file to read.
+//   len: maximum size of the buffered returned.
+// Returns:
+//   The embedder is supposed to asynchronously call ReadComplete(), passing
+//   back the offset, together with the actual buffer.
+using ReadTraceFunction = uint32_t (*)(uint32_t /*offset*/,
+                                       uint32_t /*len*/,
+                                       uint8_t* /*dst*/);
+
 namespace {
 
 EmscriptenTaskRunner* g_task_runner;
+TraceDatabase* g_trace_database;
+ReadTraceFunction g_read_trace;
 
 }
 
@@ -35,11 +51,13 @@ EmscriptenTaskRunner* g_task_runner;
 // | Exported functions called by the JS/TS running in the worker.             |
 // +---------------------------------------------------------------------------+
 extern "C" {
-void EMSCRIPTEN_KEEPALIVE main();
-void main() {
-  PERFETTO_ILOG("Initializing WASM bridge\n");
+void EMSCRIPTEN_KEEPALIVE Initialize(ReadTraceFunction);
+void Initialize(ReadTraceFunction read_trace_function) {
+  PERFETTO_ILOG("Initializing WASM bridge");
   g_task_runner = new EmscriptenTaskRunner();
-  // TODO(hjd): Patch.
+  g_trace_database = new TraceDatabase(g_task_runner);
+  g_read_trace = read_trace_function;
+  //g_trace_database->LoadTrace(reader);
 }
 
 }  // extern "C"

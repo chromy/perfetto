@@ -27,9 +27,10 @@ group("ui") {
   deps = [
     ":index_release",
     ":logo_release",
-    ":main_bundle_release",
     ":wasm_release",
+    ":main_bundle_release",
     ":worker_bundle_release",
+    ":processor_bundle_release",
   ]
 }
 
@@ -123,6 +124,31 @@ node_bin("worker_bundle") {
   ]
 }
 
+node_bin("processor_bundle") {
+  deps = [
+    ":transpile_all_ts",
+  ]
+  node_cmd = "rollup"
+  inputs = [
+    "$target_out_dir/processor.js",
+    "rollup.config.js",
+  ]
+  outputs = [
+    "$target_out_dir/processor_bundle.js",
+  ]
+  args = [
+    "-c",
+    rebase_path("rollup.config.js", root_build_dir),
+    rebase_path(inputs[0], root_build_dir),
+    "-o",
+    rebase_path(outputs[0], root_build_dir),
+    "-f",
+    "iife",
+    "-m",
+    "--silent",
+  ]
+}
+
 # +----------------------------------------------------------------------------+
 # | Protobuf: gen rules to create .js and .d.ts files from protos.             |
 # +----------------------------------------------------------------------------+
@@ -191,6 +217,7 @@ node_bin("transpile_all_ts") {
   ]
   inputs = sources + [ "tsconfig.json" ]
   outputs = [
+    "$target_out_dir/processor.js",
     "$target_out_dir/main.js",
     "$target_out_dir/worker.js",
   ]
@@ -277,6 +304,25 @@ node_bin("worker_bundle_release") {
   ]
 }
 
+node_bin("processor_bundle_release") {
+  deps = [
+    ":processor_bundle",
+  ]
+  inputs = [
+    "$target_out_dir/processor_bundle.js",
+  ]
+  outputs = [
+    "$ui_dir/processor_bundle.js",
+  ]
+  node_cmd = "sorcery"
+  args = [
+    "-i",
+    rebase_path(inputs[0], root_build_dir),
+    "-o",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 copy("wasm_release") {
   deps = [
     "//src/trace_processor:trace_processor.js($wasm_toolchain)",
@@ -287,7 +333,7 @@ copy("wasm_release") {
     "$root_build_dir/wasm/trace_processor.wasm",
   ]
   outputs = [
-    "$ui_dir/wasm/{{source_file_part}}",
+    "$ui_dir/{{source_file_part}}",
   ]
 }
 
