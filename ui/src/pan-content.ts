@@ -4,15 +4,12 @@ import {render} from 'lit-html';
 
 export class PanContent extends LitElement {
 
-  static MAX_SCROLL = 600;
-  static SCROLL_BAR_HEIGHT = 16;
-  static NEUTRAL_POSITION = PanContent.MAX_SCROLL / 2;
-  static SCROLL_SPEED = 10;
+  static SCROLL_SPEED = 1;
+  static SCROLLBAR_WIDTH = 16;
 
   protected mouseDownX = -1;
   protected timeToWidthRatio : number;
   private scroller: HTMLDivElement;
-  private lastScrollX = PanContent.NEUTRAL_POSITION;
 
   constructor(private width: number,
               private windowHeight: number,
@@ -26,8 +23,7 @@ export class PanContent extends LitElement {
 
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
-    this.scroller.addEventListener('scroll', () => this.onScroll(), {passive: true});
-    this.scroller.scrollLeft = PanContent.NEUTRAL_POSITION;
+    this.scroller.addEventListener('wheel', (e) => this.onWheel(e));
   }
 
   protected onMouseDown(e: MouseEvent) {
@@ -55,7 +51,7 @@ export class PanContent extends LitElement {
     this.onPanned();
   }
 
-  protected onScroll() {
+  protected onWheel(e: WheelEvent) {
 
     /*const start = Date.now();
     let i = 0;
@@ -65,17 +61,11 @@ export class PanContent extends LitElement {
     }
     console.log(i);*/
 
-    const movedPx = this.scroller.scrollLeft - this.lastScrollX;
-    if(movedPx) {
-      this.panByPx(movedPx * PanContent.SCROLL_SPEED);
-      this.lastScrollX = this.scroller.scrollLeft;
+    if(e.deltaX) {
+      this.panByPx(e.deltaX * PanContent.SCROLL_SPEED);
     }
 
     this.onScrolled(this.scroller.scrollTop);
-  }
-
-  _firstRendered() {
-    this.scroller.scrollLeft = PanContent.NEUTRAL_POSITION;
   }
 
   _render() {
@@ -85,17 +75,11 @@ export class PanContent extends LitElement {
 
     const scrollerContent = html`
     <style>
-      .overflow-content {
-        width: ${this.width + PanContent.MAX_SCROLL + 'px'};
-        height: 1px;
-      }
       .scroller-content {
-        width: ${this.width + 'px'};
+        width: ${this.width - PanContent.SCROLLBAR_WIDTH + 'px'};
         position: relative;
-        left: ${this.scroller.scrollLeft + 'px'};
       }
     </style>
-    <div class="overflow-content"></div>
     <div class="scroller-content">
       <slot></slot>
     </div>
@@ -110,9 +94,10 @@ export class PanContent extends LitElement {
         overflow: hidden;
       }
       .scroller {
-        overflow: scroll;
+        overflow-y: scroll;
+        overflow-x: hidden;
         width: ${this.width + 'px'};
-        height: ${this.windowHeight + PanContent.SCROLL_BAR_HEIGHT}px;
+        height: ${this.windowHeight}px;
       }
     </style>
     <div class="event-capture"

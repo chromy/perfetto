@@ -8,6 +8,7 @@ import {render} from 'lit-html';
 
 export class TraceUi extends LitElement {
 
+  static SCROLLBAR_WIDTH = 16;
   static get properties() { return { s: String }}
 
   private cc: CanvasController;
@@ -25,9 +26,11 @@ export class TraceUi extends LitElement {
     const canvasHeight = 2 * window.innerHeight;
     this.cc = new CanvasController(this.width, canvasHeight, window.innerHeight, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
-    this.root = new TrackTree(this.state.trackTree, this.state, tCtx, this.width);
+    const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
+    this.root = new TrackTree(this.state.trackTree, this.state, tCtx,
+        contentWidth);
 
-    this.overview = new GlobalBrushTimeline(this.state, this.width, reRender);
+    this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
     this.pc = new PanContent(this.width,
         window.innerHeight,
