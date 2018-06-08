@@ -125,6 +125,7 @@ export class GlobalBrushTimeline extends LitElement {
         position: sticky;
         top: -1px;
         height: 150px;
+        width: ${this.width}px;
         background:#eee;
         box-sizing: border-box;
         z-index: 500;

@@ -98,6 +98,7 @@ export class PanContent extends LitElement {
         overflow-x: hidden;
         width: ${this.width + 'px'};
         height: ${this.windowHeight}px;
+        will-change: transform;
       }
     </style>
     <div class="event-capture"

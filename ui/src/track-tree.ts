@@ -74,6 +74,7 @@ export class TrackTree extends LitElement {
         height: ${this.height}px;
         box-sizing: border-box;
         position: relative;
+        width: ${this.width}px;
       }
       .content {
         position: absolute;

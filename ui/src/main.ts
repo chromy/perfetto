@@ -138,19 +138,24 @@ if (container) {
   render(html`${ui}`, container);
 }
 
+// Set this to say 200 to test compositor scrolling
 const mainThreadWaitTimeInMs = 0;
 
 const wait = function(ms: number)
 {
   const start = Date.now();
+  let i = 0;
   while(Date.now() - start < ms)
   {
-
+    i++;
   }
+  console.log(i);
 };
 
 const raf = () => {
-  wait(mainThreadWaitTimeInMs);
+  if(mainThreadWaitTimeInMs) {
+    wait(mainThreadWaitTimeInMs);
+  }
 
   requestAnimationFrame(raf);
 };
