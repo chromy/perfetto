@@ -6,10 +6,13 @@ export class PanContent extends LitElement {
 
   static SCROLL_SPEED = 1;
   static SCROLLBAR_WIDTH = 16;
+  static ZOOM_IN_PERCENTAGE_SPEED = 0.95;
+  static ZOOM_OUT_PERCENTAGE_SPEED = 1.05;
 
   protected mouseDownX = -1;
   protected timeToWidthRatio : number;
   private scroller: HTMLDivElement;
+  //private mouseXpos: number = 0;
 
   constructor(private width: number,
               private windowHeight: number,
@@ -24,6 +27,55 @@ export class PanContent extends LitElement {
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
     this.scroller.addEventListener('wheel', (e) => this.onWheel(e));
+
+    this.handleZooming();
+  }
+
+  protected handleZooming() {
+
+    let zooming = false;
+
+    document.body.addEventListener('keydown', (e) => {
+      if(e.key === 'w') {
+        startZoom(true);
+      } else if(e.key === 's') {
+        startZoom(false);
+      }
+    });
+    document.body.addEventListener('keyup', (e) => {
+      if(e.key === 'w' || e.key === 's') {
+        endZoom();
+      }
+    });
+
+    const zoom = (zoomIn: boolean) => {
+      const t = this.state.gps.endVisibleWindow - this.state.gps.startVisibleWindow;
+      const percentage = zoomIn ? PanContent.ZOOM_IN_PERCENTAGE_SPEED :
+          PanContent.ZOOM_OUT_PERCENTAGE_SPEED;
+      const newT = t * percentage;
+
+      //const zoomPosition = this.x.invert(this.mouseXpos).getTime();
+      const zoomPosition = t / 2 + this.state.gps.startVisibleWindow;
+      const zoomPositionPercentage = (zoomPosition -
+          this.state.gps.startVisibleWindow) / t;
+
+      this.state.gps.startVisibleWindow = zoomPosition - newT * zoomPositionPercentage;
+      this.state.gps.endVisibleWindow = zoomPosition + newT * (1 - zoomPositionPercentage);
+
+      this.onPanned();
+
+      if(zooming) {
+        requestAnimationFrame(() => zoom(zoomIn));
+      }
+    };
+
+    const startZoom = (zoomIn: boolean) => {
+      zooming = true;
+      zoom(zoomIn);
+    };
+    const endZoom = () => {
+      zooming = false;
+    };
   }
 
   protected onMouseDown(e: MouseEvent) {
@@ -36,6 +88,7 @@ export class PanContent extends LitElement {
       this.panByPx(movedPx);
       this.mouseDownX = e.clientX;
     }
+    //this.mouseXpos = e.clientX;
   }
 
   protected onMouseUp() {
@@ -52,14 +105,6 @@ export class PanContent extends LitElement {
   }
 
   protected onWheel(e: WheelEvent) {
-
-    /*const start = Date.now();
-    let i = 0;
-    while(Date.now() - start < 200)
-    {
-      i++;
-    }
-    console.log(i);*/
 
     if(e.deltaX) {
       this.panByPx(e.deltaX * PanContent.SCROLL_SPEED);
