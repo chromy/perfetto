@@ -4,13 +4,11 @@ import {TrackShell} from './track-shell';
 import {SliceTrackContent} from './slice-track-content';
 import {TrackContent} from './track-content';
 import { TrackCanvasContext } from './track-canvas-controller';
-import {TrackContentData} from './track-content-data';
 
 export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
-  trackContentData: TrackContentData;
 
   private shellWidth = 200;
 
@@ -25,34 +23,14 @@ export class Track extends LitElement {
     const contentCtx = new TrackCanvasContext(this.tCtx, cp.left + this.shellWidth, cp.top);
 
     this.type = 'slice'; //TODO: Infer
-    this.trackContentData = {
-      trace: 'abc',
-      thread: 'def',
-      process: 'ghi',
-      slices: this.getMockSlices()
-    };
-
+    
     const contentWidth = this.width - this.shellWidth -
         this.contentPosition.left - this.contentPosition.right;
-    this.content = new SliceTrackContent(contentCtx, this.trackContentData, contentWidth); //TODO: Infer
+    this.content = new SliceTrackContent(contentCtx, contentWidth); //TODO: Infer
     this.shell = new TrackShell(this.content.height, this.shellWidth, this.state.metadata.name);
 
     //console.log(this.width, this.height);
     contentCtx.setDimensions(this.width, this.height);
-  }
-
-  getMockSlices()
-  {
-    const mocks: {start: number, end: number}[] = [];
-    let nextStart = 0;
-
-    for(let t = 0; t <= 250; t += 1)
-    {
-      const mock = {start: nextStart, end: nextStart + Math.round(Math.abs(Math.sin(t)*50))};
-      mocks.push(mock);
-      nextStart = mock.end + Math.round(Math.abs(Math.sin(t)*20));
-    }
-    return mocks;
   }
 
   get height() {

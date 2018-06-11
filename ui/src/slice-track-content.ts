@@ -1,7 +1,7 @@
 import {TrackContent} from './track-content';
 import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
-import {SliceTrackContentData} from './slice-track-content-data';
+import { traceDataStore } from './trace-data-store';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
@@ -19,9 +19,7 @@ export class SliceTrackContent extends TrackContent {
   }*/
 
   constructor(private tCtx: TrackCanvasContext,
-              private data: SliceTrackContentData,
-              protected width: number
-  ) {
+              protected width: number) {
     super(width);
 
     this.color = this.getRandomColor();
@@ -34,7 +32,13 @@ export class SliceTrackContent extends TrackContent {
     this.tCtx.fillRect(0, 0, this.width, this.height);
 
     this.tCtx.fillStyle = '#' + this.color;
-    for (const slice of this.data.slices) {
+    const slices = traceDataStore.getData({
+      start: 0,
+      end: 14000,
+      process: 1,
+      thread: 1,
+    });
+    for (const slice of slices) {
       this.tCtx.fillRect(this.x(slice.start), 0,
           this.x(slice.end) - this.x(slice.start), 20);
     }
