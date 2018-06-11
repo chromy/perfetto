@@ -36,14 +36,14 @@ class TraceDataStore {
       for (let tid = 1; tid < 10; tid++) {
         const slices : ThreadSlice[] = [];
         let nextStart = 0;
-        for(let t = 0; t <= 250; t += 1) {
+        for(let t = 0; t <= 250 && nextStart < 10000; t += 1) {
           const slice = {
             start: nextStart,
             end: nextStart + Math.round(Math.abs(Math.sin(t)*50)),
             title: 'SliceName',
             tid: tid, 
             pid: pid,
-          }
+          };
           slices.push(slice);
           nextStart = slice.end + Math.round(Math.abs(Math.sin(t)*20));
         }

@@ -20,7 +20,6 @@ export class Track extends LitElement {
     super();
 
     this.type = 'slice'; //TODO: Infer
-
     const height = 100;
 
     this.shell = new TrackShell(height, this.width, this.state.metadata.name);

@@ -11,7 +11,6 @@ export class PanContent extends LitElement {
   static ZOOM_OUT_PERCENTAGE_SPEED = 1.05;
 
   protected mouseDownX = -1;
-  protected timeToWidthRatio : number;
   private scroller: HTMLDivElement;
   private mouseXpos: number = 0;
 
@@ -22,9 +21,6 @@ export class PanContent extends LitElement {
               private onPanned: () => void,
               private onScrolled: (scrollTop: number) => void) {
     super();
-
-    this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
-        this.state.gps.startVisibleWindow) / this.width;
 
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
@@ -91,6 +87,7 @@ export class PanContent extends LitElement {
       this.mouseDownX = e.offsetX;
     }
     this.mouseXpos = e.offsetX;
+    //console.log(this.mouseXpos, this.scale.pxToTs(this.mouseXpos));
   }
 
   protected onMouseUp() {
@@ -98,7 +95,7 @@ export class PanContent extends LitElement {
   }
 
   protected panByPx(movedPx: number) {
-    const movedTime = this.timeToWidthRatio * movedPx;
+    const movedTime = this.scale.pxToTs(movedPx) - this.scale.pxToTs(0);
 
     this.state.gps.startVisibleWindow += movedTime;
     this.state.gps.endVisibleWindow += movedTime;
@@ -116,9 +113,6 @@ export class PanContent extends LitElement {
   }
 
   _render() {
-
-    this.timeToWidthRatio = (this.state.gps.endVisibleWindow -
-        this.state.gps.startVisibleWindow) / this.width;
 
     const scrollerContent = html`
     <style>
