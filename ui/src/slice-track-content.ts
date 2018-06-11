@@ -66,6 +66,16 @@ export class SliceTrackContent extends TrackContent {
     return 100;
   }
 
+  onClick(e: MouseEvent) {
+    if(e.target) {
+      const eventTarget: HTMLElement = <HTMLElement> e.target;
+      const bcr = <DOMRect> eventTarget.getBoundingClientRect();
+      const rel = e.clientX - bcr.x;
+      const t = this.x.pxToTs(rel);
+      console.log(t);
+    }
+  }
+
   _render() {
 
     this.draw();  // This makes it not a pure function since this is a side effect.
@@ -87,7 +97,7 @@ export class SliceTrackContent extends TrackContent {
         left: ${this.x.tsToPx(100)}px;
       }
     </style>
-    <div class="wrap">
+    <div class="wrap" on-click=${(e: MouseEvent) => { this.onClick(e);}}>
       <div class="content">
         Slice Track Content
       </div>

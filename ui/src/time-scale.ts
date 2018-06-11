@@ -45,4 +45,8 @@ export class OffsetTimeScale {
 
     return result;
   }
+
+  public pxToTs(px: number): number {
+    return this.scale.pxToTs(px + this.pxOffset);
+  }
 }
