@@ -13,14 +13,15 @@ export class SliceTrackContent extends TrackContent {
   private color: string;
 
   constructor(private tCtx: TrackCanvasContext,
-              protected width: number,
+              private width: number,
               private x: OffsetTimeScale) {
-    super(width);
+    super();
 
     this.color = this.getRandomColor();
 
     //this.vis = new SliceTrackContent();
   }
+
   draw() {
 
     this.tCtx.fillStyle = 'black';

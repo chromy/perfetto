@@ -9,7 +9,7 @@ export abstract class TrackContent extends LitElement {
 
   public height: number;
 
-  constructor(protected width: number) {
+  constructor() {
     super();
 
     this.height = this.getHeight();

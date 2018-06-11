@@ -5,13 +5,12 @@ import {SliceTrackContent} from './slice-track-content';
 import {TrackContent} from './track-content';
 import { TrackCanvasContext } from './track-canvas-controller';
 import {OffsetTimeScale} from './time-scale';
+import {render} from 'lit-html';
 
 export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
-
-  private shellWidth = 200;
 
   constructor(private state: TrackState,
               private tCtx: TrackCanvasContext,
@@ -20,29 +19,33 @@ export class Track extends LitElement {
   {
     super();
 
-    const cp = this.contentPosition;
-    const contentCtx = new TrackCanvasContext(this.tCtx, cp.left + this.shellWidth, cp.top);
-
     this.type = 'slice'; //TODO: Infer
-    
-    const contentWidth = this.width - this.shellWidth -
-        this.contentPosition.left - this.contentPosition.right;
-    const contentX = new OffsetTimeScale(this.x,
-        this.contentPosition.left,
-        contentWidth);
+
+    const height = 100;
+
+    this.shell = new TrackShell(height, this.width, this.state.metadata.name);
+    const contentWidth = this.shell.getContentWidth();
+
+    const cp = this.contentPosition;
+    const shellCp = this.shell.contentPosition;
+    const left = cp.left + shellCp.left;
+    const top = cp.top + shellCp.top;
+
+    const contentX = new OffsetTimeScale(this.x, left, contentWidth);
+    const contentCtx = new TrackCanvasContext(this.tCtx, left, top);
     this.content = new SliceTrackContent(contentCtx, contentWidth, contentX); //TODO: Infer
-    this.shell = new TrackShell(this.content.height, this.shellWidth, this.state.metadata.name);
 
     //console.log(this.width, this.height);
     contentCtx.setDimensions(this.width, this.height);
   }
 
-  get height() {
-    return this.contentPosition.top + this.content.height + this.contentPosition.bottom;
+  get contentPosition() : { top: number, right: number, bottom: number, left: number } {
+    return { top: 10, right: 0, bottom: 0, left: 0 };
   }
 
-  get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 10, right: 0, bottom: 0, left: 10 };
+  get height() {
+    const cp = this.contentPosition;
+    return cp.top + cp.bottom + this.content.height;
   }
 
   _render() {
@@ -53,40 +56,26 @@ export class Track extends LitElement {
 
     this.content._invalidateProperties();
 
-    //this.eventTemplate.innerHTML = this.content;
+    const contentTemplate = html`${this.content}`;
+    render(contentTemplate, this.shell);
 
     return html`
     <style>
-      .wrap {
-        background-color: hsl(217, 100%, 98%);
-        padding: 2px;
-        height: ${this.height}px;
-        box-sizing: border-box;
-        position: relative;
-      }
-      .content {
-        position: absolute;
-        top: ${this.contentPosition.top}px;
-        left: ${this.contentPosition.left}px;
-        width: ${this.width - 
-    this.contentPosition.left - this.contentPosition.right + 'px'};
-      }
-      .trackcontent {
-        position: absolute;
-        top: 0px;
-        left: ${this.shellWidth + 'px'};
-        width: ${this.width - this.shellWidth -
-    this.contentPosition.left - this.contentPosition.right + 'px'};
-      }
-      }
+    :host {
+      height: ${this.height}px;
+      width: ${this.width}px;
+      display: block;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .wrap {
+      position: absolute;
+      top: ${this.contentPosition.top}px;
+      left: ${this.contentPosition.left}px;
+    }
     </style>
     <div class="wrap">
-      <div class="content">
-        ${this.shell}
-        <div class="trackcontent">
-          ${this.content}
-        </div>
-      </div>
+      ${this.shell}
     </div>`;
   }
 }
