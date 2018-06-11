@@ -26,10 +26,13 @@ export class TrackTree extends LitElement {
     for(let childState of this.state.children)
     {
       const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
-      const cScale = new OffsetTimeScale(this.scale, this.contentPosition.left);
 
       const sidePadding = this.contentPosition.left + this.contentPosition.right;
       const reducedWidth = this.width - sidePadding;
+      const cScale = new OffsetTimeScale(this.scale,
+          this.contentPosition.left,
+          reducedWidth);
+
       const child = TrackTree.isTrackTreeState(childState) ?
         new TrackTree(childState, tCtx, reducedWidth, cScale) :
         new Track(childState, tCtx, reducedWidth, cScale);

@@ -35,7 +35,7 @@ export class TraceUi extends LitElement {
     const tCtx = this.cc.getTrackCanvasContext();
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
     this.root = new TrackTree(this.state.trackTree, tCtx,
-        contentWidth, new OffsetTimeScale(this.scale, 0));
+        contentWidth, new OffsetTimeScale(this.scale, 0, this.width));
 
     this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;

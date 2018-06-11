@@ -27,32 +27,22 @@ export class TimeScale {
     this.tStart = tStart;
     this.tEnd = tEnd;
   }
-
-  public getPxLimits() {
-    return { start: this.pxStart, end: this.pxEnd };
-  }
 }
 
 export class OffsetTimeScale {
 
   constructor(private scale: (TimeScale|OffsetTimeScale),
-              private pxOffset: number) {
+              private pxOffset: number,
+              private width: number) {
 
   }
 
   public tsToPx(time: number): number {
     const result = this.scale.tsToPx(time) - this.pxOffset;
     if(result < 0) return 0;
-    if(result > this.scale.getPxLimits().end)
-      return this.scale.getPxLimits().end;
+    if(result > this.width)
+      return this.width;
 
     return result;
   }
-
-  public getPxLimits(): {start: number, end: number} {
-    const limits = this.scale.getPxLimits();
-    return { start: limits.start - this.pxOffset,
-      end: limits.end - this.pxOffset};
-  }
-
 }
