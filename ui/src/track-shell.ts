@@ -3,7 +3,9 @@ import {html} from 'lit-html';
 
 export class TrackShell extends LitElement {
 
-  constructor(private height: number, private width: number)
+  constructor(private height: number,
+              private width: number,
+              private name: string)
   {
     super();
   }
@@ -19,7 +21,7 @@ export class TrackShell extends LitElement {
         box-sizing: border-box;
       }
     </style>
-    <div class="wrap"> Track Shell!
+    <div class="wrap"> ${this.name}
     </div>`;
   }
 }

@@ -26,7 +26,9 @@ export interface TrackTreeState {
 
 
 export interface TrackState {
-  metadata: {};
+  metadata: {
+    name: string,
+  };
   trackData: TrackDataSpec;
 }
 

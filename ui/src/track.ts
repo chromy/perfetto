@@ -35,7 +35,7 @@ export class Track extends LitElement {
     const contentWidth = this.width - this.shellWidth -
         this.contentPosition.left - this.contentPosition.right;
     this.content = new SliceTrackContent(contentCtx, this.trackContentData, contentWidth); //TODO: Infer
-    this.shell = new TrackShell(this.content.height, this.shellWidth);
+    this.shell = new TrackShell(this.content.height, this.shellWidth, this.state.metadata.name);
 
     //console.log(this.width, this.height);
     contentCtx.setDimensions(this.width, this.height);
@@ -60,7 +60,7 @@ export class Track extends LitElement {
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 92, right: 20, bottom: 20, left: 20 };
+    return { top: 10, right: 0, bottom: 0, left: 10 };
   }
 
 
@@ -78,11 +78,10 @@ export class Track extends LitElement {
     //this.eventTemplate.innerHTML = this.content;
 
     return html`
-    
     <style>
       .wrap {
-        background: orange;
-        padding: 20px;
+        background-color: hsl(217, 100%, 98%);
+        padding: 2px;
         height: ${this.height}px;
         box-sizing: border-box;
         position: relative;
@@ -103,10 +102,7 @@ export class Track extends LitElement {
       }
       }
     </style>
-    
     <div class="wrap">
-      <h2>Track</h2>
-      
       <div class="content">
         ${this.shell}
         <div class="trackcontent">

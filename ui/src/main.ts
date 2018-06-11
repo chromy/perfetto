@@ -57,76 +57,63 @@ if (container) {
     },
     trackTree: {
       metadata: {
-        name: 'foo',
+        name: 'Trace 1: Pinpoint job 347',
         shellColor: 'red'
       },
       children: [{
         metadata: {
-          name: 'bar 1',
+          name: 'Renderer PID: 12341',
           shellColor: 'blue'
         },
         children: []
       }, {
         metadata: {
-          name: 'bar 2',
+          name: 'Renderer PID: 32423',
           shellColor: 'yellow'
         },
         children: [{
           metadata: {
-            name: 'subbar 2-1',
+            name: 'Metrics Analysis for renderer',
             shellColor: 'green'
           },
-          children: []
+          children: [{
+            metadata: { name: "Slice Track"},
+            trackData: {},
+          }],
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
         }, {
-          metadata: {},
+          metadata: { name: "Slice Track"},
           trackData: {}
-        }, {
-          metadata: {},
-          trackData: {}
-        }, {
-          metadata: {},
-          trackData: {}
-        }, {
-          metadata: {},
-          trackData: {}
-        }, {
-          metadata: {},
-          trackData: {}
-        }, {
-          metadata: {},
-          trackData: {}
-        }
-        ]
+        }]
       }]
     },
     sliceTrackDataSpec: {}

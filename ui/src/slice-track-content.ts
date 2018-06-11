@@ -57,7 +57,7 @@ export class SliceTrackContent extends TrackContent {
   }
 
   getHeight() : number {
-    return 150;
+    return 100;
   }
 
   _render() {

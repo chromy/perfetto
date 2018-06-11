@@ -20,7 +20,7 @@ export class TrackTree extends LitElement {
 
   private updateChildren() {
 
-    let yOffset = this.contentPosition.top;
+    let yOffset = this.contentPosition.top + 1;  // 1px for border.
 
     for(let childState of this.state.children)
     {
@@ -66,15 +66,16 @@ export class TrackTree extends LitElement {
       child._invalidateProperties();
     }
 
+    // TODO: Do colors based on nesting level.
     return html`
     <style>
       .wrap {
-        background: ${state.metadata.shellColor};
-        padding: 20px;
+        background-color: hsla(213, 100%, 98%, 50%);
         height: ${this.height}px;
         box-sizing: border-box;
         position: relative;
         width: ${this.width}px;
+        border: 1px solid #777; 
       }
       .content {
         position: absolute;
@@ -83,9 +84,13 @@ export class TrackTree extends LitElement {
         width: ${this.width - 
     this.contentPosition.left - this.contentPosition.right + 'px'};
       }
+      .titlebar {
+        background-color: #e5eef7;
+        padding: 5px;
+      }
     </style>
     <div class="wrap">
-      <h2>Track Tree: ${state.metadata.name}</h2>
+      <div class="titlebar">${state.metadata.name}</div>
       <div class="content">
         ${trackChildren}
       </div>
