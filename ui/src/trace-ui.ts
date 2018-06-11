@@ -5,6 +5,7 @@ import {GlobalBrushTimeline} from './overview-timeline/global-brush-timeline';
 import {TrackTree} from './track-tree';
 import {PanContent} from './pan-content';
 import {render} from 'lit-html';
+import {OffsetTimeScale, TimeScale} from './time-scale';
 
 export class TraceUi extends LitElement {
 
@@ -15,6 +16,8 @@ export class TraceUi extends LitElement {
   private overview: GlobalBrushTimeline;
   private root: TrackTree;
   private pc: PanContent;
+  //private overviewScale: TimeScale;
+  private scale: TimeScale;
 
   constructor(private state: State, private width: number)
   {
@@ -24,11 +27,15 @@ export class TraceUi extends LitElement {
     const reRender = () => this._invalidateProperties();
 
     const canvasHeight = 2 * window.innerHeight;
+
+    //this.overviewScale = new TimeScale(0, 1000, 0, this.width);
+    this.scale = new TimeScale(0, 1000, 0, this.width);
+
     this.cc = new CanvasController(this.width, canvasHeight, window.innerHeight, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
-    this.root = new TrackTree(this.state.trackTree, this.state, tCtx,
-        contentWidth);
+    this.root = new TrackTree(this.state.trackTree, tCtx,
+        contentWidth, new OffsetTimeScale(this.scale, 0));
 
     this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
@@ -42,6 +49,10 @@ export class TraceUi extends LitElement {
   }
 
   _render() {
+
+    this.scale.setTimeLimits(this.state.gps.startVisibleWindow,
+        this.state.gps.endVisibleWindow);
+
     this.overview._invalidateProperties();
     this.root._invalidateProperties();
     this.pc._invalidateProperties();

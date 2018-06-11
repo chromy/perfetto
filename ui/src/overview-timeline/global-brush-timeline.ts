@@ -24,7 +24,9 @@ export class GlobalBrushTimeline extends LitElement {
 
   static get properties() { return { width: Number }}
 
-  constructor(private state: State, private width: number, onBrushed: () => void)
+  constructor(private state: State,
+              private width: number,
+              onBrushed: () => void)
   {
     super();
     console.log(this.state);

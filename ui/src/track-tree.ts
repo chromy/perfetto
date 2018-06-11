@@ -1,7 +1,8 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
-import {TrackTreeState, TrackState, State} from './state'
+import {TrackTreeState, TrackState } from './state'
 import { TrackCanvasContext } from './track-canvas-controller';
+import {OffsetTimeScale} from './time-scale';
 
 export class TrackTree extends LitElement {
   trackChildren: (TrackTree|Track)[] = [];
@@ -9,9 +10,9 @@ export class TrackTree extends LitElement {
   static get properties() { return { state: String, trackChildren: [String] }}
 
   constructor(private state: TrackTreeState,
-              private globalState: State,
               private tCtx: TrackCanvasContext,
-              private width: number)
+              private width: number,
+              private scale: OffsetTimeScale)
   {
     super();
 
@@ -25,12 +26,13 @@ export class TrackTree extends LitElement {
     for(let childState of this.state.children)
     {
       const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
+      const cScale = new OffsetTimeScale(this.scale, this.contentPosition.left);
 
       const sidePadding = this.contentPosition.left + this.contentPosition.right;
       const reducedWidth = this.width - sidePadding;
       const child = TrackTree.isTrackTreeState(childState) ?
-        new TrackTree(childState, this.globalState, tCtx, reducedWidth) :
-        new Track(childState, this.globalState, tCtx, reducedWidth);
+        new TrackTree(childState, tCtx, reducedWidth, cScale) :
+        new Track(childState, tCtx, reducedWidth, cScale);
 
       tCtx.setDimensions(reducedWidth, child.height);
       this.trackChildren.push(child);

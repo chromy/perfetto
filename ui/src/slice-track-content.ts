@@ -2,6 +2,7 @@ import {TrackContent} from './track-content';
 import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
 import { traceDataStore } from './trace-data-store';
+import {OffsetTimeScale} from './time-scale';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
@@ -19,7 +20,8 @@ export class SliceTrackContent extends TrackContent {
   }*/
 
   constructor(private tCtx: TrackCanvasContext,
-              protected width: number) {
+              protected width: number,
+              private x: OffsetTimeScale) {
     super(width);
 
     this.color = this.getRandomColor();
@@ -39,8 +41,8 @@ export class SliceTrackContent extends TrackContent {
       thread: 1,
     });
     for (const slice of slices) {
-      this.tCtx.fillRect(this.x(slice.start), 0,
-          this.x(slice.end) - this.x(slice.start), 20);
+      this.tCtx.fillRect(this.x.tsToPx(slice.start), 0,
+          this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start), 20);
     }
 
     //TODO Draw stuff with data.
@@ -82,7 +84,7 @@ export class SliceTrackContent extends TrackContent {
         z-index: 10;
         position: absolute;
         top: 20px;
-        left: ${this.x(100)}px;
+        left: ${this.x.tsToPx(100)}px;
       }
     </style>
     <div class="wrap">

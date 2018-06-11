@@ -1,9 +1,10 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {State, TrackState} from './state';
+import {TrackState} from './state';
 import {TrackShell} from './track-shell';
 import {SliceTrackContent} from './slice-track-content';
 import {TrackContent} from './track-content';
 import { TrackCanvasContext } from './track-canvas-controller';
+import {OffsetTimeScale} from './time-scale';
 
 export class Track extends LitElement {
   shell: TrackShell;
@@ -13,9 +14,9 @@ export class Track extends LitElement {
   private shellWidth = 200;
 
   constructor(private state: TrackState,
-              private globalState: State,
               private tCtx: TrackCanvasContext,
-              private width: number)
+              private width: number,
+              private x: OffsetTimeScale)
   {
     super();
 
@@ -26,7 +27,7 @@ export class Track extends LitElement {
     
     const contentWidth = this.width - this.shellWidth -
         this.contentPosition.left - this.contentPosition.right;
-    this.content = new SliceTrackContent(contentCtx, contentWidth); //TODO: Infer
+    this.content = new SliceTrackContent(contentCtx, contentWidth, this.x); //TODO: Infer
     this.shell = new TrackShell(this.content.height, this.shellWidth, this.state.metadata.name);
 
     //console.log(this.width, this.height);
@@ -47,9 +48,6 @@ export class Track extends LitElement {
     if(this.state) {
       // This is here just so this.state is used.
     }
-
-    this.content.setLimits(this.globalState.gps.startVisibleWindow,
-        this.globalState.gps.endVisibleWindow);
 
     this.content._invalidateProperties();
 
