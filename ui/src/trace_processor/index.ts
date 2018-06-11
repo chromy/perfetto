@@ -15,35 +15,59 @@
  */
 
 class TraceProcessorBridge {
-  wasm?: any;
-  file?: File;
-  wasmReady: boolean = false;
+  wasm_?: any = undefined;
+  file_?: File = undefined;
   // @ts-ignore
   fileReader = new FileReaderSync();
 
   constructor() {
-    this.wasm = null;
+  }
+
+  get file(): File {
+    console.assert(this.file_);
+    if (!this.file_)
+      throw "Error!";
+    return this.file_;
+  }
+
+  set file(f: File) {
+    console.assert(!this.file_);
+    this.file_ = f;
+    this.maybeInitialize();
   }
 
   onRuntimeInitialized(wasm: any) {
-    console.assert(!this.wasmReady);
-    this.wasmReady = true;
-    this.wasm = wasm;
-    console.log('onRuntimeInitialized');
-    const readTraceFn = this.wasm.addFunction(this.readTraceData.bind(this), 'iiii');
-    this.wasm.ccall('Initialize', 'void', ['number'], [readTraceFn]);
+    console.assert(!this.wasm_);
+    this.wasm_ = wasm;
+    this.maybeInitialize();
+  }
+
+  maybeInitialize() {
+    console.log('maybeInitialize', this.wasm_, this.file_);
+    if (!this.wasm_ || !this.file_)
+      return;
+    const readTraceFn = this.wasm_.addFunction(this.readTraceData.bind(this), 'iiii');
+    const replyFn = this.wasm_.addFunction(this.reply.bind(this), 'viiii');
+    this.wasm_.ccall('Initialize', 'void',
+      ['number', 'number'],
+      [readTraceFn, replyFn]);
   }
 
   readTraceData(offset: number, len: number, dstPtr: number): number {
-    if (!this.file) {
-      console.assert(false);
-      return 0;
-    }
     const slice = this.file.slice(offset, offset + len);
     const buf: ArrayBuffer = this.fileReader.readAsArrayBuffer(slice);
     const buf8 = new Uint8Array(buf);
-    this.wasm.HEAPU8.set(buf8, dstPtr);
+    this.wasm_.HEAPU8.set(buf8, dstPtr);
     return buf.byteLength;
+  }
+
+  reply(reqId: number, success: boolean, heapPtr: number, size: number) {
+    const data = this.wasm_.HEAPU8.slice(heapPtr, heapPtr + size);
+    console.log('reply', reqId, success, data);
+  }
+
+  query() {
+    this.wasm_.ccall('ExecuteQuery', 'void', [], []);
   }
 }
 
@@ -51,6 +75,18 @@ function main() {
   console.log('Hello from processor!');
 
   const bridge = new TraceProcessorBridge();
+
+  (self as any).onmessage = (msg: any) => {
+    switch (msg.data.topic) {
+      case "load_file":
+        const file = msg.data.file;
+        bridge.file = file;
+        break;
+      case "query":
+        bridge.query();
+        break
+    }
+  };
 
   (self as any).Module = {
     locateFile: (s: any) => {

@@ -26,6 +26,8 @@
 namespace perfetto {
 namespace trace_processor {
 
+using RequestID = uint32_t;
+
 // ReadTrace(): reads a portion of the trace file. Ca
 // Invoked by the C++ code in the trace processor to ask the embedder (e.g. the
 // JS code for the case of the UI) to get read a chunk of the trace file.
@@ -39,11 +41,40 @@ using ReadTraceFunction = uint32_t (*)(uint32_t /*offset*/,
                                        uint32_t /*len*/,
                                        uint8_t* /*dst*/);
 
+// Called asynchronously (i.e. in a separate task) by the C++ code inside the
+// trace processor to return data for a RPC method call.
+// The function is generic and thankfully we need just one for all methods
+// because the output is always a protobuf buffer.
+// Args:
+//  RequestID: the ID passed by the embedder when invoking the RPC method (e.g.,
+//             the first argument passed to sched_getSchedEvents()).
+using ReplyFunction = void (*)(RequestID,
+                               bool success,
+                               const char* /*proto_reply_data*/,
+                               uint32_t /*len*/);
+
 namespace {
 
 EmscriptenTaskRunner* g_task_runner;
 TraceDatabase* g_trace_database;
 ReadTraceFunction g_read_trace;
+ReplyFunction g_reply;
+
+// Implements the BlobReader interface passed to the trace processor C++
+// classes. It simply routes the requests to the embedder (e.g. JS/TS).
+class BlobReaderImpl : public BlobReader {
+ public:
+  ~BlobReaderImpl() override = default;
+
+  uint32_t Read(uint64_t offset, uint32_t len, uint8_t* dst) override {
+    return g_read_trace(static_cast<uint32_t>(offset), len, dst);
+  }
+};
+
+BlobReaderImpl* blob_reader() {
+  static BlobReaderImpl* instance = new BlobReaderImpl();
+  return instance;
+}
 
 }
 
@@ -51,13 +82,21 @@ ReadTraceFunction g_read_trace;
 // | Exported functions called by the JS/TS running in the worker.             |
 // +---------------------------------------------------------------------------+
 extern "C" {
-void EMSCRIPTEN_KEEPALIVE Initialize(ReadTraceFunction);
-void Initialize(ReadTraceFunction read_trace_function) {
+void EMSCRIPTEN_KEEPALIVE Initialize(ReadTraceFunction, ReplyFunction);
+void Initialize(ReadTraceFunction read_trace_function, ReplyFunction reply_function) {
   PERFETTO_ILOG("Initializing WASM bridge");
   g_task_runner = new EmscriptenTaskRunner();
   g_trace_database = new TraceDatabase(g_task_runner);
   g_read_trace = read_trace_function;
-  //g_trace_database->LoadTrace(reader);
+  g_reply = reply_function;
+  g_trace_database->LoadTrace(blob_reader(), []() {
+    PERFETTO_ILOG("Trace Loaded");
+  });
+}
+
+void EMSCRIPTEN_KEEPALIVE ExecuteQuery();
+void ExecuteQuery() {
+  PERFETTO_ILOG("ExecuteQuery");
 }
 
 }  // extern "C"

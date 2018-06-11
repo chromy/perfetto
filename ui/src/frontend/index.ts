@@ -360,8 +360,15 @@ function main() {
       case 'new_state':
         updateState(msg.data.new_state);
         break;
+      case 'msg_processor':
+        processor.postMessage(msg.data.msg);
+        break;
     }
   };
+
+  (window as any).query = () => processor.postMessage({
+    topic: 'query',
+  })
 
   const root = document.querySelector('main');
   if (root == null) {

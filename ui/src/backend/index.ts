@@ -250,6 +250,13 @@ function dispatch(action: any) {
     case 'load_trace_file': {
       const file = action.file;
       console.log('load_trace_file', file);
+      any_self.postMessage({
+        topic: 'msg_processor',
+        msg: {
+          topic: 'load_file',
+          file,
+        },
+      });
       gState.traces.push({
         name: file.name,
         file: file,
