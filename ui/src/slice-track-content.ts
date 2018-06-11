@@ -1,23 +1,16 @@
 import {TrackContent} from './track-content';
 import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
-import { traceDataStore } from './trace-data-store';
+import {ThreadSlice, traceDataStore} from './trace-data-store';
 import {OffsetTimeScale} from './time-scale';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
   //private vis: TrackContent;
-  static get properties() { return { data: [String] }}
+  static get properties() { return { data: [String], selectedSlice: String }}
 
+  private selectedSlice: ThreadSlice|null = null;
   private color: string;
-
-  /*private * getData() {
-    const slices = [,
-                   ];
-    for (const s of slices) {
-      yield s;
-    }
-  }*/
 
   constructor(private tCtx: TrackCanvasContext,
               protected width: number,
@@ -34,24 +27,27 @@ export class SliceTrackContent extends TrackContent {
     this.tCtx.fillRect(0, 0, this.width, this.height);
 
     this.tCtx.fillStyle = '#' + this.color;
-    const slices = traceDataStore.getData({
+    const slices = this.getCurrentData();
+    for (const slice of slices) {
+      if(slice === this.selectedSlice) {
+        this.tCtx.fillStyle = 'red';
+      }
+      this.tCtx.fillRect(this.x.tsToPx(slice.start), 0,
+          this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start), 20);
+
+      if(slice === this.selectedSlice) {
+        this.tCtx.fillStyle = '#' + this.color;
+      }
+    }
+  }
+
+  private getCurrentData() {
+    return traceDataStore.getData({
       start: 0,
       end: 14000,
       process: 1,
       thread: 1,
     });
-    for (const slice of slices) {
-      this.tCtx.fillRect(this.x.tsToPx(slice.start), 0,
-          this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start), 20);
-    }
-
-    //TODO Draw stuff with data.
-
-    //this.vis.update(data).draw(ctx);
-
-    /*if(true) {
-      this.vis2.update(this.state).draw(s, ctx);
-    }*/
   }
 
   private getRandomColor(): string
@@ -70,9 +66,27 @@ export class SliceTrackContent extends TrackContent {
     if(e.target) {
       const eventTarget: HTMLElement = <HTMLElement> e.target;
       const bcr = <DOMRect> eventTarget.getBoundingClientRect();
-      const rel = e.clientX - bcr.x;
-      const t = this.x.pxToTs(rel);
-      console.log(t);
+      const rel = { x: e.clientX - bcr.x, y: e.clientY - bcr.y };
+      let deselect = true;
+
+      if(rel.y >= 0 && rel.y <= 20) {
+        const t = this.x.pxToTs(rel.x);
+        const slices = this.getCurrentData();
+
+        for (const slice of slices) {
+          if(slice.start < t && slice.end > t && slice !== this.selectedSlice) {
+            this.selectedSlice = slice;
+            deselect = false;
+          }
+        }
+      }
+      else {
+        deselect = true;
+      }
+
+      if(deselect) {
+        this.selectedSlice = null;
+      }
     }
   }
 
