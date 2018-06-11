@@ -17,7 +17,9 @@
 import { State, createZeroState } from '../backend/state';
 import * as m from 'mithril';
 import * as Atrace from  '../backend/atrace';
-import '../my-element';
+import { State as TracksState } from '../state';
+import { TraceUi } from '../trace-ui';
+import { html, render } from 'lit-html';
 
 let gState: State = createZeroState();
 let gDispatch: (msg: any) => void = _ => {};
@@ -196,16 +198,89 @@ const ConfigPage = {
   },
 };
 
-const ViewerPage = {
+const ViewerPage: m.Component = {
+  oncreate: function(vnode) {
+    const state: TracksState = {
+    loadedTraces: [], // Handles to traces
+    gps: {
+      startVisibleWindow: 10,
+      endVisibleWindow: 2000
+    },
+    trackTree: {
+      metadata: {
+        name: 'Trace 1: Pinpoint job 347',
+        shellColor: 'red'
+      },
+      children: [{
+        metadata: {
+          name: 'Renderer PID: 12341',
+          shellColor: 'blue'
+        },
+        children: []
+      }, {
+        metadata: {
+          name: 'Renderer PID: 32423',
+          shellColor: 'yellow'
+        },
+        children: [{
+          metadata: {
+            name: 'Metrics Analysis for renderer',
+            shellColor: 'green'
+          },
+          children: [{
+            metadata: { name: "Slice Track"},
+            trackData: {},
+          }],
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }, {
+          metadata: { name: "Slice Track"},
+          trackData: {}
+        }]
+      }]
+    },
+    sliceTrackDataSpec: {}
+    };
+    const root = vnode.dom;
+    const rect = root.getBoundingClientRect();
+    const ui = new TraceUi(state, rect.width);
+    render(html`${ui}`, root);
+  },
+
   view: function() {
     return [
-      m(Menu, { title: "Trace Viewer" }),
+      m('#trace-ui-container'),
+      m(Menu, { title: "Home" }),
       m(Side),
-      m('#content',
-        "No traces loaded",
-        m('my-element[mood=happy]'),
-      ),
-    ];
+    ]
   },
 };
 
