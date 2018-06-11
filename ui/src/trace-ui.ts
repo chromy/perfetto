@@ -19,19 +19,20 @@ export class TraceUi extends LitElement {
   //private overviewScale: TimeScale;
   private scale: TimeScale;
 
-  constructor(private state: State, private width: number)
+  constructor(private state: State, private width: number,
+              private height: number)
   {
     super();
     console.log('Trace UI initialized.', this.width);
 
     const reRender = () => this._invalidateProperties();
 
-    const canvasHeight = 2 * window.innerHeight;
+    const canvasHeight = 2 * this.height;
 
     //this.overviewScale = new TimeScale(0, 1000, 0, this.width);
     this.scale = new TimeScale(0, 1000, 0, this.width);
 
-    this.cc = new CanvasController(this.width, canvasHeight, window.innerHeight, reRender);
+    this.cc = new CanvasController(this.width, canvasHeight, this.height, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
     this.root = new TrackTree(this.state.trackTree, tCtx,
@@ -40,7 +41,7 @@ export class TraceUi extends LitElement {
     this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
     this.pc = new PanContent(this.width,
-        window.innerHeight,
+        this.height,
         this.state,
         reRender,
         (scrollTop: number) => this.cc.setScrollTop(scrollTop)

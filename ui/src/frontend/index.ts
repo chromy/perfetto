@@ -271,7 +271,7 @@ const ViewerPage: m.Component = {
     };
     const root = vnode.dom;
     const rect = root.getBoundingClientRect();
-    const ui = new TraceUi(state, rect.width);
+    const ui = new TraceUi(state, rect.width, rect.height);
     render(html`${ui}`, root);
   },
 
