@@ -1,6 +1,7 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {State} from './state';
 import {render} from 'lit-html';
+import {TimeScale} from './time-scale';
 
 export class PanContent extends LitElement {
 
@@ -12,11 +13,12 @@ export class PanContent extends LitElement {
   protected mouseDownX = -1;
   protected timeToWidthRatio : number;
   private scroller: HTMLDivElement;
-  //private mouseXpos: number = 0;
+  private mouseXpos: number = 0;
 
   constructor(private width: number,
               private windowHeight: number,
               private state: State,
+              private scale: TimeScale,
               private onPanned: () => void,
               private onScrolled: (scrollTop: number) => void) {
     super();
@@ -54,8 +56,8 @@ export class PanContent extends LitElement {
           PanContent.ZOOM_OUT_PERCENTAGE_SPEED;
       const newT = t * percentage;
 
-      //const zoomPosition = this.x.invert(this.mouseXpos).getTime();
-      const zoomPosition = t / 2 + this.state.gps.startVisibleWindow;
+      const zoomPosition = this.scale.pxToTs(this.mouseXpos);
+      //const zoomPosition = t / 2 + this.state.gps.startVisibleWindow;
       const zoomPositionPercentage = (zoomPosition -
           this.state.gps.startVisibleWindow) / t;
 
@@ -79,16 +81,16 @@ export class PanContent extends LitElement {
   }
 
   protected onMouseDown(e: MouseEvent) {
-    this.mouseDownX = e.clientX;
+    this.mouseDownX = e.offsetX;
   }
 
   protected onMouseMove(e: MouseEvent) {
     if(this.mouseDownX !== -1) {
-      const movedPx = this.mouseDownX - e.clientX;
+      const movedPx = this.mouseDownX - e.offsetX;
       this.panByPx(movedPx);
-      this.mouseDownX = e.clientX;
+      this.mouseDownX = e.offsetX;
     }
-    //this.mouseXpos = e.clientX;
+    this.mouseXpos = e.offsetX;
   }
 
   protected onMouseUp() {

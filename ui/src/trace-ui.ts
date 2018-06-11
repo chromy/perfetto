@@ -10,6 +10,7 @@ import {OffsetTimeScale, TimeScale} from './time-scale';
 export class TraceUi extends LitElement {
 
   static SCROLLBAR_WIDTH = 16;
+  static CONTENT_MARGIN_LEFT = 200;
   static get properties() { return { s: String }}
 
   private cc: CanvasController;
@@ -29,20 +30,21 @@ export class TraceUi extends LitElement {
 
     const canvasHeight = 2 * this.height;
 
-    //this.overviewScale = new TimeScale(0, 1000, 0, this.width);
-    this.scale = new TimeScale(0, 1000, 0, this.width);
+    this.scale = new TimeScale(0, 1000, TraceUi.CONTENT_MARGIN_LEFT,
+        this.width - TraceUi.CONTENT_MARGIN_LEFT);
 
     this.cc = new CanvasController(this.width, canvasHeight, this.height, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
     this.root = new TrackTree(this.state.trackTree, tCtx,
-        contentWidth, new OffsetTimeScale(this.scale, 0, this.width));
-
+        contentWidth, new OffsetTimeScale(this.scale,
+            TraceUi.CONTENT_MARGIN_LEFT, this.width));
     this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
     this.pc = new PanContent(this.width,
         this.height,
         this.state,
+        this.scale,
         reRender,
         (scrollTop: number) => this.cc.setScrollTop(scrollTop)
         );
