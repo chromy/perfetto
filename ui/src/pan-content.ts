@@ -9,6 +9,7 @@ export class PanContent extends LitElement {
   static SCROLLBAR_WIDTH = 16;
   static ZOOM_IN_PERCENTAGE_SPEED = 0.95;
   static ZOOM_OUT_PERCENTAGE_SPEED = 1.05;
+  static PAN_SPEED = 20; // In px per frame
 
   protected mouseDownX = -1;
   private scroller: HTMLDivElement;
@@ -26,10 +27,10 @@ export class PanContent extends LitElement {
     this.scroller.className = 'scroller';
     this.scroller.addEventListener('wheel', (e) => this.onWheel(e));
 
-    this.handleZooming();
+    this.handleKeyNavigation();
   }
 
-  protected handleZooming() {
+  protected handleKeyNavigation() {
 
     let zooming = false;
 
@@ -38,11 +39,18 @@ export class PanContent extends LitElement {
         startZoom(true);
       } else if(e.key === 's') {
         startZoom(false);
+      } else if(e.key === 'a') {
+        startPan(true);
+      } else if(e.key === 'd') {
+        startPan(false);
       }
     });
     document.body.addEventListener('keyup', (e) => {
       if(e.key === 'w' || e.key === 's') {
         endZoom();
+      }
+      if(e.key === 'a' || e.key === 'd') {
+        endPan();
       }
     });
 
@@ -53,7 +61,6 @@ export class PanContent extends LitElement {
       const newT = t * percentage;
 
       const zoomPosition = this.scale.pxToTs(this.mouseXpos);
-      //const zoomPosition = t / 2 + this.state.gps.startVisibleWindow;
       const zoomPositionPercentage = (zoomPosition -
           this.state.gps.startVisibleWindow) / t;
 
@@ -78,6 +85,33 @@ export class PanContent extends LitElement {
     const endZoom = () => {
       zooming = false;
     };
+
+    let panning = false;
+    const pan = (left: boolean) => {
+      const leftFactor = left ? -1 : 1;
+      const panAmountInTs = this.scale.pxToTs(PanContent.PAN_SPEED) - this.scale.pxToTs(0);
+      this.state.gps.startVisibleWindow += leftFactor * panAmountInTs;
+      this.state.gps.endVisibleWindow += leftFactor * panAmountInTs;
+
+      this.onPanned();
+
+      if(panning) {
+        requestAnimationFrame(() => pan(left));
+      }
+    };
+
+    const startPan = (left: boolean) => {
+      if(panning)
+      {
+        return;
+      }
+      panning = true;
+      pan(left);
+    };
+    const endPan = () => {
+      panning = false;
+    };
+
   }
 
   protected onMouseDown(e: MouseEvent) {
