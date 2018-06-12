@@ -4,32 +4,36 @@ import * as d3 from 'd3';
 import {svg} from 'lit-html';
 import {ScaleTime} from 'd3-scale';
 import {CpuTimeline} from './cpu-timeline';
+import {TimeScale} from '../time-scale';
 
 export class GlobalBrushTimeline extends LitElement {
 
   private x: ScaleTime<number, number>;
   private xAxis: any;
   private axisEl: any;
-  private brush: any;
-  private brushEl: any;
   private g: SVGGElement;
 
+  private scale: TimeScale;
   private start = 0;
   private end = 10000;
   public height = 150;
   private margin: {top: number, right: number, bottom: number, left: number};
 
   private cpuTimeline: CpuTimeline;
-  private manualBrushSet = 0;
+
+  private brushHandleDragState: {
+    isLeft: boolean,
+    lastXPos: number,
+  }|null = null;
+  private brushingStartX: number|undefined;
 
   static get properties() { return { width: Number }}
 
   constructor(private state: State,
               private width: number,
-              onBrushed: () => void)
+              private onBrushed: () => void)
   {
     super();
-    console.log(this.state);
 
     this.margin = {
       top: 10,
@@ -38,6 +42,8 @@ export class GlobalBrushTimeline extends LitElement {
       left: 20
     };
 
+    this.scale = new TimeScale(this.start, this.end, this.margin.left,
+        this.width - this.margin.right);
     this.x = d3.scaleTime().range([this.margin.left, this.width - this.margin.right]);
     this.x.domain([this.start, this.end]);
 
@@ -52,64 +58,56 @@ export class GlobalBrushTimeline extends LitElement {
     this.axisEl
         .call(this.xAxis);
 
-    this.brush = d3.brushX()
-        .extent([[0,0], [this.width , this.height - this.margin.bottom ]])
-        .on("brush end", () =>
-        {
-          if(this.manualBrushSet === 0)
-          {
-            //TODO: This should be communicated to some central place and then to the worker.
-            this.state.gps.startVisibleWindow = this.x.invert(+d3.event.selection[0]).getTime();
-            this.state.gps.endVisibleWindow = this.x.invert(+d3.event.selection[1]).getTime();
-
-            onBrushed();
-            //this.dispatchEvent(new CustomEvent(brushEventName, { detail: [start, end]}));
-          }
-          else
-          {
-            this.manualBrushSet--;
-          }
-        });
-
-    this.brushEl = d3.select(this.g).append("g")
-        .attr("class", "brush");
-
-    this.brushEl
-        .call(this.brush);
-
-    this.setBrush();
-
     this.cpuTimeline = new CpuTimeline(this.state, this.x);
-
-    /*setTimeout(() => setInterval(() => {
-      this.width = 500 + Math.round(Math.random() * 1000);
-      this.x.range([this.margin.left, this.width - this.margin.right]);
-      this.axisEl
-          .transition()
-          .call(this.xAxis);
-      this.brushEl
-          .transition()
-          .call(this.brush.move, [
-          this.x(this.state.gps.startVisibleWindow),
-          this.x(this.state.gps.endVisibleWindow)]);
-
-      this.cpuTimeline._invalidateProperties();
-    }, 2000), 1000);*/
   }
 
-  private setBrush()
-  {
-    // onBrushEnd is called twice after this.
-    this.manualBrushSet += 2;
-
-    this.brushEl
-        .call(this.brush.move, [
-          this.x(this.state.gps.startVisibleWindow),
-          this.x(this.state.gps.endVisibleWindow)]);
+  private brushHandleMouseDown(e: MouseEvent, isLeft: boolean) {
+    this.brushHandleDragState = {
+      isLeft: isLeft,
+      lastXPos: e.clientX
+    };
+    e.stopPropagation();
   }
 
-  private getChildContent()
-  {
+  private onMouseDown(e: MouseEvent) {
+    this.brushingStartX = e.offsetX;
+    e.stopPropagation();
+  }
+
+  private onMouseMove(e: MouseEvent) {
+    if(this.brushHandleDragState) {
+      const movedPx = e.clientX - this.brushHandleDragState.lastXPos;
+      const movedTs = this.scale.pxToTs(movedPx) - this.scale.pxToTs(0);
+
+      if(this.brushHandleDragState.isLeft) {
+        this.state.gps.startVisibleWindow += movedTs;
+      }
+      else {
+        this.state.gps.endVisibleWindow += movedTs;
+      }
+
+      this.onBrushed();
+      this.brushHandleDragState.lastXPos = e.clientX;
+    }
+    else if(this.brushingStartX) {
+      const xPositions = [this.brushingStartX, e.offsetX];
+      const xLeft = Math.min(...xPositions);
+      const xRight = Math.max(...xPositions);
+      const tLeft = this.scale.pxToTs(xLeft);
+      const tRight = this.scale.pxToTs(xRight);
+
+      this.state.gps.startVisibleWindow = tLeft;
+      this.state.gps.endVisibleWindow = tRight;
+      this.onBrushed();
+    }
+  }
+
+  private onMouseUp() {
+    this.brushHandleDragState = null;
+    this.brushingStartX = undefined;
+  }
+
+  private getChildContent() {
     return html`${this.cpuTimeline}`;
   }
 
@@ -118,8 +116,6 @@ export class GlobalBrushTimeline extends LitElement {
     const svgContent = svg`
         ${this.g}
         `;
-
-    this.setBrush();
 
     return html`
     <style>
@@ -141,8 +137,55 @@ export class GlobalBrushTimeline extends LitElement {
         height: 100%;
       }
       .brush .selection { stroke: none; }
+      .brush-left, .brush-right {
+        position: absolute;
+        background: rgba(210,210,210,0.7);
+        top: ${this.margin.top}px;
+        height: ${this.height-this.margin.bottom-this.margin.top}px;
+        z-index: 100;
+        pointer-events: none;
+      }
+      .brush-left {
+        left: ${this.margin.left}px;
+        width: ${this.scale.tsToPx(this.state.gps.startVisibleWindow) - this.margin.left}px;
+      }
+      .brush-right {
+        left: ${this.scale.tsToPx(this.state.gps.endVisibleWindow)}px;
+        width: ${this.width - this.margin.right - this.scale.tsToPx(this.state.gps.endVisibleWindow)}px;
+      }
+      .brush .handle {
+        position: absolute;
+        top: ${(this.height-this.margin.top-this.margin.bottom)/2-15}px;
+        height: 30px;
+        width: 12px;
+        background: #fff;
+        border-radius: 3px;
+        border: 1px solid #999;
+        cursor: pointer;
+        z-index: 100;
+      }
+      .brush-left .handle {
+        left: ${this.scale.tsToPx(this.state.gps.startVisibleWindow)-this.margin.left-6}px;
+      }
+      .brush-right .handle {
+        left: -6px;
+      }
     </style>
-    <div class="wrap" style="padding: ${this.margin.top}px 0px ${this.margin.bottom}px 0px">
+    <div class="wrap"
+      style="padding: ${this.margin.top}px 0px ${this.margin.bottom}px 0px"
+      on-mousedown=${(e: MouseEvent) => { this.onMouseDown(e); }}
+      on-mousemove=${(e: MouseEvent) => { this.onMouseMove(e); }}
+      on-mouseup="${() => { this.onMouseUp(); }}">
+      <div class="brush">
+        <div class="brush-left">
+          <div class="handle" 
+            on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, true); }}></div>
+        </div>
+        <div class="brush-right">
+          <div class="handle"
+             on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, false); }}></div>
+          </div>
+      </div>
       ${this.getChildContent()}
       <svg>
         ${svgContent}
