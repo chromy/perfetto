@@ -68,6 +68,10 @@ export class PanContent extends LitElement {
     };
 
     const startZoom = (zoomIn: boolean) => {
+      if(zooming)
+      {
+        return;
+      }
       zooming = true;
       zoom(zoomIn);
     };
