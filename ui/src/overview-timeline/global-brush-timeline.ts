@@ -27,7 +27,7 @@ export class GlobalBrushTimeline extends LitElement {
   }|null = null;
   private brushingStartX: number|undefined;
 
-  static get properties() { return { width: Number }}
+  static get properties() { return { width: Number, brushingStartX: Number }}
 
   constructor(private state: State,
               private width: number,
@@ -163,6 +163,7 @@ export class GlobalBrushTimeline extends LitElement {
         border: 1px solid #999;
         cursor: pointer;
         z-index: 100;
+        pointer-events: ${this.brushingStartX ? 'none' : 'auto'};
       }
       .brush-left .handle {
         left: ${this.scale.tsToPx(this.state.gps.startVisibleWindow)-this.margin.left-6}px;
