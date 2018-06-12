@@ -25,6 +25,8 @@ interface TraceBackendRequest {
   id: string;
   file: Blob;
   name: string|null;
+  query: string;
+  needs_update: boolean;
 };
 
 type TraceBackendState = 'LOADING' | 'READY' | 'ERROR';
@@ -32,7 +34,7 @@ interface TraceBackendInfo {
   id: string;
   state: TraceBackendState;
   name: string;
-  num_packets: null|number;
+  result: any;
 };
 
 type FragmentParameters = {[s: string]: any};

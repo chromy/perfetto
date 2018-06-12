@@ -48,6 +48,14 @@ function navigate(fragment: string) {
   };
 }
 
+function updateQuery(id: string, query: string) {
+  return {
+    topic: 'query',
+    query,
+    id,
+  };
+}
+
 function setStreamToHost(enabled: boolean) {
   return {
     topic: 'set_stream_to_host',
@@ -100,7 +108,7 @@ const Side = {
         m("h1", "Perfetto"),
       ),
       m('ul.items', 
-        m('li', { onclick: quietDispatch(navigate('/control')) }, 'Home'),
+        m('li', { onclick: quietDispatch(navigate('/home')) }, 'Home'),
         m('li', { onclick: quietDispatch(navigate('/viewer')) }, 'Trace Viewer'),
         m('li', { onclick: quietDispatch(navigate('/config')) }, 'Config Editor'),
       ),
@@ -152,7 +160,13 @@ const HomePage = {
             m('.trace-card-name', b.name),
             m('.trace-card-status', b.state),
             m('.trace-card-info',
-              b.num_packets === null ? '-' : `#packets ${b.num_packets}`),
+              b.state === 'READY' ? [
+               m('button', {
+                 onclick: quietDispatch(navigate(`/query/${b.id}`))
+               }, 'Query')
+              ] : null,
+
+            ),
           )),
         ),
       ),
@@ -197,6 +211,53 @@ const ConfigPage = {
     ];
   },
 };
+
+const QueryPage = {
+  view: function() {
+    const id = m.route.param('id');
+    let request = null;
+    for (const trace of gState.traces) {
+      if (id === trace.id) 
+        request = trace; 
+    }
+  
+    if (!request)
+      return [];
+
+    return [
+      m(Menu, { title: "Raw Query" }),
+      m(Side),
+      m('#content',
+        m('input.big', {
+            value: request.query,
+            onchange: q(m.withAttr('value', v => gDispatch(updateQuery(id, v)))),
+        }),
+        table(gState.backends[id].result),
+      ),
+    ];
+  },
+};
+
+function table(result: any): any {
+  if (!result)
+    return m('');
+
+  const extract = (d: any, i: number): number => {
+    if (d.ulongValues.length > 0)
+      return d.ulongValues[i];
+    if (d.uintValues.length > 0)
+      return d.uintValues[i];
+    return 0;
+  };
+  return m('table',
+    m('thead', m('tr', result.columnDescriptors.map((d: any) => m('th', d.name)))),
+    m('tbody', Array.from(Array(1000).keys()).map(i => {
+      return m('tr', result.columns.map((c: any) => {
+        return m('td', extract(c, i));
+      }));
+    })),
+  );
+}
 
 const ViewerPage: m.Component = {
   oncreate: function(vnode) {
@@ -345,12 +406,18 @@ function updateState(new_state: State): void {
   });
 }
 
-function main() {
-  console.log('Hello from the main thread!');
+function startProcessor(): Promise<MessagePort> {
   const processor = new Worker("processor_bundle.js");
   processor.onerror = e => {
     console.error(e);
-  }
+  };
+  return new Promise<MessagePort>((resolve, _reject) => {
+      processor.onmessage = msg => resolve(msg.data);
+  });
+}
+
+function main() {
+  console.log('Hello from the main thread!');
   const worker = new Worker("worker_bundle.js");
   worker.onerror = e => {
     console.error(e);
@@ -360,15 +427,16 @@ function main() {
       case 'new_state':
         updateState(msg.data.new_state);
         break;
-      case 'msg_processor':
-        processor.postMessage(msg.data.msg);
+      case 'start_processor':
+        startProcessor().then(port =>
+          worker.postMessage({
+            topic: 'processor_started',
+            port,
+          }, [port])
+        );
         break;
     }
   };
-
-  (window as any).query = () => processor.postMessage({
-    topic: 'query',
-  })
 
   const root = document.querySelector('main');
   if (root == null) {
@@ -379,6 +447,7 @@ function main() {
     "/home": HomePage,
     "/config": ConfigPage,
     "/viewer": ViewerPage,
+    "/query/:id": QueryPage,
   });
 
   gState = tryReadState();

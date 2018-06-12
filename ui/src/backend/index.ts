@@ -15,11 +15,14 @@
  */
 
 import { TraceBackendState, TraceBackendInfo, TraceBackendRequest, State, ConfigEditorState, FragmentParameters, createZeroState } from './state';
-import { TraceConfig, Trace } from './protos';
+import { TraceConfig } from './protos';
+import { createSender } from '../ipc';
+import { TraceProcessorBridge } from '../trace_processor';
 
 let gState: State = createZeroState();
 let gTracesController: TracesController|null = null;
 let gLargestKnownId = 0;
+let gPort: MessagePort|null = null;
 
 function createConfig(state: ConfigEditorState): Uint8Array {
   const ftraceEvents: string[] = [];
@@ -101,21 +104,27 @@ function publishBackend(info: TraceBackendInfo) {
   };
 }
 
+function updateDone(id: string) {
+  return {
+    topic: 'query_done',
+    id,
+  };
+}
+
 class TraceController {
   id: string;
   state: TraceBackendState;
   name: string;
   file: Blob|null;
-  proto: any|null;
-  num_packets: null|number;
+  remoteTraceProcessorBridge: null|TraceProcessorBridge;
+  result: any;
 
   constructor(id: string) {
     this.id = id;
     this.state = 'LOADING';
     this.name = '';
     this.file = null;
-    this.proto = null;
-    this.num_packets = null;
+    this.remoteTraceProcessorBridge = null;
   }
 
   details(): TraceBackendInfo {
@@ -123,7 +132,7 @@ class TraceController {
       id: this.id,
       state: this.state,
       name: this.name,
-      num_packets: this.num_packets,
+      result: this.result,
     };
   }
 
@@ -134,34 +143,31 @@ class TraceController {
     this.file = trace.file;
 
     gState.backends[this.id] = this.details();
-
-    setTimeout(() => {
-      new Promise((resolve, reject) => {
-        if (!this.file) {
-          reject();
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result); 
-        reader.readAsArrayBuffer(this.file);
-      }).then((buffer: any) => {
-        const uint8array = new Uint8Array(buffer)
-        const decoded = Trace.decode(uint8array);
-        return decoded;
-      }).then((proto: any) => {
-        console.log(proto);
-        this.proto = proto;
-        this.state = 'READY';
-        this.num_packets = proto.packet.length;
-        dispatch(publishBackend(this.details()));
-      }).catch((_e) => {
-        this.state = 'ERROR';
-        dispatch(publishBackend(this.details()));
-      });
-    }, 1000);
+    (self as any).postMessage({
+      topic: 'start_processor',
+    });
   }
 
-  update(_: State) {
+  update(_: State, request: TraceBackendRequest) {
+    if (this.state === 'LOADING' && this.file && gPort) {
+      const bridge = createSender<TraceProcessorBridge>(gPort);
+      this.remoteTraceProcessorBridge = bridge;
+      this.remoteTraceProcessorBridge.loadBlob(this.file).then(() => {
+        this.state = 'READY';
+        dispatch(publishBackend(this.details()));
+      });
+      gPort = null;
+    }
+    if (this.state === 'READY' &&
+      this.remoteTraceProcessorBridge &&
+      request.needs_update) {
+      this.remoteTraceProcessorBridge.query(request.query).then((x: any) => {
+        console.log(x);
+        this.result = x;
+        dispatch(updateDone(this.id));
+        dispatch(publishBackend(this.details()));
+      });
+    }
   }
 
   teardown() {
@@ -190,7 +196,7 @@ class TracesController {
       const controller = this.controllers.get(trace.id);
       if (!controller)
         throw 'Missing id';
-      controller.update(state);
+      controller.update(state, trace);
     }
 
     const ids = new Set(state.traces.map(t => t.id));
@@ -203,10 +209,13 @@ class TracesController {
   }
 }
 
-
 function dispatch(action: any) {
   const any_self = (self as any);
   switch (action.topic) {
+    case 'processor_started': {
+      gPort = action.port;
+      break;
+    }
     case 'init': {
       gState = action.initial_state;
       break;
@@ -249,19 +258,32 @@ function dispatch(action: any) {
     }
     case 'load_trace_file': {
       const file = action.file;
-      console.log('load_trace_file', file);
-      any_self.postMessage({
-        topic: 'msg_processor',
-        msg: {
-          topic: 'load_file',
-          file,
-        },
-      });
       gState.traces.push({
         name: file.name,
+        needs_update: false,
         file: file,
         id: ''+gLargestKnownId++,
+        query: '',
       });
+      break;
+    }
+    case 'query': {
+      const id = action.id;
+      const query = action.query;
+      for (const trace of gState.traces) {
+        if (trace.id === id) {
+          trace.needs_update = true;
+          trace.query = query;
+        }
+      }
+      break;
+    }
+    case 'query_done': {
+      const id = action.id;
+      for (const trace of gState.traces) {
+        if (trace.id === id)
+          trace.needs_update = false;
+      }
       break;
     }
     default:
@@ -285,6 +307,7 @@ function main() {
 
   const any_self = (self as any);
   any_self.onmessage = (m: any) => dispatch(m.data);
+
 }
 
 export {

@@ -3,7 +3,7 @@
   "exclude": [ "./node_modules/", "./src/gen/" ],
   "compilerOptions": {
     "target": "es6",
-    "lib": [ "es2017", "dom", "es6", "dom.iterable", "scripthost" ],
+    "lib": [ "es2017", "dom", "es6", "dom.iterable", "scripthost", "ES2015.Proxy" ],
     "module": "commonjs",
     "moduleResolution": "node",
     // Lints and checks.

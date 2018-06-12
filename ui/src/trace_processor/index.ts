@@ -14,26 +14,45 @@
  * limitations under the License.
  */
 
+import { createReceiver } from '../ipc';
+import { RawQueryArgs, RawQueryResult } from '../backend/protos';
+
 class TraceProcessorBridge {
   wasm_?: any = undefined;
-  file_?: File = undefined;
+  blob_?: Blob = undefined;
+  pendingInitialized: Promise<void>;
+  resolvePendingInitialized: () => void;
+  requestId: number;
+  pendingRequests: {[id: number]: (result: any) => void};
+
   // @ts-ignore
-  fileReader = new FileReaderSync();
+  blobReader = new FileReaderSync();
 
   constructor() {
+    this.pendingRequests = {};
+    this.requestId = 0;
+    this.resolvePendingInitialized = () => {};
+    this.pendingInitialized = new Promise<void>(resolve => {
+      this.resolvePendingInitialized = resolve;
+    });
   }
 
-  get file(): File {
-    console.assert(this.file_);
-    if (!this.file_)
+  get blob(): Blob {
+    console.assert(this.blob_);
+    if (!this.blob_)
       throw "Error!";
-    return this.file_;
+    return this.blob_;
   }
 
-  set file(f: File) {
-    console.assert(!this.file_);
-    this.file_ = f;
+  set blob(f: Blob) {
+    console.assert(!this.blob_);
+    this.blob_ = f;
     this.maybeInitialize();
+  }
+
+  loadBlob(blob: Blob): Promise<void> {
+    this.blob = blob;
+    return this.pendingInitialized;
   }
 
   onRuntimeInitialized(wasm: any) {
@@ -43,31 +62,51 @@ class TraceProcessorBridge {
   }
 
   maybeInitialize() {
-    console.log('maybeInitialize', this.wasm_, this.file_);
-    if (!this.wasm_ || !this.file_)
+    if (!this.wasm_ || !this.blob_)
       return;
     const readTraceFn = this.wasm_.addFunction(this.readTraceData.bind(this), 'iiii');
     const replyFn = this.wasm_.addFunction(this.reply.bind(this), 'viiii');
     this.wasm_.ccall('Initialize', 'void',
       ['number', 'number'],
       [readTraceFn, replyFn]);
+    this.resolvePendingInitialized();
   }
 
   readTraceData(offset: number, len: number, dstPtr: number): number {
-    const slice = this.file.slice(offset, offset + len);
-    const buf: ArrayBuffer = this.fileReader.readAsArrayBuffer(slice);
+    const slice = this.blob.slice(offset, offset + len);
+    const buf: ArrayBuffer = this.blobReader.readAsArrayBuffer(slice);
     const buf8 = new Uint8Array(buf);
     this.wasm_.HEAPU8.set(buf8, dstPtr);
     return buf.byteLength;
   }
 
-  reply(reqId: number, success: boolean, heapPtr: number, size: number) {
+  reply(requestId: number, success: boolean, heapPtr: number, size: number) {
     const data = this.wasm_.HEAPU8.slice(heapPtr, heapPtr + size);
-    console.log('reply', reqId, success, data);
+    console.assert(success);
+    console.assert(this.pendingRequests[requestId]);
+
+    const result = RawQueryResult.decode(data);
+
+    this.pendingRequests[requestId](result);
+    delete this.pendingRequests[requestId];
   }
 
-  query() {
-    this.wasm_.ccall('ExecuteQuery', 'void', [], []);
+  query(s: string): Promise<void> {
+    const requestId = this.requestId++;
+    const pending = new Promise<void>(resolve => {
+      this.pendingRequests[requestId] = resolve;
+    });
+
+    const buf = RawQueryArgs.encode({
+      sqlQuery: s
+    }).finish();
+
+    this.wasm_.ccall('ExecuteQuery', 'void', [
+      'number', 'array', 'number',
+    ], [
+      requestId, buf, buf.length
+    ]);
+    return pending;
   }
 }
 
@@ -76,24 +115,11 @@ function main() {
 
   const bridge = new TraceProcessorBridge();
 
-  (self as any).onmessage = (msg: any) => {
-    switch (msg.data.topic) {
-      case "load_file":
-        const file = msg.data.file;
-        bridge.file = file;
-        break;
-      case "query":
-        bridge.query();
-        break
-    }
-  };
-
   (self as any).Module = {
     locateFile: (s: any) => {
       const parts = location.pathname.split('/');
       const base = parts.splice(0, parts.length-1).join('/');
       const path = `${base}/${s}`
-      console.log('locateFile', s, base, path);
       return path;
     },
     onRuntimeInitialized: () => bridge.onRuntimeInitialized((self as any).Module),
@@ -102,8 +128,15 @@ function main() {
   };
 
   (self as any).importScripts('trace_processor.js');
+  const channel = new MessageChannel();
+  const txPort = channel.port1;
+  const rxPort = channel.port2;
+
+  createReceiver<TraceProcessorBridge>(rxPort, bridge);
+  (self as any).postMessage(txPort, [txPort]);
 }
 
 export {
   main,
+  TraceProcessorBridge,
 }

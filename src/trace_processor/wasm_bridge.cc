@@ -23,6 +23,8 @@
 #include "src/trace_processor/emscripten_task_runner.h"
 #include "src/trace_processor/trace_database.h"
 
+#include "perfetto/trace_processor/raw_query.pb.h"
+
 namespace perfetto {
 namespace trace_processor {
 
@@ -90,13 +92,30 @@ void Initialize(ReadTraceFunction read_trace_function, ReplyFunction reply_funct
   g_read_trace = read_trace_function;
   g_reply = reply_function;
   g_trace_database->LoadTrace(blob_reader(), []() {
+    //g_reply(0, true, nullptr, 0);
     PERFETTO_ILOG("Trace Loaded");
   });
 }
 
-void EMSCRIPTEN_KEEPALIVE ExecuteQuery();
-void ExecuteQuery() {
-  PERFETTO_ILOG("ExecuteQuery");
+void EMSCRIPTEN_KEEPALIVE ExecuteQuery(RequestID, const uint8_t*, int);
+void ExecuteQuery(RequestID req_id, const uint8_t* query_data, int len) {
+  protos::RawQueryArgs query;
+  bool parsed = query.ParseFromArray(query_data, len);
+  if (!parsed) {
+    std::string err = "Failed to parse input request";
+    g_reply(req_id, false, err.data(), err.size());
+  }
+
+  // When the C++ class implementing the service replies, serialize the protobuf
+  // result and post it back to the worker script (|g_reply|).
+  auto callback = [req_id](const protos::RawQueryResult& res) {
+    std::string encoded;
+    res.SerializeToString(&encoded);
+    g_reply(req_id, true, encoded.data(),
+            static_cast<uint32_t>(encoded.size()));
+  };
+
+  g_trace_database->ExecuteQuery(query, callback);
 }
 
 }  // extern "C"

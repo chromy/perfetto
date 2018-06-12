@@ -16,21 +16,4 @@
 
 import { main } from './frontend';
 
-//function writeToUIConsole(line:string) {
-//  const lineElement = document.createElement('div');
-//  lineElement.innerText = line;
-//  const container = document.getElementById('console');
-//  if (!container)
-//    throw new Error('OMG');
-//  container.appendChild(lineElement);
-//}
-//
-//// TODO(primiano): temporary for testing, just instantiates the WASM module on
-//// the main thread.
-//(<any>window).Module = {
-//    locateFile: (s: string) => '/wasm/' + s,
-//    print: writeToUIConsole,
-//    printErr: writeToUIConsole,
-//};
-
 main();
