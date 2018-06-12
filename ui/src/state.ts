@@ -4,6 +4,10 @@ export interface State {
     startVisibleWindow: number,
     endVisibleWindow: number
   };
+  maxVisibleWindow: {
+    start: number;
+    end: number;
+  };
   trackTree: TrackTreeState;
   sliceTrackDataSpec: {
     // Minimal data you need to obtain the complete slice data

@@ -267,6 +267,10 @@ const ViewerPage: m.Component = {
       startVisibleWindow: 10,
       endVisibleWindow: 2000
     },
+    maxVisibleWindow: {
+      start: 0,
+      end: 10000
+    },
     trackTree: {
       metadata: {
         name: 'Trace 1: Pinpoint job 347',

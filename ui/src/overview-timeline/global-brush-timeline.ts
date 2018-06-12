@@ -14,8 +14,8 @@ export class GlobalBrushTimeline extends LitElement {
   private g: SVGGElement;
 
   private scale: TimeScale;
-  private start = 0;
-  private end = 10000;
+  private start: number;
+  private end: number;
   public height = 150;
   private margin: {top: number, right: number, bottom: number, left: number};
 
@@ -41,6 +41,9 @@ export class GlobalBrushTimeline extends LitElement {
       bottom: 20,
       left: 20
     };
+
+    this.start = this.state.maxVisibleWindow.start;
+    this.end = this.state.maxVisibleWindow.end;
 
     this.scale = new TimeScale(this.start, this.end, this.margin.left,
         this.width - this.margin.right);
