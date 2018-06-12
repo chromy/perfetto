@@ -118,12 +118,36 @@ export class TrackCanvasContext {
     this.yOffset = offset;
   }
 
+  public moveTo(x: number, y: number) {
+    this.ctx.moveTo(x + this.xOffset, y + this.yOffset);
+  }
+
+  public lineTo(x: number, y: number) {
+    this.ctx.lineTo(x + this.xOffset, y + this.yOffset);
+  }
+
+  public stroke() {
+    this.ctx.stroke();
+  }
+
+  public beginPath() {
+    this.ctx.beginPath();
+  }
+
+  public closePath() {
+    this.ctx.closePath();
+  }
+
   set strokeStyle(v: string) {
     this.ctx.strokeStyle = v;
   }
 
   set fillStyle(v: string) {
     this.ctx.fillStyle = v;
+  }
+
+  set lineWidth(width: number) {
+    this.ctx.lineWidth = width;
   }
 }
 

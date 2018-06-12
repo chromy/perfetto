@@ -3,7 +3,6 @@ import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
 import {ThreadSlice, traceDataStore} from './trace-data-store';
 import {OffsetTimeScale} from './time-scale';
-import {render} from 'lit-html';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
@@ -13,10 +12,10 @@ export class SliceTrackContent extends TrackContent {
   private selectedSlice: ThreadSlice|null = null;
   private color: string;
 
-  constructor(private tCtx: TrackCanvasContext,
-              private width: number,
-              private x: OffsetTimeScale) {
-    super();
+  constructor(protected tCtx: TrackCanvasContext,
+              protected width: number,
+              protected x: OffsetTimeScale) {
+    super(tCtx, x);
 
     this.color = this.getRandomColor();
 
@@ -27,6 +26,8 @@ export class SliceTrackContent extends TrackContent {
 
     this.tCtx.fillStyle = 'black';
     this.tCtx.fillRect(0, 0, this.width, this.height);
+
+    this.drawGridLines();
 
     this.tCtx.fillStyle = '#' + this.color;
     const slices = this.getCurrentData();
@@ -89,32 +90,13 @@ export class SliceTrackContent extends TrackContent {
       if(deselect) {
         this.selectedSlice = null;
       }
+
     }
-  }
-
-  getAxisElement(): HTMLDivElement {
-    const markers = document.createElement('div');
-    markers.className = 'markers';
-
-    for(let t = 0; t < 10000; t += 200) {
-      const marker = html`<div class="marker" style="left: ${this.x.tsToPx(t)}px;">
-        <div class="indicator"></div>
-        <div class="label">${t}</div>
-      </div>`;
-
-      const wrap = document.createElement('div');
-      render(marker, wrap);
-      markers.appendChild(wrap);
-    }
-
-    return markers;
   }
 
   _render() {
 
     this.draw();  // This makes it not a pure function since this is a side effect.
-
-    const axis = this.getAxisElement();
 
     return html`
     <style>
@@ -153,7 +135,6 @@ export class SliceTrackContent extends TrackContent {
       <div class="content">
         Slice Track Content
       </div>
-      ${axis}
     </div>`;
   }
 }
