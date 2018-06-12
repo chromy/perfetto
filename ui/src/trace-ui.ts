@@ -31,7 +31,7 @@ export class TraceUi extends LitElement {
     const canvasHeight = 2 * this.height;
 
     this.scale = new TimeScale(0, 1000, TraceUi.CONTENT_MARGIN_LEFT,
-        this.width - TraceUi.CONTENT_MARGIN_LEFT);
+        this.width);
 
     this.cc = new CanvasController(this.width, canvasHeight, this.height, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
