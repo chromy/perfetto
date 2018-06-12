@@ -123,6 +123,7 @@ export class PanContent extends LitElement {
       const movedPx = this.mouseDownX - e.offsetX;
       this.panByPx(movedPx);
       this.mouseDownX = e.offsetX;
+      e.preventDefault();
     }
     this.mouseXpos = e.offsetX;
     //console.log(this.mouseXpos, this.scale.pxToTs(this.mouseXpos));

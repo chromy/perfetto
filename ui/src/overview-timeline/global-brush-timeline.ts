@@ -91,6 +91,7 @@ export class GlobalBrushTimeline extends LitElement {
 
       this.onBrushed();
       this.brushHandleDragState.lastXPos = e.clientX;
+      e.preventDefault();
     }
     else if(this.brushingStartX) {
       const xPositions = [this.brushingStartX, e.offsetX];
@@ -102,6 +103,7 @@ export class GlobalBrushTimeline extends LitElement {
       this.state.gps.startVisibleWindow = tLeft;
       this.state.gps.endVisibleWindow = tRight;
       this.onBrushed();
+      e.preventDefault();
     }
   }
 
