@@ -138,6 +138,10 @@ export class TrackCanvasContext {
     this.ctx.closePath();
   }
 
+  public fillText(text: string, x: number, y: number) {
+    this.ctx.fillText(text, x + this.xOffset, y + this.yOffset);
+  }
+
   set strokeStyle(v: string) {
     this.ctx.strokeStyle = v;
   }
@@ -148,6 +152,10 @@ export class TrackCanvasContext {
 
   set lineWidth(width: number) {
     this.ctx.lineWidth = width;
+  }
+
+  set font(fontString: string) {
+    this.ctx.font = fontString;
   }
 }
 

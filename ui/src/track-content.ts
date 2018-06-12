@@ -25,7 +25,21 @@ export abstract class TrackContent extends LitElement {
   protected drawGridLines(): void {
     this.tCtx.strokeStyle = '#aa0000';
     this.tCtx.lineWidth = 1;
-    for(let t = 0; t < 10000; t += 200) {
+
+    const limits = this.x.getTimeLimits();
+    const range = limits.end - limits.start;
+    let step = 1;
+    while(range / step > 20) {
+      step *= 10;
+    }
+    if(range / step < 5) {
+      step /= 5;
+    }
+    if(range / step < 10) {
+      step /= 2;
+    }
+
+    for(let t = 0; t < 10000; t += step) {
       const xPos = this.x.tsToPx(t);
 
       this.tCtx.beginPath();

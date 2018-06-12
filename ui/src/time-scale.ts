@@ -27,6 +27,13 @@ export class TimeScale {
     this.tStart = tStart;
     this.tEnd = tEnd;
   }
+
+  public getTimeLimits() {
+    return {
+      start: this.tStart,
+      end: this.tEnd
+    };
+  }
 }
 
 export class OffsetTimeScale {
@@ -48,5 +55,9 @@ export class OffsetTimeScale {
 
   public pxToTs(px: number): number {
     return this.scale.pxToTs(px + this.pxOffset);
+  }
+
+  public getTimeLimits(): {start: number, end: number} {
+    return this.scale.getTimeLimits();
   }
 }
