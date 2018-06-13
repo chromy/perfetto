@@ -14,8 +14,6 @@ export class GlobalBrushTimeline extends LitElement {
   private g: SVGGElement;
 
   private scale: TimeScale;
-  private start: number;
-  private end: number;
   public height = 150;
   private margin: {top: number, right: number, bottom: number, left: number};
 
@@ -42,13 +40,12 @@ export class GlobalBrushTimeline extends LitElement {
       left: 20
     };
 
-    this.start = this.state.maxVisibleWindow.start;
-    this.end = this.state.maxVisibleWindow.end;
-
-    this.scale = new TimeScale(this.start, this.end, this.margin.left,
+    this.scale = new TimeScale(this.state.maxVisibleWindow.start,
+        this.state.maxVisibleWindow.end, this.margin.left,
         this.width - this.margin.right);
     this.x = d3.scaleTime().range([this.margin.left, this.width - this.margin.right]);
-    this.x.domain([this.start, this.end]);
+    this.x.domain([this.state.maxVisibleWindow.start,
+      this.state.maxVisibleWindow.end]);
 
     this.xAxis = d3.axisBottom(this.x);
 
@@ -117,6 +114,13 @@ export class GlobalBrushTimeline extends LitElement {
   }
 
   _render() {
+
+    this.scale.setTimeLimits(this.state.maxVisibleWindow.start,
+        this.state.maxVisibleWindow.end);
+    this.x.domain([this.state.maxVisibleWindow.start,
+      this.state.maxVisibleWindow.end]);
+    this.axisEl
+        .call(this.xAxis);
 
     const svgContent = svg`
         ${this.g}
