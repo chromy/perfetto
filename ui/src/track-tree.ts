@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
-import {TrackTreeState, TrackState } from './backend/state'
+import {TrackTreeState, TrackState, GlobalPositioningState } from './backend/state'
 import { TrackCanvasContext } from './track-canvas-controller';
 import {OffsetTimeScale} from './time-scale';
 
@@ -12,7 +12,8 @@ export class TrackTree extends LitElement {
   constructor(private state: TrackTreeState,
               private tCtx: TrackCanvasContext,
               private width: number,
-              private scale: OffsetTimeScale)
+              private scale: OffsetTimeScale,
+              private gps: GlobalPositioningState)
   {
     super();
 
@@ -34,8 +35,8 @@ export class TrackTree extends LitElement {
           reducedWidth);
 
       const child = TrackTree.isTrackTreeState(childState) ?
-        new TrackTree(childState, tCtx, reducedWidth, cScale) :
-        new Track(childState, tCtx, reducedWidth, cScale);
+        new TrackTree(childState, tCtx, reducedWidth, cScale,this.gps) :
+          new Track(childState, tCtx, reducedWidth, cScale, this.gps);
 
       tCtx.setDimensions(reducedWidth, child.height);
       this.trackChildren.push(child);

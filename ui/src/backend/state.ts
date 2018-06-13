@@ -47,16 +47,18 @@ interface State {
   config_commandline: string | null;
   fragment_params: FragmentParameters;
 
-  // Merged from ui/src/state.ts
-  gps: {
-    startVisibleWindow: number,
-    endVisibleWindow: number
-  };
+  // 
+  gps: GlobalPositioningState;
   maxVisibleWindow: {
     start: number;
     end: number;
   };
   trackTree: TrackTreeState;
+}
+
+export interface GlobalPositioningState {
+  startVisibleWindow: number,
+  endVisibleWindow: number,
 }
 
 interface TrackTreeState {

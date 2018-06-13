@@ -7,7 +7,29 @@ export interface ThreadSlice {
   pid: number,
 };
 
-type ThreadDataMap = Map<number, ThreadSlice[]>;
+interface ThreadSliceCache {
+  // Start and end time of data that we have cached.
+  start: number;
+  end: number;
+
+  slices: ThreadSlice[];
+}
+
+export interface TraceDataQuery {
+  readonly start: number;
+  readonly end: number;
+  readonly process?: number;
+  readonly thread?: number;
+}
+
+function queryEquals(q1: TraceDataQuery, q2: TraceDataQuery) {
+  return q1.start == q2.start && 
+    q1.end == q2.end &&
+    q1.process == q2.process &&
+    q1.thread == q2.thread;
+}
+
+type ThreadDataMap = Map<number, ThreadSliceCache>;
 type ProcessDataMap = Map<number, ThreadDataMap>;
 
 function getFirstIndexWhereTrue(slices: ThreadSlice[],
@@ -19,24 +41,32 @@ function getFirstIndexWhereTrue(slices: ThreadSlice[],
   return slices.length;
 }
 
+async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+sleep;  // tsc disable unused warning.
+
 class TraceDataStore {
   // TODO: This is super ad hoc. Figure out how to actually cache data properly.
   // We need to figure out what the cache keys should be, and how data
   // expiration will work (LRU?)
-  private data: ProcessDataMap;
+  private processDataMap: ProcessDataMap = new Map();
+  private pendingQueries: TraceDataQuery[] = []; 
 
-  constructor() {
-    this.data = new Map();
-    this.populateWithMockData();
+  constructor() {}
+
+  initialize(rerenderCallback: () => any) {
+    this.onNewDataReceived = rerenderCallback;
   }
 
   populateWithMockData() {
     for (let pid = 1; pid < 10; pid++) {
-      const threadData = new Map();
+      const threadData : ThreadDataMap = new Map();
       for (let tid = 1; tid < 10; tid++) {
         const slices : ThreadSlice[] = [];
         let nextStart = 0;
-        for(let t = 0; t <= 250 && nextStart < 10000; t += 1) {
+        for(let t = 0; t <= 250 && nextStart < 1000; t += 1) {
           const slice = {
             start: nextStart,
             end: nextStart + Math.round(Math.abs(Math.sin(t)*50)),
@@ -47,18 +77,42 @@ class TraceDataStore {
           slices.push(slice);
           nextStart = slice.end + Math.round(Math.abs(Math.sin(t)*20));
         }
-        threadData.set(tid, slices);
+        threadData.set(tid, {
+          start: slices[0].start,
+          end: slices[slices.length - 1].end,
+          slices,
+        });
       }
-      this.data.set(pid, threadData);
+      this.processDataMap.set(pid, threadData);
     }
   }
 
   * getData(query: TraceDataQuery) {
-    if (query.process === undefined || query.thread === undefined) return;
+    // At the moment, we need either process or thread in the query.
+    if (query.process == null || query.thread == null) return;
     const process = query.process;
-    const threadData = this.data.get(process);
-    if (threadData == null) return;
-    const slices = threadData.get(query.thread);
+    const threadData = this.processDataMap.get(process);
+    
+    if (threadData == null) {
+      // If we do not have data for this process, schedule a fetch and return. 
+      this.fetchDataFromBackend(query);
+      return;
+    }
+    
+    const cachedSlices = threadData.get(query.thread);
+    if (cachedSlices == null) {
+      // If we do not have data for this process, schedule a fetch and return. 
+      this.fetchDataFromBackend(query);
+      return;
+    }
+
+    if (query.start < cachedSlices.start || query.end > cachedSlices.end) {
+      // For now reissue the whole query. We will eventually do partial query to
+      // top up the cache.
+      this.fetchDataFromBackend(query);
+    }
+
+    const slices = cachedSlices.slices;
     if (slices == null || slices.length == 0) return;
     const beginIndex = getFirstIndexWhereTrue(slices, s => query.start < s.end);
     const endIndex  = getFirstIndexWhereTrue(slices, s => query.end < s.start);
@@ -68,15 +122,66 @@ class TraceDataStore {
   }
 
   onNewDataReceived() {
-    //App.render();
+    throw new Error("Must be TraceDataStore must be initialized with rerender callback");
+  }
+
+  queryPending(query: TraceDataQuery) {
+    for (let pendingQuery of this.pendingQueries) {
+      if (queryEquals(pendingQuery, query)) return true;
+    }
+    return false;
+  }
+
+  async fetchDataFromBackend(query: TraceDataQuery) {
+    if (this.queryPending(query)) return;
+    this.pendingQueries.push(query);
+    console.log("Fetch data: ", query);
+    // Toggle this line to introduce delay for testing.
+    await sleep(50);
+    this.mockFetchDataFromBackend(query);
+    this.onNewDataReceived();
+  }
+
+  // Currently unused.
+  checkCacheHit(query: TraceDataQuery) {
+    if (query.process == null || query.thread == null) return false;
+    const threadData = this.processDataMap.get(query.process);    
+    if (threadData == null) return false;
+    const cachedSlices = threadData.get(query.thread);
+    if (cachedSlices == null) return false;
+    return (query.start >= cachedSlices.start && query.end <= cachedSlices.end);
+  }
+
+  mockFetchDataFromBackend(query: TraceDataQuery) {
+    if (query.process == null || query.thread == null) return;
+    let threadDataMap = 
+        this.processDataMap.get(query.process);
+    if (threadDataMap == null) {
+      threadDataMap = new Map();
+      this.processDataMap.set(query.process, threadDataMap);
+    }
+
+    const sliceStartBegin = Math.floor(query.start/50) * 50;
+    const sliceStartEnd = query.end;
+    const slices = [];
+    for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
+      slices.push({
+        start: t,
+        end: t + 50,
+        title: 'SliceName',
+        tid: query.thread,
+        pid: query.process,
+      });
+    }
+
+    threadDataMap.set(query.thread, {
+      start: query.start,
+      end: query.end,
+      slices,
+    });
   }
 }
 
-export interface TraceDataQuery {
-  readonly start: number;
-  readonly end: number;
-  readonly process?: number;
-  readonly thread?: number;
-}
 
+// Singleton.
 export const traceDataStore = new TraceDataStore();

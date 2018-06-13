@@ -19,6 +19,7 @@ import * as m from 'mithril';
 import * as Atrace from  '../backend/atrace';
 import { TraceUi } from '../trace-ui';
 import { html, render } from 'lit-html';
+import { traceDataStore } from '../trace-data-store';
 
 let gState: State = createZeroState();
 let gDispatch: (msg: any) => void = _ => {};
@@ -264,6 +265,8 @@ const ViewerPage: m.Component = {
     const root = vnode.dom;
     const rect = root.getBoundingClientRect();
     const ui = new TraceUi(gState, rect.width, rect.height);
+    // TODO: Maybe we should get invalidate calls from individual tracks instead.
+    traceDataStore.initialize(() => ui._invalidateProperties());
     render(html`${ui}`, root);
   },
 

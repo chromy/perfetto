@@ -3,6 +3,7 @@ import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
 import {ThreadSlice, traceDataStore} from './trace-data-store';
 import {OffsetTimeScale} from './time-scale';
+import { GlobalPositioningState } from './backend/state';
 
 export class SliceTrackContent extends TrackContent {
   //private state: TrackState | undefined;
@@ -12,9 +13,11 @@ export class SliceTrackContent extends TrackContent {
   private selectedSlice: ThreadSlice|null = null;
   private color: string;
 
+
   constructor(protected tCtx: TrackCanvasContext,
-              protected width: number,
-              protected x: OffsetTimeScale) {
+              private width: number,
+              protected x: OffsetTimeScale,
+              private gps: GlobalPositioningState) {
     super(tCtx, x);
 
     this.color = this.getRandomColor();
@@ -46,8 +49,8 @@ export class SliceTrackContent extends TrackContent {
 
   private getCurrentData() {
     return traceDataStore.getData({
-      start: 0,
-      end: 14000,
+      start: this.gps.startVisibleWindow,
+      end: this.gps.endVisibleWindow,
       process: 1,
       thread: 1,
     });
