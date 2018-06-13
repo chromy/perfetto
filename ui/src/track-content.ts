@@ -28,7 +28,7 @@ export abstract class TrackContent extends LitElement {
 
     const limits = this.x.getTimeLimits();
     const range = limits.end - limits.start;
-    let step = 1;
+    let step = 0.001;
     while(range / step > 20) {
       step *= 10;
     }
@@ -39,7 +39,9 @@ export abstract class TrackContent extends LitElement {
       step /= 2;
     }
 
-    for(let t = 0; t < 10000; t += step) {
+    const start = Math.round(limits.start / step) * step;
+
+    for(let t = start; t <= limits.end; t += step) {
       const xPos = this.x.tsToPx(t);
 
       this.tCtx.beginPath();

@@ -24,14 +24,20 @@ export class DetailAxis {
     while(range / step > 20) {
       step *= 10;
     }
-    if(range / step < 5) {
-      step /= 5;
+    if(step > 1) {
+      if(range / step < 5) {
+        step /= 5;
+      }
+      if(range / step < 10) {
+        step /= 2;
+      }
     }
-    if(range / step < 10) {
-      step /= 2;
-    }
+    // TODO: Figure out sub 1 labels.
 
-    for(let t = 0; t < 10000; t += step) {
+    const start = Math.round(limits.start / step) * step;
+
+    for(let t = start; t <= limits.end; t += step) {
+      const tRounded = Math.round(Math.round(t / step) * step);
       const xPos = this.x.tsToPx(t);
 
       this.tCtx.beginPath();
@@ -40,7 +46,7 @@ export class DetailAxis {
       this.tCtx.stroke();
 
       this.tCtx.fillStyle = 'red';
-      const text = t.toString();
+      const text = tRounded.toString();
       const offset = Math.floor(text.length / 2) * widthPerLetter + widthPerLetter / 2;
       this.tCtx.fillText(text, xPos - offset, 22);
     }
