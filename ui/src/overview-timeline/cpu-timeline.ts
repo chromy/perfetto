@@ -1,5 +1,5 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {State} from '../state';
+import {State} from '../backend/state';
 import {render, svg} from 'lit-html';
 import * as d3 from 'd3';
 

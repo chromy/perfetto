@@ -1,5 +1,5 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {State} from '../state';
+import {State} from '../backend/state';
 
 export class FramesTimeline extends LitElement {
 

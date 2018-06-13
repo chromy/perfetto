@@ -1,5 +1,5 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {TrackState} from './state';
+import {TrackState} from './backend/state';
 import {TrackShell} from './track-shell';
 import {SliceTrackContent} from './slice-track-content';
 import {TrackContent} from './track-content';

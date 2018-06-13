@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
-import {TrackTreeState, TrackState } from './state'
+import {TrackTreeState, TrackState } from './backend/state'
 import { TrackCanvasContext } from './track-canvas-controller';
 import {OffsetTimeScale} from './time-scale';
 

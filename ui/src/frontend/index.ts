@@ -17,7 +17,6 @@
 import { State, createZeroState } from '../backend/state';
 import * as m from 'mithril';
 import * as Atrace from  '../backend/atrace';
-import { State as TracksState } from '../state';
 import { TraceUi } from '../trace-ui';
 import { html, render } from 'lit-html';
 
@@ -261,82 +260,10 @@ function table(result: any): any {
 
 const ViewerPage: m.Component = {
   oncreate: function(vnode) {
-    const state: TracksState = {
-    loadedTraces: [], // Handles to traces
-    gps: {
-      startVisibleWindow: 10,
-      endVisibleWindow: 2000
-    },
-    maxVisibleWindow: {
-      start: 0,
-      end: 10000
-    },
-    trackTree: {
-      metadata: {
-        name: 'Trace 1: Pinpoint job 347',
-        shellColor: 'red'
-      },
-      children: [{
-        metadata: {
-          name: 'Renderer PID: 12341',
-          shellColor: 'blue'
-        },
-        children: []
-      }, {
-        metadata: {
-          name: 'Renderer PID: 32423',
-          shellColor: 'yellow'
-        },
-        children: [{
-          metadata: {
-            name: 'Metrics Analysis for renderer',
-            shellColor: 'green'
-          },
-          children: [{
-            metadata: { name: "Slice Track"},
-            trackData: {},
-          }],
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }, {
-          metadata: { name: "Slice Track"},
-          trackData: {}
-        }]
-      }]
-    },
-    sliceTrackDataSpec: {}
-    };
+
     const root = vnode.dom;
     const rect = root.getBoundingClientRect();
-    const ui = new TraceUi(state, rect.width, rect.height);
+    const ui = new TraceUi(gState, rect.width, rect.height);
     render(html`${ui}`, root);
   },
 
@@ -455,6 +382,81 @@ function main() {
   });
 
   gState = tryReadState();
+
+  gState.loadedTraces = [];
+  gState.gps = {
+    startVisibleWindow: 10,
+    endVisibleWindow: 2000,
+  }
+  gState.maxVisibleWindow = {
+    start: 0,
+    end: 10000,
+  };
+
+  gState.trackTree = {
+    metadata: {
+      name: 'Trace 1: Pinpoint job 347',
+      shellColor: 'red'
+    },
+    children: [{
+      metadata: {
+        name: 'Renderer PID: 12341',
+        shellColor: 'blue'
+      },
+      children: []
+    }, {
+      metadata: {
+        name: 'Renderer PID: 32423',
+        shellColor: 'yellow'
+      },
+      children: [{
+        metadata: {
+          name: 'Metrics Analysis for renderer',
+          shellColor: 'green'
+        },
+        children: [{
+          metadata: { name: "Slice Track"},
+          trackData: {},
+        }],
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }, {
+        metadata: { name: "Slice Track"},
+        trackData: {}
+      }]
+    }]
+  };
+
+  gState.sliceTrackDataSpec = {};
+
   m.redraw();
 
   gDispatch = worker.postMessage.bind(worker);

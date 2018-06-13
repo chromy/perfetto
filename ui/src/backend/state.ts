@@ -46,7 +46,47 @@ interface State {
   config_editor: ConfigEditorState;
   config_commandline: string | null;
   fragment_params: FragmentParameters;
+
+  // Merged from ui/src/state.ts
+  loadedTraces: string[]; // Handles to traces
+  gps: {
+    startVisibleWindow: number,
+    endVisibleWindow: number
+  };
+  maxVisibleWindow: {
+    start: number;
+    end: number;
+  };
+  trackTree: TrackTreeState;
+  sliceTrackDataSpec: {
+    // Minimal data you need to obtain the complete slice data
+    //Rendering Class (maybe - or maybe it's automatically inferred from the TrackDataSpec class?
+    //start, end of drawing range,
+    //process, thread
+    // Does not contain a list of all the slices.
+  }
 }
+
+interface TrackTreeState {
+  metadata: {
+    name: string,
+    shellColor: string
+  };
+  children: (TrackTreeState|TrackState)[];
+}
+
+interface TrackState {
+  metadata: {
+    name: string,
+  };
+  trackData: TrackDataSpec;
+}
+
+interface TrackDataSpec {};
+
+interface CpuTrackDataSpec extends TrackDataSpec {}
+
+interface SliceTrackDataSpec extends TrackDataSpec {}
 
 function createZeroState(): State {
   return {
@@ -61,6 +101,25 @@ function createZeroState(): State {
     traces: [],
     backends: {},
     config_commandline: "echo 'Create a config above'",
+
+    loadedTraces: [],
+    trackTree: {
+      metadata: {
+        name: '',
+        shellColor: '',
+      },
+      children: [],
+    },
+    gps: {
+      startVisibleWindow: 0,
+      endVisibleWindow: 0,
+    },
+    maxVisibleWindow: {
+      start: 0,
+      end: 0,
+    },
+    sliceTrackDataSpec: {
+    },
   };
 }
 
@@ -71,6 +130,11 @@ export {
   TraceBackendRequest,
   TraceBackendState,
   TraceBackendInfo,
+  CpuTrackDataSpec,
+  SliceTrackDataSpec,
+  TrackDataSpec,
+  TrackState,
+  TrackTreeState,
   State,
 };
 

@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {CanvasController, TrackCanvasContext} from './track-canvas-controller';
-import {State} from './state';
+import {State} from './backend/state';
 import {GlobalBrushTimeline} from './overview-timeline/global-brush-timeline';
 import {TrackTree} from './track-tree';
 import {PanContent} from './pan-content';
