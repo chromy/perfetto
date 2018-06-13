@@ -60,6 +60,7 @@ class TraceDataStore {
     this.onNewDataReceived = rerenderCallback;
   }
 
+  // Currently unused.
   populateWithMockData() {
     for (let pid = 1; pid < 10; pid++) {
       const threadData : ThreadDataMap = new Map();
@@ -133,12 +134,20 @@ class TraceDataStore {
   }
 
   async fetchDataFromBackend(query: TraceDataQuery) {
-    if (this.queryPending(query)) return;
-    this.pendingQueries.push(query);
-    console.log("Fetch data: ", query);
+    const queryDuration = query.end - query.start;
+    const widenedQuery = {
+      thread: query.thread,
+      process: query.process,
+      start: query.start - (0.5 * queryDuration),
+      end: query.end + (0.5 * queryDuration)
+    }
+    if (this.queryPending(widenedQuery)) return;
+    this.pendingQueries.push(widenedQuery);
+    console.log("Fetching data from backend: ", query);
     // Toggle this line to introduce delay for testing.
     await sleep(50);
-    this.mockFetchDataFromBackend(query);
+    this.mockFetchDataFromBackend(widenedQuery);
+    // TODO: Implement slice eviction.
     this.onNewDataReceived();
   }
 
