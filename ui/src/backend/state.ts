@@ -47,13 +47,15 @@ interface State {
   config_commandline: string | null;
   fragment_params: FragmentParameters;
 
-  // 
   gps: GlobalPositioningState;
   maxVisibleWindow: {
     start: number;
     end: number;
   };
   trackTree: TrackTreeState;
+
+  tracks: {[id: string]: TrackState},
+  tracksData: {[id: string]: TrackData},
 }
 
 export interface GlobalPositioningState {
@@ -73,6 +75,11 @@ interface TrackState {
   metadata: {
     name: string,
   };
+  query?: string;
+}
+
+interface TrackData {
+  data: any,
 }
 
 function createZeroState(): State {
@@ -88,6 +95,9 @@ function createZeroState(): State {
     traces: [],
     backends: {},
     config_commandline: "echo 'Create a config above'",
+
+    tracks: {},
+    tracksData: {},
 
     trackTree: {
       metadata: {

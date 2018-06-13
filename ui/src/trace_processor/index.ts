@@ -20,6 +20,7 @@ import { RawQueryArgs, RawQueryResult } from '../backend/protos';
 class TraceProcessorBridge {
   wasm_?: any = undefined;
   blob_?: Blob = undefined;
+  ready: boolean = false;
   pendingInitialized: Promise<void>;
   resolvePendingInitialized: () => void;
   requestId: number;
@@ -69,7 +70,6 @@ class TraceProcessorBridge {
     this.wasm_.ccall('Initialize', 'void',
       ['number', 'number'],
       [readTraceFn, replyFn]);
-    this.resolvePendingInitialized();
   }
 
   readTraceData(offset: number, len: number, dstPtr: number): number {
@@ -81,6 +81,12 @@ class TraceProcessorBridge {
   }
 
   reply(requestId: number, success: boolean, heapPtr: number, size: number) {
+    if (!this.ready) {
+      this.ready = true;
+      this.resolvePendingInitialized();
+      return;
+    }
+
     const data = this.wasm_.HEAPU8.slice(heapPtr, heapPtr + size);
     console.assert(success);
     console.assert(this.pendingRequests[requestId]);
