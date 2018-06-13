@@ -57,13 +57,6 @@ interface State {
     end: number;
   };
   trackTree: TrackTreeState;
-  sliceTrackDataSpec: {
-    // Minimal data you need to obtain the complete slice data
-    //Rendering Class (maybe - or maybe it's automatically inferred from the TrackDataSpec class?
-    //start, end of drawing range,
-    //process, thread
-    // Does not contain a list of all the slices.
-  }
 }
 
 interface TrackTreeState {
@@ -78,14 +71,7 @@ interface TrackState {
   metadata: {
     name: string,
   };
-  trackData: TrackDataSpec;
 }
-
-interface TrackDataSpec {};
-
-interface CpuTrackDataSpec extends TrackDataSpec {}
-
-interface SliceTrackDataSpec extends TrackDataSpec {}
 
 function createZeroState(): State {
   return {
@@ -116,8 +102,6 @@ function createZeroState(): State {
       start: 0,
       end: 0,
     },
-    sliceTrackDataSpec: {
-    },
   };
 }
 
@@ -128,9 +112,6 @@ export {
   TraceBackendRequest,
   TraceBackendState,
   TraceBackendInfo,
-  CpuTrackDataSpec,
-  SliceTrackDataSpec,
-  TrackDataSpec,
   TrackState,
   TrackTreeState,
   State,

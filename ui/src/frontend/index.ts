@@ -454,8 +454,6 @@ function main() {
     }]
   };
 
-  gState.sliceTrackDataSpec = {};
-
   m.redraw();
 
   gDispatch = worker.postMessage.bind(worker);
