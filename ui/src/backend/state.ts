@@ -68,7 +68,8 @@ interface TrackTreeState {
     name: string,
     shellColor: string
   };
-  children: (TrackTreeState|TrackState)[];
+  children?: TrackTreeState[];
+  trackIds?: string[];
 }
 
 interface TrackState {
@@ -105,6 +106,7 @@ function createZeroState(): State {
         shellColor: '',
       },
       children: [],
+      trackIds: []
     },
     gps: {
       startVisibleWindow: 0,

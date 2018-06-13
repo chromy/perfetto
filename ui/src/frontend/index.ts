@@ -400,10 +400,23 @@ function main() {
   gState.gps = {
     startVisibleWindow: 10,
     endVisibleWindow: 2000,
-  }
+  };
   gState.maxVisibleWindow = {
     start: 0,
     end: 10000,
+  };
+
+  gState.tracks = {
+    'foo1': { metadata: { name: "Slice Track 1"}, query: "" },
+    'foo2': { metadata: { name: "Slice Track 2"}, query: "" },
+    'foo3': { metadata: { name: "Slice Track 3"}, query: "" },
+    'foo4': { metadata: { name: "Slice Track 4"}, query: "" },
+    'foo5': { metadata: { name: "Slice Track 5"}, query: "" },
+    'foo6': { metadata: { name: "Slice Track 6"}, query: "" },
+    'foo7': { metadata: { name: "Slice Track 7"}, query: "" },
+    'foo8': { metadata: { name: "Slice Track 8"}, query: "" },
+    'foo9': { metadata: { name: "Slice Track 9"}, query: "" },
+    'foo10': { metadata: { name: "Slice Track 10"}, query: "" }
   };
 
   gState.trackTree = {
@@ -427,44 +440,10 @@ function main() {
           name: 'Metrics Analysis for renderer',
           shellColor: 'green'
         },
-        children: [{
-          metadata: { name: "Slice Track 1"},
-          trackData: {},
-        }],
-      }, {
-        metadata: { name: "Slice Track 2"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track 3"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }, {
-        metadata: { name: "Slice Track"},
-        trackData: {}
-      }]
+        children: [],
+        trackIds: ['foo1']
+      }],
+      trackIds: ['foo2', 'foo3', 'foo4', 'foo5', 'foo6', 'foo7', 'foo8', 'foo9', 'foo10']
     }]
   };
 
