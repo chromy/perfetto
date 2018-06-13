@@ -383,7 +383,6 @@ function main() {
 
   gState = tryReadState();
 
-  gState.loadedTraces = [];
   gState.gps = {
     startVisibleWindow: 10,
     endVisibleWindow: 2000,

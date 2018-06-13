@@ -48,7 +48,6 @@ interface State {
   fragment_params: FragmentParameters;
 
   // Merged from ui/src/state.ts
-  loadedTraces: string[]; // Handles to traces
   gps: {
     startVisibleWindow: number,
     endVisibleWindow: number
@@ -102,7 +101,6 @@ function createZeroState(): State {
     backends: {},
     config_commandline: "echo 'Create a config above'",
 
-    loadedTraces: [],
     trackTree: {
       metadata: {
         name: '',
