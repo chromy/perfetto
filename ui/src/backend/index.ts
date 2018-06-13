@@ -111,6 +111,15 @@ function updateDone(id: string) {
   };
 }
 
+function updateTrackData(id: string, data: any) {
+  return {
+    topic: 'update_track_data',
+    id,
+    data,
+  };
+}
+
+
 class TraceController {
   id: string;
   state: TraceBackendState;
@@ -118,6 +127,7 @@ class TraceController {
   file: Blob|null;
   remoteTraceProcessorBridge: null|TraceProcessorBridge;
   result: any;
+  seenTracks: Set<string>;
 
   constructor(id: string) {
     this.id = id;
@@ -125,6 +135,7 @@ class TraceController {
     this.name = '';
     this.file = null;
     this.remoteTraceProcessorBridge = null;
+    this.seenTracks = new Set();
   }
 
   details(): TraceBackendInfo {
@@ -148,7 +159,7 @@ class TraceController {
     });
   }
 
-  update(_: State, request: TraceBackendRequest) {
+  update(state: State, request: TraceBackendRequest) {
     if (this.state === 'LOADING' && this.file && gPort) {
       const bridge = createSender<TraceProcessorBridge>(gPort);
       this.remoteTraceProcessorBridge = bridge;
@@ -167,6 +178,20 @@ class TraceController {
         dispatch(updateDone(this.id));
         dispatch(publishBackend(this.details()));
       });
+    }
+    if (this.state === 'READY' && this.remoteTraceProcessorBridge) {
+      for (const [id, track] of Object.entries(state.tracks)) {
+        if (this.seenTracks.has(id))
+          continue;
+        if (!track.query)
+          continue;
+        this.seenTracks.add(id);
+        this.remoteTraceProcessorBridge.query(track.query).then((result: any) => {
+          console.log(result);
+          const data = {};
+          dispatch(updateTrackData(id, data));
+        });
+      }
     }
   }
 
@@ -265,6 +290,14 @@ function dispatch(action: any) {
         id: ''+gLargestKnownId++,
         query: '',
       });
+      for (let i=0; i<8; i++) { 
+        gState.tracks[''+gLargestKnownId++] = {
+          metadata: {
+            name: `CPU ${i}`,
+          },
+          query: `select * from sched_slices where cpu = ${i};`,
+        };
+      }
       break;
     }
     case 'query': {
@@ -284,6 +317,14 @@ function dispatch(action: any) {
         if (trace.id === id)
           trace.needs_update = false;
       }
+      break;
+    }
+    case 'update_track_data': {
+      const id = action.id;
+      const data = action.data;
+      gState.tracksData[id] = {
+        data,
+      };
       break;
     }
     default:
@@ -307,7 +348,6 @@ function main() {
 
   const any_self = (self as any);
   any_self.onmessage = (m: any) => dispatch(m.data);
-
 }
 
 export {

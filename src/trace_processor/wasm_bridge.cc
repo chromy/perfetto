@@ -92,7 +92,7 @@ void Initialize(ReadTraceFunction read_trace_function, ReplyFunction reply_funct
   g_read_trace = read_trace_function;
   g_reply = reply_function;
   g_trace_database->LoadTrace(blob_reader(), []() {
-    //g_reply(0, true, nullptr, 0);
+    g_reply(0, true, nullptr, 0);
     PERFETTO_ILOG("Trace Loaded");
   });
 }
