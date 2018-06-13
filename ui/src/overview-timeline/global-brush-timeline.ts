@@ -122,6 +122,26 @@ export class GlobalBrushTimeline extends LitElement {
         ${this.g}
         `;
 
+    const handleBars = html`
+      <style>
+        .handle-bars {
+          position: relative;
+          top: 9px;
+        }
+        .bar {
+          height: 5px;
+          width: 8px;
+          margin-left: 2px;
+          border-top: 1px solid #888;
+        }
+      </style>
+      <div class="handle-bars">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    `;
+
     return html`
     <style>
       .wrap {
@@ -185,11 +205,11 @@ export class GlobalBrushTimeline extends LitElement {
       <div class="brush">
         <div class="brush-left">
           <div class="handle" 
-            on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, true); }}></div>
+            on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, true); }}>${handleBars}</div>
         </div>
         <div class="brush-right">
           <div class="handle"
-             on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, false); }}></div>
+             on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, false); }}>${handleBars}</div>
           </div>
       </div>
       ${this.getChildContent()}
