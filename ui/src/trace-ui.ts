@@ -56,6 +56,20 @@ export class TraceUi extends LitElement {
     this.detailAxis = new DetailAxis(tCtx, this.width, TraceUi.AXIS_HEIGHT, this.scale);
   }
 
+  public setState(state: State) {
+    this.state = state;
+
+    this.overview.setState(this.state);
+    this.pc.setState(this.state);
+    this.root.setState(this.state.trackTree, this.state.gps);
+
+    const canvasHeight = 2 * this.height;
+    this.cc.setHeight(canvasHeight);
+    this.cc.setMaxHeight(this.root.height);
+
+    this._invalidateProperties();
+  }
+
   _render() {
     this.scale.setTimeLimits(this.state.gps.startVisibleWindow,
         this.state.gps.endVisibleWindow);

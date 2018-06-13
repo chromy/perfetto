@@ -39,6 +39,13 @@ export class Track extends LitElement {
     contentCtx.setDimensions(this.width, this.height);
   }
 
+  public setState(state: TrackState, gps: GlobalPositioningState) {
+    this.state = state;
+    this.gps = gps;
+
+    this.content.setGps(gps);
+  }
+
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
     return { top: 10, right: 0, bottom: 0, left: 0 };
   }
@@ -49,11 +56,6 @@ export class Track extends LitElement {
   }
 
   _render() {
-
-    if(this.state) {
-      // This is here just so this.state is used.
-    }
-
     this.content._invalidateProperties();
 
     const contentTemplate = html`${this.content}`;

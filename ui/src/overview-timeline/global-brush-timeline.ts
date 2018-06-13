@@ -40,25 +40,39 @@ export class GlobalBrushTimeline extends LitElement {
       left: 20
     };
 
-    this.scale = new TimeScale(this.state.maxVisibleWindow.start,
-        this.state.maxVisibleWindow.end, this.margin.left,
-        this.width - this.margin.right);
     this.x = d3.scaleTime().range([this.margin.left, this.width - this.margin.right]);
-    this.x.domain([this.state.maxVisibleWindow.start,
-      this.state.maxVisibleWindow.end]);
-
     this.xAxis = d3.axisBottom(this.x);
-
     this.g = document.createElementNS('http://www.w3.org/2000/svg', "g");
 
     this.axisEl = d3.select(this.g).append("g")
         .attr("class", "axis axis--x")
         .attr("transform", "translate(0," + (this.height - this.margin.bottom) + ")");
 
-    this.axisEl
-        .call(this.xAxis);
+    this.scale = new TimeScale(this.state.maxVisibleWindow.start,
+        this.state.maxVisibleWindow.end, this.margin.left,
+        this.width - this.margin.right);
+
+    this.setScales();
 
     this.cpuTimeline = new CpuTimeline(this.state, this.x);
+  }
+
+  public setState(state: State) {
+    this.state = state;
+    this.cpuTimeline.setState(this.state);
+
+    this.setScales();
+  }
+
+  private setScales() {
+
+    this.scale.setTimeLimits(this.state.maxVisibleWindow.start,
+        this.state.maxVisibleWindow.end);
+    this.x.domain([this.state.maxVisibleWindow.start,
+      this.state.maxVisibleWindow.end]);
+
+    this.axisEl
+        .call(this.xAxis);
   }
 
   private brushHandleMouseDown(e: MouseEvent, isLeft: boolean) {
@@ -115,12 +129,7 @@ export class GlobalBrushTimeline extends LitElement {
 
   _render() {
 
-    this.scale.setTimeLimits(this.state.maxVisibleWindow.start,
-        this.state.maxVisibleWindow.end);
-    this.x.domain([this.state.maxVisibleWindow.start,
-      this.state.maxVisibleWindow.end]);
-    this.axisEl
-        .call(this.xAxis);
+    this.cpuTimeline._invalidateProperties();
 
     const svgContent = svg`
         ${this.g}

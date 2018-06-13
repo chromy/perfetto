@@ -1,6 +1,6 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {Track} from './track';
-import {TrackTreeState, TrackState, GlobalPositioningState } from './backend/state'
+import {TrackTreeState, TrackState, GlobalPositioningState} from './backend/state'
 import { TrackCanvasContext } from './track-canvas-controller';
 import {OffsetTimeScale} from './time-scale';
 
@@ -23,26 +23,52 @@ export class TrackTree extends LitElement {
   private updateChildren() {
 
     let yOffset = this.contentPosition.top + 1;  // 1px for border.
+    let i = -1;
 
     for(let childState of this.state.children)
     {
-      const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
+      i++;
+      let child: (TrackTree|Track);
+      if(this.trackChildren[i]) {
+        //TODO: This matching of Tracks and TrackTrees
+        // should be done somewhat intelligently.
+        child = this.trackChildren[i];
+        if((child instanceof TrackTree &&
+            TrackTree.isTrackTreeState(childState))) {
+          child.setState(childState, this.gps);
+        } else if(child instanceof Track &&
+            !TrackTree.isTrackTreeState(childState)) {
+          child.setState(childState, this.gps);
+          // I wish this could be done with an OR statement, but the type checks
+          // are not sophisticated enough.
+        }
+      }
+      else {
+        const tCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
 
-      const sidePadding = this.contentPosition.left + this.contentPosition.right;
-      const reducedWidth = this.width - sidePadding;
-      const cScale = new OffsetTimeScale(this.scale,
-          this.contentPosition.left,
-          reducedWidth);
+        const sidePadding = this.contentPosition.left + this.contentPosition.right;
+        const reducedWidth = this.width - sidePadding;
+        const cScale = new OffsetTimeScale(this.scale,
+            this.contentPosition.left,
+            reducedWidth);
 
-      const child = TrackTree.isTrackTreeState(childState) ?
-        new TrackTree(childState, tCtx, reducedWidth, cScale,this.gps) :
-          new Track(childState, tCtx, reducedWidth, cScale, this.gps);
+        child = TrackTree.isTrackTreeState(childState) ?
+            new TrackTree(childState, tCtx, reducedWidth, cScale,this.gps) :
+            new Track(childState, tCtx, reducedWidth, cScale, this.gps);
 
-      tCtx.setDimensions(reducedWidth, child.height);
-      this.trackChildren.push(child);
+        tCtx.setDimensions(reducedWidth, child.height);
+        this.trackChildren.push(child);
+      }
 
       yOffset += child.height;
     }
+  }
+
+  public setState(state: TrackTreeState, gps: GlobalPositioningState) {
+    this.state = state;
+    this.gps = gps;
+
+    this.updateChildren();
   }
 
   static isTrackTreeState(state: (TrackTreeState | TrackState)): state is TrackTreeState {

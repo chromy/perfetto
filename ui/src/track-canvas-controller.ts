@@ -57,8 +57,15 @@ export class CanvasController  extends LitElement {
     //TODO
   }
 
+  setHeight(height: number) {
+    this.height = height;
+    this.canvas.setAttribute('height', this.height.toString());
+    this.tCtx.setDimensions(this.width, this.height);
+  }
+
   setMaxHeight(maxHeight: number) {
     this.maxHeight = maxHeight;
+    this._invalidateProperties();
   }
 
   _render()

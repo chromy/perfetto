@@ -263,16 +263,18 @@ function table(result: any): any {
 function reinitializeUI(vnode: m.VnodeDOM) {
   // FIXME: We're creating a new TraceUI object to work around the lack on setters
   // here. Should fix this asap.
-  const root = vnode.dom;
-  const rect = root.getBoundingClientRect();
-  const ui = new TraceUi(gState, rect.width, rect.height);
-  render(html`${ui}`, root);
-  traceDataStore.initialize(() => ui._invalidateProperties());  
+  const ui = (vnode.dom.firstElementChild as TraceUi);
+  ui.setState(gState);
 }
 
 const ViewerPage: m.Component = {
   oncreate(vnode) {
-    reinitializeUI(vnode);
+    //reinitializeUI(vnode);
+    const root = vnode.dom;
+    const rect = root.getBoundingClientRect();
+    const ui = new TraceUi(gState, rect.width, rect.height);
+    render(html`${ui}`, root);
+    traceDataStore.initialize(() => ui._invalidateProperties());
   },
 
   onupdate(vnode) {
@@ -426,14 +428,14 @@ function main() {
           shellColor: 'green'
         },
         children: [{
-          metadata: { name: "Slice Track"},
+          metadata: { name: "Slice Track 1"},
           trackData: {},
         }],
       }, {
-        metadata: { name: "Slice Track"},
+        metadata: { name: "Slice Track 2"},
         trackData: {}
       }, {
-        metadata: { name: "Slice Track"},
+        metadata: { name: "Slice Track 3"},
         trackData: {}
       }, {
         metadata: { name: "Slice Track"},

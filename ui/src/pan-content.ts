@@ -30,6 +30,10 @@ export class PanContent extends LitElement {
     this.handleKeyNavigation();
   }
 
+  public setState(state: State) {
+    this.state = state;
+  }
+
   protected handleKeyNavigation() {
 
     let zooming = false;

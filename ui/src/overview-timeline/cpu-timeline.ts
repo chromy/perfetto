@@ -29,6 +29,10 @@ export class CpuTimeline extends LitElement {
     this.path.setAttribute('fill', 'none');
   }
 
+  public setState(state: State) {
+    this.state = state;
+  }
+
   private setRandomCpuData()
   {
     const start = 0;
