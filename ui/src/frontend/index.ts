@@ -260,17 +260,20 @@ function table(result: any): any {
 }
 
 const ViewerPage: m.Component = {
-  oncreate: function(vnode) {
-
+  oncreate(vnode) {
     const root = vnode.dom;
     const rect = root.getBoundingClientRect();
     const ui = new TraceUi(gState, rect.width, rect.height);
-    // TODO: Maybe we should get invalidate calls from individual tracks instead.
-    traceDataStore.initialize(() => ui._invalidateProperties());
     render(html`${ui}`, root);
   },
 
-  view: function() {
+  onupdate(vnode) {
+    // TODO: Maybe we should get invalidate calls from individual tracks instead.
+    const ui = (vnode.dom.firstElementChild as any);
+    traceDataStore.initialize(() => ui._invalidateProperties());
+  },
+
+  view() {
     return [
       m('#trace-ui-container'),
       m(Menu, { title: "Home" }),
