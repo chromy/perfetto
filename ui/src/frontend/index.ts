@@ -259,18 +259,24 @@ function table(result: any): any {
   );
 }
 
+
+function reinitializeUI(vnode: m.VnodeDOM) {
+  // FIXME: We're creating a new TraceUI object to work around the lack on setters
+  // here. Should fix this asap.
+  const root = vnode.dom;
+  const rect = root.getBoundingClientRect();
+  const ui = new TraceUi(gState, rect.width, rect.height);
+  render(html`${ui}`, root);
+  traceDataStore.initialize(() => ui._invalidateProperties());  
+}
+
 const ViewerPage: m.Component = {
   oncreate(vnode) {
-    const root = vnode.dom;
-    const rect = root.getBoundingClientRect();
-    const ui = new TraceUi(gState, rect.width, rect.height);
-    render(html`${ui}`, root);
+    reinitializeUI(vnode);
   },
 
   onupdate(vnode) {
-    // TODO: Maybe we should get invalidate calls from individual tracks instead.
-    const ui = (vnode.dom.firstElementChild as any);
-    traceDataStore.initialize(() => ui._invalidateProperties());
+    reinitializeUI(vnode);
   },
 
   view() {
@@ -278,7 +284,7 @@ const ViewerPage: m.Component = {
       m('#trace-ui-container'),
       m(Menu, { title: "Home" }),
       m(Side),
-    ]
+    ];
   },
 };
 

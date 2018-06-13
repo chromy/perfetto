@@ -57,7 +57,6 @@ export class TraceUi extends LitElement {
   }
 
   _render() {
-
     this.scale.setTimeLimits(this.state.gps.startVisibleWindow,
         this.state.gps.endVisibleWindow);
 
