@@ -259,14 +259,6 @@ function table(result: any): any {
   );
 }
 
-
-function reinitializeUI(vnode: m.VnodeDOM) {
-  // FIXME: We're creating a new TraceUI object to work around the lack on setters
-  // here. Should fix this asap.
-  const ui = (vnode.dom.firstElementChild as TraceUi);
-  ui.setState(gState);
-}
-
 const ViewerPage: m.Component = {
   oncreate(vnode) {
     //reinitializeUI(vnode);
@@ -278,7 +270,8 @@ const ViewerPage: m.Component = {
   },
 
   onupdate(vnode) {
-    reinitializeUI(vnode);
+    const ui = (vnode.dom.firstElementChild as TraceUi);
+    ui.setState(gState);
   },
 
   view() {
