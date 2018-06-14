@@ -41,6 +41,10 @@ interface TraceBackendInfo {
 
 type FragmentParameters = {[s: string]: any};
 
+// Adding '|undefined' because of
+// https://github.com/Microsoft/TypeScript/issues/23817
+type ObjectByID<T> = {[id: string]: T | undefined};
+
 interface State {
   fragment: string;
   traces: TraceBackendRequest[];
@@ -57,11 +61,9 @@ interface State {
   rootTrackTree: string | null;
 
   // TODO: Consider unifying track and tracktrees.
-  // TODO: This method of typing doesn't let us do a null check,
-  // even though it's possible for tracks[id] to be null.
-  tracks: {[id: string]: TrackState},
-  trackTrees: {[id: string]: TrackTreeState}
-  tracksData: {[id: string]: TrackData},
+  tracks: ObjectByID<TrackState>;
+  trackTrees: ObjectByID<TrackTreeState>;
+  tracksData: ObjectByID<TrackData>;
 }
 
 export interface GlobalPositioningState {
@@ -131,6 +133,7 @@ export {
   createZeroState,
   FragmentParameters,
   ConfigEditorState,
+  ObjectByID,
   TraceBackendRequest,
   TraceBackendState,
   TraceBackendInfo,

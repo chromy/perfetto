@@ -180,7 +180,8 @@ class TraceController {
       });
     }
     if (this.state === 'READY' && this.remoteTraceProcessorBridge) {
-      for (const [id, track] of Object.entries(state.tracks)) {
+      for (let [id, track] of Object.entries(state.tracks)) {
+        if (track == null) continue;  // TS being a little too pedantic here.
         console.log(state.tracks);
         if (this.seenTracks.has(id))
           continue;

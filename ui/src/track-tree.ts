@@ -1,5 +1,5 @@
 import { LitElement, html } from '@polymer/lit-element';
-import { GlobalPositioningState, TrackNodeID, TrackState, TrackTreeState } from './backend/state';
+import { GlobalPositioningState, TrackNodeID, TrackState, TrackTreeState, ObjectByID } from './backend/state';
 import { OffsetTimeScale } from './time-scale';
 import { Track } from './track';
 import { TrackCanvasContext } from './track-canvas-controller';
@@ -11,8 +11,8 @@ export class TrackTree extends LitElement {
   static get properties() { return { }}
 
   constructor(private trackTreeState: TrackTreeState,
-              private tracks: {[id: string]: TrackState},
-              private trackTrees: {[id: string]: TrackTreeState},
+              private tracks: ObjectByID<TrackState>,
+              private trackTrees: ObjectByID<TrackTreeState>,
               private tCtx: TrackCanvasContext,
               private width: number,
               private scale: OffsetTimeScale,
@@ -32,6 +32,7 @@ export class TrackTree extends LitElement {
     
     // Else, it's a tracktree.
     const trackTree = this.trackTrees[nodeID.id];
+    if (trackTree == null) throw 'Non-existent track tree';
     const childrenHeight = trackTree.children
         .map(c => this.getNodeHeight(c))
         .reduce((a,b) => a+b, 0);
@@ -54,6 +55,7 @@ export class TrackTree extends LitElement {
       switch (childID.nodeType) {
         case 'TRACK': {  // Intentionally using new block.
           const childState = this.tracks[childID.id];
+          if (childState == null) throw 'Non-existent track';
           const child = this.idToChildTracks.get(childID.id);
           if (child == null) {
             const childTrackCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
@@ -67,6 +69,7 @@ export class TrackTree extends LitElement {
         case 'TRACKTREE': {
           // TODO: Lots of code duplication with the block above.
           const childState = this.trackTrees[childID.id];
+          if (childState == null) throw 'Non-existent track tree';
           const child = this.idToChildTrackTrees.get(childID.id);
           if (child == null) {
             const childTrackCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
@@ -87,8 +90,8 @@ export class TrackTree extends LitElement {
 
   public setState(
       state: TrackTreeState,
-      tracks: {[id: string]: TrackState},
-      trackTrees: {[id: string]: TrackTreeState},
+      tracks: ObjectByID<TrackState>,
+      trackTrees: ObjectByID<TrackTreeState>,
       gps: GlobalPositioningState) {
     this.trackTreeState = state;
     this.tracks = tracks;

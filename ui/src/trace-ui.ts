@@ -67,6 +67,7 @@ export class TraceUi extends LitElement {
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
     // TODO: This constructor has too many arguments. Need better state propagation.
     const rootTrackTreeState = this.state.trackTrees[rootTrackTreeID];
+    if (rootTrackTreeState == null) return null;
     return new TrackTree(rootTrackTreeState, this.state.tracks, this.state.trackTrees,
       tracksCtx, contentWidth, new OffsetTimeScale(this.scale,0, this.width),
       this.state.gps);
@@ -80,6 +81,7 @@ export class TraceUi extends LitElement {
     
     if (this.state.rootTrackTree != null) {
       const rootTrackTreeState = this.state.trackTrees[this.state.rootTrackTree];
+      if (rootTrackTreeState == null) return;
       if (this.root == null) {
         this.root = this.createRootTree(this.state.rootTrackTree);
       } else {

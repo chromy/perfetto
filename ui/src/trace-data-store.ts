@@ -181,7 +181,7 @@ class TraceDataStore {
     let slices = [];
         const tracksData = Object.values(this.state().tracksData);
     if (tracksData.length > 0) {
-      slices = tracksData[0].data;
+      slices = tracksData[0]!.data;
     } else {
       const sliceStartBegin = Math.floor(query.start/50) * 50;
       const sliceStartEnd = query.end;
