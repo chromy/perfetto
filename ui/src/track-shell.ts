@@ -7,13 +7,12 @@ export class TrackShell extends LitElement {
 
   constructor(private height: number,
               private width: number,
-              private name: string)
-  {
+              private name: string) {
     super();
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 0, right: 0, bottom: 0, left: 200 };
+    return { top: 0, right: 0, bottom: 1, left: 200 };
   }
 
   public getContentWidth() {
@@ -30,18 +29,18 @@ export class TrackShell extends LitElement {
       box-sizing: border-box;
     }
     .wrap {
-      background: #eee;
       width: ${this.width}px;
       height: ${this.height}px;
       box-sizing: border-box;
       position: relative;
+      border-bottom: 1px solid #000;
     }
     .shell-content {
       background:#eee;
       box-sizing: border-box;
       padding: 20px;
       width: ${this.shellWidth}px;
-      height: ${this.height}px;
+      height: ${this.height-1}px;
       display: block;
     }
     .track-content {
@@ -49,6 +48,7 @@ export class TrackShell extends LitElement {
       top: ${this.contentPosition.top}px;
       left: ${this.contentPosition.left}px; 
       width: ${this.width-this.contentPosition.left-this.contentPosition.right}px;
+      height: ${this.height-this.contentPosition.top-this.contentPosition.bottom}px;
     }
     </style>
     <div class="wrap">

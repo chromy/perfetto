@@ -11,6 +11,7 @@ export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
+  public height = 100;
 
   constructor(private state: TrackState,
               private tCtx: TrackCanvasContext,
@@ -21,22 +22,19 @@ export class Track extends LitElement {
     super();
 
     this.type = 'slice'; //TODO: Infer
-    const height = 100;
+    const height = this.height;
 
     this.shell = new TrackShell(height, this.width, this.state.name);
     const contentWidth = this.shell.getContentWidth();
 
-    const cp = this.contentPosition;
     const shellCp = this.shell.contentPosition;
-    const left = cp.left + shellCp.left;
-    const top = cp.top + shellCp.top;
+    const contentX = new OffsetTimeScale(this.x, shellCp.left, contentWidth);
+    const contentCtx = new TrackCanvasContext(this.tCtx, shellCp.left, shellCp.top);
+    const contentHeight = height - shellCp.top - shellCp.bottom;
 
-    const contentX = new OffsetTimeScale(this.x, left, contentWidth);
-    const contentCtx = new TrackCanvasContext(this.tCtx, left, top);
-    this.content = new SliceTrackContent(contentCtx, contentWidth, contentX, this.gps); //TODO: Infer
-
-    //console.log(this.width, this.height);
-    contentCtx.setDimensions(this.width, this.height);
+    this.content = new SliceTrackContent(contentCtx, contentWidth,
+        contentHeight, contentX, this.gps); //TODO: Infer
+    contentCtx.setDimensions(this.width, contentHeight);
   }
 
   public setState(state: TrackState, gps: GlobalPositioningState) {
@@ -44,15 +42,6 @@ export class Track extends LitElement {
     this.gps = gps;
 
     this.content.setGps(gps);
-  }
-
-  get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 0, right: 0, bottom: 0, left: 0 };
-  }
-
-  get height() {
-    const cp = this.contentPosition;
-    return cp.top + cp.bottom + this.content.height;
   }
 
   _render() {
@@ -71,9 +60,7 @@ export class Track extends LitElement {
       position: relative;
     }
     .wrap {
-      position: absolute;
-      top: ${this.contentPosition.top}px;
-      left: ${this.contentPosition.left}px;
+      position: relative;
     }
     </style>
     <div class="wrap">

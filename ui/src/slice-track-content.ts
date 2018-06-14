@@ -16,9 +16,10 @@ export class SliceTrackContent extends TrackContent {
 
   constructor(protected tCtx: TrackCanvasContext,
               private width: number,
+              protected height: number,
               protected x: OffsetTimeScale,
               protected gps: GlobalPositioningState) {
-    super(tCtx, x, gps);
+    super(tCtx, height, x, gps);
 
     this.color = this.getRandomColor();
     //this.vis = new SliceTrackContent();

@@ -10,22 +10,16 @@ export abstract class TrackContent extends LitElement {
   protected start = 0;
   protected end = 1000;
 
-  public height: number;
 
   constructor(protected tCtx: TrackCanvasContext,
+              protected height: number,
               protected x: OffsetTimeScale,
               protected gps: GlobalPositioningState) {
     super();
-
-    this.height = this.getHeight();
   }
 
   public setGps(gps: GlobalPositioningState) {
     this.gps = gps;
-  }
-
-  protected getHeight(): number {
-    return 100;
   }
 
   protected drawGridLines(): void {
