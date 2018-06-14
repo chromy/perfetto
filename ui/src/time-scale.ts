@@ -1,14 +1,14 @@
 export class TimeScale {
 
-  constructor(private tStart: number,
-              private tEnd: number,
-              private pxStart: number,
-              private pxEnd: number,
-              private pxOffset: number = 0) {
+  constructor(private tStart: Milliseconds,
+              private tEnd: Milliseconds,
+              private pxStart: Pixels,
+              private pxEnd: Pixels,
+              private pxOffset: Pixels = 0) {
 
   }
 
-  public tsToPx(time: number): number {
+  public tsToPx(time: Milliseconds): Pixels {
 
     /*if(time < this.tStart) return this.pxStart;
     if(time > this.tEnd) return this.pxEnd;*/
@@ -18,12 +18,16 @@ export class TimeScale {
     return this.pxStart + percentagePx - this.pxOffset;
   }
 
-  public pxToTs(px: number): number {
+  public pxToTs(px: Pixels): Milliseconds {
     const percentage = (px - this.pxStart) / (this.pxEnd - this.pxStart);
     return this.tStart + percentage * (this.tEnd - this.tStart);
   }
 
-  public setTimeLimits(tStart: number, tEnd: number) {
+  public relativePxToTs(px: Pixels): Milliseconds {
+    return this.pxToTs(px) - this.pxToTs(0);
+  }
+
+  public setTimeLimits(tStart: Milliseconds, tEnd: Milliseconds) {
     this.tStart = tStart;
     this.tEnd = tEnd;
   }
@@ -39,12 +43,11 @@ export class TimeScale {
 export class OffsetTimeScale {
 
   constructor(private scale: (TimeScale|OffsetTimeScale),
-              private pxOffset: number,
-              private width: number) {
-
+              private pxOffset: Pixels,
+              private width: Pixels) {
   }
 
-  public tsToPx(time: number): number {
+  public tsToPx(time: Milliseconds): Pixels {
     const result = this.scale.tsToPx(time) - this.pxOffset;
     if(result < 0) return 0;
     if(result > this.width)
@@ -53,11 +56,23 @@ export class OffsetTimeScale {
     return result;
   }
 
-  public pxToTs(px: number): number {
+  public pxToTs(px: Pixels): Milliseconds {
     return this.scale.pxToTs(px + this.pxOffset);
   }
 
-  public getTimeLimits(): {start: number, end: number} {
+  public relativePxToTs(px: Pixels): Milliseconds {
+    return this.scale.pxToTs(px + this.pxOffset) - this.scale.pxToTs(0);
+  }
+
+  public getTimeLimits(): {start: Milliseconds, end: Milliseconds} {
     return this.scale.getTimeLimits();
   }
 }
+
+// We are using enums because TypeScript does proper type checking for those,
+// and disallows assigning a pixel value to a milliseconds value, even though
+// there are numbers. Using types, this safeguard would not be here.
+// See: https://stackoverflow.com/a/43832165
+
+export enum Pixels {}
+export enum Milliseconds {}

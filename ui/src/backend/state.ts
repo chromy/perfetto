@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {Milliseconds, Pixels} from '../time-scale';
+
 interface ConfigEditorState {
   stream_to_host: boolean,
   buffer_size_kb: number|null,
@@ -49,8 +51,8 @@ interface State {
 
   gps: GlobalPositioningState;
   maxVisibleWindow: {
-    start: number;
-    end: number;
+    start: Milliseconds;
+    end: Milliseconds;
   };
   rootTrackTree: string | null;
 
@@ -63,8 +65,8 @@ interface State {
 }
 
 export interface GlobalPositioningState {
-  startVisibleWindow: number,
-  endVisibleWindow: number,
+  startVisibleWindow: Milliseconds,
+  endVisibleWindow: Milliseconds,
 }
 
 interface TrackTreeID {
@@ -86,7 +88,7 @@ interface TrackTreeState {
 
 interface TrackState {
   name: string,
-  height: number,
+  height: Pixels,
   query?: string,
 }
 

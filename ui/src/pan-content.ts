@@ -1,7 +1,7 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {State} from './backend/state';
 import {render} from 'lit-html';
-import {TimeScale} from './time-scale';
+import {Milliseconds, Pixels, TimeScale} from './time-scale';
 
 export class PanContent extends LitElement {
 
@@ -13,7 +13,7 @@ export class PanContent extends LitElement {
 
   protected mouseDownX = -1;
   private scroller: HTMLDivElement;
-  private mouseXpos: number = 0;
+  private mouseXpos: Pixels = 0;
 
   constructor(private width: number,
               private windowHeight: number,
@@ -64,7 +64,7 @@ export class PanContent extends LitElement {
           PanContent.ZOOM_OUT_PERCENTAGE_SPEED;
       const newT = t * percentage;
 
-      const zoomPosition = this.scale.pxToTs(this.mouseXpos);
+      const zoomPosition: Milliseconds = this.scale.pxToTs(this.mouseXpos);
       const zoomPositionPercentage = (zoomPosition -
           this.state.gps.startVisibleWindow) / t;
 
@@ -93,9 +93,9 @@ export class PanContent extends LitElement {
     let panning = false;
     const pan = (left: boolean) => {
       const leftFactor = left ? -1 : 1;
-      const panAmountInTs = this.scale.pxToTs(PanContent.PAN_SPEED) - this.scale.pxToTs(0);
-      this.state.gps.startVisibleWindow += leftFactor * panAmountInTs;
-      this.state.gps.endVisibleWindow += leftFactor * panAmountInTs;
+      const panAmount: Milliseconds = this.scale.relativePxToTs(PanContent.PAN_SPEED);
+      this.state.gps.startVisibleWindow += leftFactor * panAmount;
+      this.state.gps.endVisibleWindow += leftFactor * panAmount;
 
       this.onPanned();
 
@@ -138,7 +138,7 @@ export class PanContent extends LitElement {
   }
 
   protected panByPx(movedPx: number) {
-    const movedTime = this.scale.pxToTs(movedPx) - this.scale.pxToTs(0);
+    const movedTime = this.scale.relativePxToTs(movedPx);
 
     this.state.gps.startVisibleWindow += movedTime;
     this.state.gps.endVisibleWindow += movedTime;

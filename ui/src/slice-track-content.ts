@@ -2,7 +2,7 @@ import {TrackContent} from './track-content';
 import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
 import {ThreadSlice, traceDataStore} from './trace-data-store';
-import {OffsetTimeScale} from './time-scale';
+import {OffsetTimeScale, Pixels} from './time-scale';
 import { GlobalPositioningState } from './backend/state';
 
 export class SliceTrackContent extends TrackContent {
@@ -38,7 +38,7 @@ export class SliceTrackContent extends TrackContent {
       if(slice === this.selectedSlice) {
         this.tCtx.fillStyle = 'red';
       }
-      const sliceWidth = this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start);
+      const sliceWidth: Pixels = this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start);
       this.tCtx.fillRect(this.x.tsToPx(slice.start), 0, sliceWidth, 20);
 
       let sliceText = '';
