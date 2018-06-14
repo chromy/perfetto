@@ -290,14 +290,24 @@ function dispatch(action: any) {
         id: ''+gLargestKnownId++,
         query: '',
       });
+      let trackIds = [];
       for (let i=0; i<8; i++) { 
-        gState.tracks[''+gLargestKnownId++] = {
+        const id = ''+gLargestKnownId++;
+        gState.tracks[id] = {
           metadata: {
             name: `CPU ${i}`,
           },
           query: `select * from sched_slices where cpu = ${i};`,
         };
+        trackIds.push(id);
       }
+      gState.trackTree = {
+        metadata: {
+          name: 'foo',
+          shellColor: 'red',
+        },
+        trackIds,
+      };
       break;
     }
     case 'query': {
