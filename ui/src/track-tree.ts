@@ -42,7 +42,6 @@ export class TrackTree extends LitElement {
       + this.contentPosition.bottom;
   }
 
-
   private updateChildren() {
 
     const sidePadding = this.contentPosition.left + this.contentPosition.right;

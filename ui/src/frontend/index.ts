@@ -418,7 +418,7 @@ function main() {
     'tree1': {
       name: 'Trace 1: Pinpoint job 347',
       children: [
-        { nodeType: 'TRACKTREE', id: 'tree2' },
+        { nodeType: 'TRACKTREE', id: 'tree3' },
         { nodeType: 'TRACK', id: 'foo2'},
         { nodeType: 'TRACK', id: 'foo3'},
         { nodeType: 'TRACK', id: 'foo4'},
@@ -436,7 +436,7 @@ function main() {
     },
     'tree3': {
       name: 'Metrics Analysis for renderer',
-      children: [{ nodeType: 'TRACK', id: 'foo2' }],
+      children: [{ nodeType: 'TRACK', id: 'foo1' }],
     },
     'tree4': {
       name: 'Renderer PID: 32423',
