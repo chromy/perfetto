@@ -11,7 +11,7 @@ export class Track extends LitElement {
   shell: TrackShell;
   content: TrackContent;
   type: string; //? Class? something;
-  public height = 100;
+  public height: number;
 
   constructor(private state: TrackState,
               private tCtx: TrackCanvasContext,
@@ -22,15 +22,15 @@ export class Track extends LitElement {
     super();
 
     this.type = 'slice'; //TODO: Infer
-    const height = this.height;
+    this.height = this.state.height;
 
-    this.shell = new TrackShell(height, this.width, this.state.name);
+    this.shell = new TrackShell(this.height, this.width, this.state.name);
     const contentWidth = this.shell.getContentWidth();
 
     const shellCp = this.shell.contentPosition;
     const contentX = new OffsetTimeScale(this.x, shellCp.left, contentWidth);
     const contentCtx = new TrackCanvasContext(this.tCtx, shellCp.left, shellCp.top);
-    const contentHeight = height - shellCp.top - shellCp.bottom;
+    const contentHeight = this.height - shellCp.top - shellCp.bottom;
 
     this.content = new SliceTrackContent(contentCtx, contentWidth,
         contentHeight, contentX, this.gps); //TODO: Infer
