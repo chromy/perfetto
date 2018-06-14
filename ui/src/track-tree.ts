@@ -162,7 +162,7 @@ export class TrackTree extends LitElement {
           childID => childID.nodeType === 'TRACK' ?
             this.idToChildTracks.get(childID.id) :
             this.idToChildTrackTrees.get(childID.id))
-        })}
+        }
       </div>
     </div>`;
   }
