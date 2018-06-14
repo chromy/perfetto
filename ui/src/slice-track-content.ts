@@ -21,7 +21,6 @@ export class SliceTrackContent extends TrackContent {
     super(tCtx, x, gps);
 
     this.color = this.getRandomColor();
-
     //this.vis = new SliceTrackContent();
   }
 
@@ -38,12 +37,20 @@ export class SliceTrackContent extends TrackContent {
       if(slice === this.selectedSlice) {
         this.tCtx.fillStyle = 'red';
       }
-      this.tCtx.fillRect(this.x.tsToPx(slice.start), 0,
-          this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start), 20);
+      const sliceWidth = this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start);
+      this.tCtx.fillRect(this.x.tsToPx(slice.start), 0, sliceWidth, 20);
 
-      if(slice === this.selectedSlice) {
-        this.tCtx.fillStyle = '#' + this.color;
+      let sliceText = '';
+      for(let i = 0; i < slice.title.length && sliceText.length * 20 < sliceWidth; i++) {
+        sliceText += slice.title[i];
       }
+      if(sliceText !== slice.title) {
+        sliceText += '..';
+      }
+      this.tCtx.fillStyle = '#000';
+      this.tCtx.fillText(sliceText, this.x.tsToPx(slice.start), 15);
+
+      this.tCtx.fillStyle = '#' + this.color;
     }
   }
 
@@ -58,10 +65,14 @@ export class SliceTrackContent extends TrackContent {
 
   private getRandomColor(): string
   {
-    const alphabet = '0123456789abcdef';
-    return [1,2,3,4,5,6].map(() =>
+    return this.getRandomString(6, '0123456789abcdef');
+  }
+
+  private getRandomString(length: number,
+                          alphabet: string = 'abcdefghijklmnopqrstuvwxzy') {
+    return new Array(length).fill(0).map(() =>
         alphabet[Math.round(Math.random()*(alphabet.length - 1))]
-    ).join('');
+      ).join('');
   }
 
   getHeight() : number {
