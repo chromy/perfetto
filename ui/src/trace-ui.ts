@@ -18,7 +18,7 @@ export class TraceUi extends LitElement {
 
   private cc: CanvasController;
   private overview: GlobalBrushTimeline;
-  private root: TrackTree;
+  private root: TrackTree | null;
   private pc: PanContent;
   //private overviewScale: TimeScale;
   private scale: TimeScale;
@@ -39,11 +39,13 @@ export class TraceUi extends LitElement {
     this.cc = new CanvasController(this.width, canvasHeight, this.height, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
 
-    const tracksCtx = new TrackCanvasContext(tCtx, 0, TraceUi.AXIS_HEIGHT);
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
-    this.root = new TrackTree(this.state.trackTree, this.state.tracks, tracksCtx,
-        contentWidth, new OffsetTimeScale(this.scale,0, this.width), state.gps);
-    this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
+    // TODO: This constructor has too many arguments. Need better state propagation.
+    this.root = this.state.rootTrackTree != null
+      ? this.root = this.createRootTree(this.state.rootTrackTree)
+      : null;
+    
+      this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
     this.pc = new PanContent(this.width,
         this.height,
@@ -52,8 +54,20 @@ export class TraceUi extends LitElement {
         reRender,
         (scrollTop: number) => this.cc.setScrollTop(scrollTop)
         );
-    this.cc.setMaxHeight(this.root.height);
+    this.cc.setMaxHeight(this.root ? this.root.height : 0);
     this.detailAxis = new DetailAxis(tCtx, this.width, TraceUi.AXIS_HEIGHT, this.scale);
+  }
+
+  private createRootTree(rootTrackTreeID: string) {
+    const tCtx = this.cc.getTrackCanvasContext();
+    const tracksCtx = new TrackCanvasContext(tCtx, 0, TraceUi.AXIS_HEIGHT);
+    // TODO: Maybe pass this in from the caller since it's already calculated once.
+    const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
+    // TODO: This constructor has too many arguments. Need better state propagation.
+    const rootTrackTreeState = this.state.trackTrees[rootTrackTreeID];
+    return new TrackTree(rootTrackTreeState, this.state.tracks, this.state.trackTrees,
+      tracksCtx, contentWidth, new OffsetTimeScale(this.scale,0, this.width),
+      this.state.gps);
   }
 
   public setState(state: State) {
@@ -61,11 +75,20 @@ export class TraceUi extends LitElement {
 
     this.overview.setState(this.state);
     this.pc.setState(this.state);
-    this.root.setState(this.state.trackTree, this.state.tracks, this.state.gps);
+    
+    if (this.state.rootTrackTree != null) {
+      const rootTrackTreeState = this.state.trackTrees[this.state.rootTrackTree];
+      if (this.root == null) {
+        this.root = this.createRootTree(this.state.rootTrackTree);
+      } else {
+        this.root.setState(rootTrackTreeState, this.state.tracks,
+          this.state.trackTrees, this.state.gps);
+      }
+    }
 
     const canvasHeight = 2 * this.height;
     this.cc.setHeight(canvasHeight);
-    this.cc.setMaxHeight(this.root.height);
+    this.cc.setMaxHeight(this.root ? this.root.height : 0);
 
     this._invalidateProperties();
   }
@@ -75,7 +98,7 @@ export class TraceUi extends LitElement {
         this.state.gps.endVisibleWindow);
 
     this.overview._invalidateProperties();
-    this.root._invalidateProperties();
+    if (this.root) this.root._invalidateProperties();
     this.pc._invalidateProperties();
     this.detailAxis.render();
 

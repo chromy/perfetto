@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { TraceBackendState, TraceBackendInfo, TraceBackendRequest, State, ConfigEditorState, FragmentParameters, createZeroState } from './state';
-import { TraceConfig } from './protos';
 import { createSender } from '../ipc';
 import { TraceProcessorBridge } from '../trace_processor';
+import { TraceConfig } from './protos';
+import { ConfigEditorState, FragmentParameters, State, TraceBackendInfo, TraceBackendRequest, TraceBackendState, TrackID, createZeroState } from './state';
 
 let gState: State = createZeroState();
 let gTracesController: TracesController|null = null;
@@ -181,6 +181,7 @@ class TraceController {
     }
     if (this.state === 'READY' && this.remoteTraceProcessorBridge) {
       for (const [id, track] of Object.entries(state.tracks)) {
+        console.log(state.tracks);
         if (this.seenTracks.has(id))
           continue;
         if (!track.query)
@@ -301,24 +302,25 @@ function dispatch(action: any) {
         id: ''+gLargestKnownId++,
         query: '',
       });
-      let trackIds = [];
+      const trackIds : TrackID[] = [];
       for (let i=0; i<8; i++) { 
         const id = ''+gLargestKnownId++;
         gState.tracks[id] = {
-          metadata: {
-            name: `CPU ${i}`,
-          },
+          name: `CPU ${i}`,
+          height: 100,
           query: `select * from sched_slices where cpu = ${i} limit 100;`,
         };
-        trackIds.push(id);
+        trackIds.push({ nodeType: 'TRACK', id});
       }
-      gState.trackTree = {
-        metadata: {
-          name: 'foo',
-          shellColor: 'red',
-        },
-        trackIds,
+
+      gState.trackTrees = {
+        "tree1": {
+          name: "CPU Trace",
+          children: trackIds,
+        }
       };
+
+      gState.rootTrackTree = 'tree1';
       break;
     }
     case 'query': {

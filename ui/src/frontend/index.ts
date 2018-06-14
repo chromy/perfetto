@@ -402,45 +402,49 @@ function main() {
   };
 
   gState.tracks = {
-    'foo1': { metadata: { name: "Slice Track 1"}, query: "" },
-    'foo2': { metadata: { name: "Slice Track 2"}, query: "" },
-    'foo3': { metadata: { name: "Slice Track 3"}, query: "" },
-    'foo4': { metadata: { name: "Slice Track 4"}, query: "" },
-    'foo5': { metadata: { name: "Slice Track 5"}, query: "" },
-    'foo6': { metadata: { name: "Slice Track 6"}, query: "" },
-    'foo7': { metadata: { name: "Slice Track 7"}, query: "" },
-    'foo8': { metadata: { name: "Slice Track 8"}, query: "" },
-    'foo9': { metadata: { name: "Slice Track 9"}, query: "" },
-    'foo10': { metadata: { name: "Slice Track 10"}, query: "" }
+    'foo1': { name: "Slice Track 1", height: 100, query: "" },
+    'foo2': { name: "Slice Track 2", height: 100, query: "" },
+    'foo3': { name: "Slice Track 3", height: 100, query: "" },
+    'foo4': { name: "Slice Track 4", height: 100, query: "" },
+    'foo5': { name: "Slice Track 5", height: 100, query: "" },
+    'foo6': { name: "Slice Track 6", height: 100, query: "" },
+    'foo7': { name: "Slice Track 7", height: 100, query: "" },
+    'foo8': { name: "Slice Track 8", height: 100, query: "" },
+    'foo9': { name: "Slice Track 9", height: 100, query: "" },
+    'foo10': { name: "Slice Track 10", height: 100, query: "" }
   };
 
-  gState.trackTree = {
-    metadata: {
+  gState.trackTrees = {
+    'tree1': {
       name: 'Trace 1: Pinpoint job 347',
-      shellColor: 'red'
+      children: [
+        { nodeType: 'TRACKTREE', id: 'tree2' },
+        { nodeType: 'TRACK', id: 'foo2'},
+        { nodeType: 'TRACK', id: 'foo3'},
+        { nodeType: 'TRACK', id: 'foo4'},
+        { nodeType: 'TRACK', id: 'foo5'},
+        { nodeType: 'TRACK', id: 'foo6'},
+        { nodeType: 'TRACK', id: 'foo7'},
+        { nodeType: 'TRACK', id: 'foo8'},
+        { nodeType: 'TRACK', id: 'foo9'},
+        { nodeType: 'TRACK', id: 'foo10'},    
+      ]
     },
-    children: [{
-      metadata: {
-        name: 'Renderer PID: 12341',
-        shellColor: 'blue'
-      },
-      children: []
-    }, {
-      metadata: {
-        name: 'Renderer PID: 32423',
-        shellColor: 'yellow'
-      },
-      children: [{
-        metadata: {
-          name: 'Metrics Analysis for renderer',
-          shellColor: 'green'
-        },
-        children: [],
-        trackIds: ['foo1']
-      }],
-      trackIds: ['foo2', 'foo3', 'foo4', 'foo5', 'foo6', 'foo7', 'foo8', 'foo9', 'foo10']
-    }]
-  };
+    'tree2': {
+      name: 'Renderer PID: 12341',
+      children: [],
+    },
+    'tree3': {
+      name: 'Metrics Analysis for renderer',
+      children: [{ nodeType: 'TRACK', id: 'foo2' }],
+    },
+    'tree4': {
+      name: 'Renderer PID: 32423',
+      children: [{nodeType: 'TRACKTREE', id: 'tree3'}],
+    },
+  }
+
+  gState.rootTrackTree = 'tree1';
 
   m.redraw();
 

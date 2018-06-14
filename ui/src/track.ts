@@ -23,7 +23,7 @@ export class Track extends LitElement {
     this.type = 'slice'; //TODO: Infer
     const height = 100;
 
-    this.shell = new TrackShell(height, this.width, this.state.metadata.name);
+    this.shell = new TrackShell(height, this.width, this.state.name);
     const contentWidth = this.shell.getContentWidth();
 
     const cp = this.contentPosition;

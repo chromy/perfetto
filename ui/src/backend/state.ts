@@ -52,9 +52,13 @@ interface State {
     start: number;
     end: number;
   };
-  trackTree: TrackTreeState;
+  rootTrackTree: string | null;
 
+  // TODO: Consider unifying track and tracktrees.
+  // TODO: This method of typing doesn't let us do a null check,
+  // even though it's possible for tracks[id] to be null.
   tracks: {[id: string]: TrackState},
+  trackTrees: {[id: string]: TrackTreeState}
   tracksData: {[id: string]: TrackData},
 }
 
@@ -63,20 +67,27 @@ export interface GlobalPositioningState {
   endVisibleWindow: number,
 }
 
+interface TrackTreeID {
+  nodeType: 'TRACKTREE',
+  id: string,
+}
+
+interface TrackID {
+  nodeType: 'TRACK',
+  id: string,
+}
+
+type TrackNodeID = TrackTreeID | TrackID;
+
 interface TrackTreeState {
-  metadata: {
-    name: string,
-    shellColor: string
-  };
-  children?: TrackTreeState[];
-  trackIds?: string[];
+  name: string, 
+  children: TrackNodeID[],
 }
 
 interface TrackState {
-  metadata: {
-    name: string,
-  };
-  query?: string;
+  name: string,
+  height: number,
+  query?: string,
 }
 
 interface TrackData {
@@ -98,16 +109,11 @@ function createZeroState(): State {
     config_commandline: "echo 'Create a config above'",
 
     tracks: {},
+    trackTrees: {},
     tracksData: {},
 
-    trackTree: {
-      metadata: {
-        name: '',
-        shellColor: '',
-      },
-      children: [],
-      trackIds: []
-    },
+    rootTrackTree: null,
+
     gps: {
       startVisibleWindow: 0,
       endVisibleWindow: 0,
@@ -126,6 +132,9 @@ export {
   TraceBackendRequest,
   TraceBackendState,
   TraceBackendInfo,
+  TrackID,
+  TrackNodeID,
+  TrackTreeID,
   TrackState,
   TrackTreeState,
   State,
