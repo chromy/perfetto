@@ -2,21 +2,23 @@ import {TrackCanvasContext} from './track-canvas-controller';
 import {TimeScale} from './time-scale';
 
 export class DetailAxis {
+  zeroWidth?: number;
 
   constructor(private tCtx: TrackCanvasContext, private width: number,
               private height: number, private x: TimeScale) {
-
   }
 
   render() {
-
-    this.tCtx.fillStyle = 'black';
+    this.tCtx.fillStyle = '#f3f8fe';
     this.tCtx.fillRect(0, 0, this.width, this.height);
 
-    this.tCtx.font = '18px Arial';
-    this.tCtx.strokeStyle = 'red';
-    this.tCtx.lineWidth = 2;
-    const widthPerLetter = 8;
+    this.tCtx.font = '300 18px Roboto Mono';
+    this.tCtx.strokeStyle = 'black';
+    this.tCtx.lineWidth = 1;
+
+    if (!this.zeroWidth)
+      this.zeroWidth = this.tCtx.measureText('0').width;
+    const widthPerLetter = this.zeroWidth;
 
     const limits = this.x.getTimeLimits();
     const range = limits.end - limits.start;
@@ -38,16 +40,17 @@ export class DetailAxis {
 
     for(let t = start; t <= limits.end; t += step) {
       const tRounded = Math.round(Math.round(t / step) * step);
-      const xPos = this.x.tsToPx(t);
+      // To get a sharp line you have to draw at X.5.
+      const xPos = Math.floor(this.x.tsToPx(t))+0.5;
 
       this.tCtx.beginPath();
       this.tCtx.moveTo(xPos, 30);
       this.tCtx.lineTo(xPos, this.height);
       this.tCtx.stroke();
 
-      this.tCtx.fillStyle = 'red';
+      this.tCtx.fillStyle = 'black';
       const text = tRounded.toString();
-      const offset = Math.floor(text.length / 2) * widthPerLetter + widthPerLetter / 2;
+      const offset = (text.length / 2) * widthPerLetter;
       this.tCtx.fillText(text, xPos - offset, 22);
     }
   }

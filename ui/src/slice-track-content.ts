@@ -27,7 +27,7 @@ export class SliceTrackContent extends TrackContent {
 
   draw() {
 
-    this.tCtx.fillStyle = 'black';
+    this.tCtx.fillStyle = '#f3f8fe';
     this.tCtx.fillRect(0, 0, this.width, this.height);
 
     this.drawGridLines();
@@ -111,7 +111,6 @@ export class SliceTrackContent extends TrackContent {
         width: ${this.width}px;
       }
       .content {
-        color: #fff;
         z-index: 10;
         position: absolute;
         top: 20px;

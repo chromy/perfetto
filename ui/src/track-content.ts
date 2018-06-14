@@ -29,7 +29,7 @@ export abstract class TrackContent extends LitElement {
   }
 
   protected drawGridLines(): void {
-    this.tCtx.strokeStyle = '#aa0000';
+    this.tCtx.strokeStyle = 'black';
     this.tCtx.lineWidth = 1;
 
     const limits = this.x.getTimeLimits();
@@ -48,7 +48,7 @@ export abstract class TrackContent extends LitElement {
     const start = Math.round(limits.start / step) * step;
 
     for(let t = start; t <= limits.end; t += step) {
-      const xPos = this.x.tsToPx(t);
+      const xPos = Math.floor(this.x.tsToPx(t))+0.5;
 
       this.tCtx.beginPath();
       this.tCtx.moveTo(xPos, 0);

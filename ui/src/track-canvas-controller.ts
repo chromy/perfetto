@@ -145,6 +145,10 @@ export class TrackCanvasContext {
     this.ctx.closePath();
   }
 
+  public measureText(text: string): TextMetrics {
+    return this.ctx.measureText(text);
+  }
+
   public fillText(text: string, x: number, y: number) {
     this.ctx.fillText(text, x + this.xOffset, y + this.yOffset);
   }
