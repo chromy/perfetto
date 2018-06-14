@@ -25,7 +25,7 @@ export class PanContent extends LitElement {
 
     this.scroller = document.createElement('div');
     this.scroller.className = 'scroller';
-    this.scroller.addEventListener('wheel', (e) => this.onWheel(e));
+    this.scroller.addEventListener('wheel', (e) => this.onWheel(e), { passive: true });
 
     this.handleKeyNavigation();
   }
