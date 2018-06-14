@@ -1,3 +1,5 @@
+import { State } from './backend/state';
+
 // TODO: Perhaps this definition should live somewhere else.
 export interface ThreadSlice {
   start: number,
@@ -56,8 +58,9 @@ class TraceDataStore {
 
   constructor() {}
 
-  initialize(rerenderCallback: () => any) {
+  initialize(stateGetter: () => State, rerenderCallback: () => any) {
     this.onNewDataReceived = rerenderCallback;
+    this.state = stateGetter;
   }
 
   // Currently unused.
@@ -93,13 +96,13 @@ class TraceDataStore {
     if (query.process == null || query.thread == null) return;
     const process = query.process;
     const threadData = this.processDataMap.get(process);
-    
+
     if (threadData == null) {
       // If we do not have data for this process, schedule a fetch and return. 
       this.fetchDataFromBackend(query);
       return;
     }
-    
+
     const cachedSlices = threadData.get(query.thread);
     if (cachedSlices == null) {
       // If we do not have data for this process, schedule a fetch and return. 
@@ -123,7 +126,11 @@ class TraceDataStore {
   }
 
   onNewDataReceived() {
-    throw new Error("Must be TraceDataStore must be initialized with rerender callback");
+    throw new Error("TraceDataStore must be initialized with rerender callback");
+  }
+
+  state(): State {
+    throw new Error("TraceDataStore must be initialized with stateGetter");
   }
 
   queryPending(query: TraceDataQuery) {
@@ -172,7 +179,7 @@ class TraceDataStore {
 
     const sliceStartBegin = Math.floor(query.start/50) * 50;
     const sliceStartEnd = query.end;
-    const slices = [];
+    let slices = [];
     for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
       slices.push({
         start: t,
@@ -182,6 +189,10 @@ class TraceDataStore {
         pid: query.process,
       });
     }
+
+    const tracksData = Object.values(this.state().tracksData);
+    if (tracksData.length > 0)
+      slices = tracksData[0].data;
 
     threadDataMap.set(query.thread, {
       start: query.start,

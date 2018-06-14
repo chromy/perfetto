@@ -22,7 +22,7 @@ export class CpuTimeline extends LitElement {
 
     this.setRandomCpuData();
 
-    setInterval(() => this.setRandomCpuData(), 2000);
+    //setInterval(() => this.setRandomCpuData(), 2000);
 
     this.path = document.createElementNS('http://www.w3.org/2000/svg', "path");
     this.path.setAttribute('stroke', '#d70');

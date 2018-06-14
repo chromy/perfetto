@@ -20,6 +20,13 @@
 
 namespace perfetto {
 namespace trace_processor {
+namespace {
+
+bool StartsWith(const char *s, const char *prefix) {
+  return strncmp(prefix, s, strlen(prefix)) == 0;
+}
+
+} // namespace
 
 TraceStorage::~TraceStorage() {}
 
@@ -35,8 +42,10 @@ void TraceStorage::PushSchedSwitch(uint32_t cpu,
   // If we had a valid previous event, then inform the storage about the
   // slice.
   if (prev->valid()) {
-    uint64_t duration = timestamp - prev->timestamp;
-    cpu_events_[cpu].AddSlice(prev->timestamp, duration, prev->prev_thread_id);
+    if (!StartsWith(prev_comm, "swapper") && prev_pid != 0) {
+      uint64_t duration = timestamp - prev->timestamp;
+      cpu_events_[cpu].AddSlice(prev->timestamp, duration, prev->prev_thread_id);
+    }
   }
 
   // If the this events previous pid does not match the previous event's next

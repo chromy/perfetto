@@ -104,7 +104,7 @@ export class SliceTrackContent extends TrackContent {
     return html`
     <style>
       .wrap {
-        background: #fff;
+        background: #f3f8fe;
         height: ${this.height}px;
         box-sizing: border-box;
         position: relative;

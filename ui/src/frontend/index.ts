@@ -266,7 +266,9 @@ const ViewerPage: m.Component = {
     const rect = root.getBoundingClientRect();
     const ui = new TraceUi(gState, rect.width, rect.height);
     render(html`${ui}`, root);
-    traceDataStore.initialize(() => ui._invalidateProperties());
+    traceDataStore.initialize(
+      () => gState,
+      () => ui._invalidateProperties());
   },
 
   onupdate(vnode) {

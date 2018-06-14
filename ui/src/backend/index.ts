@@ -188,8 +188,19 @@ class TraceController {
         this.seenTracks.add(id);
         this.remoteTraceProcessorBridge.query(track.query).then((result: any) => {
           console.log(result);
-          const data = {};
-          dispatch(updateTrackData(id, data));
+          let slices: any = [];
+          for (let i=0; i<result.numRecords; i++) {
+            const start = result.columns[0].ulongValues[i] - 81473011195345;
+            const length = result.columns[2].ulongValues[i];
+            slices.push({
+              start,
+              end: start + length,
+              title: 'SliceName',
+              tid: 0,
+              pid: 0,
+            });
+          }
+          dispatch(updateTrackData(id, slices));
         });
       }
     }
@@ -297,7 +308,7 @@ function dispatch(action: any) {
           metadata: {
             name: `CPU ${i}`,
           },
-          query: `select * from sched_slices where cpu = ${i};`,
+          query: `select * from sched_slices where cpu = ${i} limit 100;`,
         };
         trackIds.push(id);
       }
