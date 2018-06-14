@@ -152,7 +152,7 @@ class TraceDataStore {
     this.pendingQueries.push(widenedQuery);
     console.log("Fetching data from backend: ", query);
     // Toggle this line to introduce delay for testing.
-    await sleep(50);
+    //    await sleep(50);
     this.mockFetchDataFromBackend(widenedQuery);
     // TODO: Implement slice eviction.
     this.onNewDataReceived();
@@ -177,22 +177,23 @@ class TraceDataStore {
       this.processDataMap.set(query.process, threadDataMap);
     }
 
-    const sliceStartBegin = Math.floor(query.start/50) * 50;
-    const sliceStartEnd = query.end;
     let slices = [];
-    for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
-      slices.push({
-        start: t,
-        end: t + 50,
-        title: 'SliceName',
-        tid: query.thread,
-        pid: query.process,
-      });
-    }
-
-    const tracksData = Object.values(this.state().tracksData);
-    if (tracksData.length > 0)
+        const tracksData = Object.values(this.state().tracksData);
+    if (tracksData.length > 0) {
       slices = tracksData[0].data;
+    } else {
+      const sliceStartBegin = Math.floor(query.start/50) * 50;
+      const sliceStartEnd = query.end;
+      for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
+        slices.push({
+          start: t,
+          end: t + 50,
+          title: 'SliceName',
+          tid: query.thread,
+          pid: query.process,
+        });
+      }
+    }
 
     threadDataMap.set(query.thread, {
       start: query.start,
