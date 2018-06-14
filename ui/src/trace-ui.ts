@@ -54,7 +54,9 @@ export class TraceUi extends LitElement {
         reRender,
         (scrollTop: number) => this.cc.setScrollTop(scrollTop)
         );
-    this.cc.setMaxHeight(this.root ? this.root.height : 0);
+    const canvasMaxHeight = !this.root ? 0 :
+        this.root.height + TraceUi.AXIS_HEIGHT;
+    this.cc.setMaxHeight(canvasMaxHeight);
     this.detailAxis = new DetailAxis(tCtx, this.width, TraceUi.AXIS_HEIGHT, this.scale);
   }
 
@@ -88,7 +90,9 @@ export class TraceUi extends LitElement {
 
     const canvasHeight = 2 * this.height;
     this.cc.setHeight(canvasHeight);
-    this.cc.setMaxHeight(this.root ? this.root.height : 0);
+    const canvasMaxHeight = !this.root ? 0 :
+        this.root.height + TraceUi.AXIS_HEIGHT;
+    this.cc.setMaxHeight(canvasMaxHeight);
 
     this._invalidateProperties();
   }
