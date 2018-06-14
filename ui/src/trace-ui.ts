@@ -95,7 +95,6 @@ export class TraceUi extends LitElement {
     </style>
     
     <div id='ui' class="ui">
-      <h1>Trace UI</h1>
       ${this.overview}
       <div class="content">
         <div class="tracks-list">
