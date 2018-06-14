@@ -47,7 +47,7 @@ export class Track extends LitElement {
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 10, right: 0, bottom: 0, left: 0 };
+    return { top: 0, right: 0, bottom: 0, left: 0 };
   }
 
   get height() {

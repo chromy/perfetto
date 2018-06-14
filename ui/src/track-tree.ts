@@ -99,7 +99,7 @@ export class TrackTree extends LitElement {
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {
-    return { top: 92, right: 10, bottom: 20, left: 10 };
+    return { top: 0, right: 0, bottom: 0, left: 0 };
   }
 
   private createTrackCtx(xOffset: number, yOffset: number) {
