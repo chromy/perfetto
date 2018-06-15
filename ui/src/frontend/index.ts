@@ -220,7 +220,7 @@ const QueryPage = {
       if (id === trace.id) 
         request = trace; 
     }
-  
+
     if (!request)
       return [];
 
@@ -298,6 +298,7 @@ function readState(): State {
     return state;
 
   const fragment = m.route.get()
+
   if (fragment.startsWith('/config')) {
     state.fragment = '/config';
     readParam<boolean>('stream_to_host',
@@ -309,6 +310,11 @@ function readState(): State {
     readParam<string[]>('atrace_categories',
       v => v.forEach((c: string) =>
         state.config_editor.atrace_categories[c] = true));
+  } else {
+    for (const route of ["/home", "/config", "/viewer", "/query"]) {
+      if (fragment.startsWith(route))
+        state.fragment = route;
+    }
   }
 
   return state;
