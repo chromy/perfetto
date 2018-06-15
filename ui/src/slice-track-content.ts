@@ -12,7 +12,7 @@ export class SliceTrackContent extends TrackContent {
 
   private selectedSlice: ThreadSlice|null = null;
   private color: string;
-
+  private letterWidth: number|null = null;
 
   constructor(protected tCtx: TrackCanvasContext,
               private width: number,
@@ -26,6 +26,8 @@ export class SliceTrackContent extends TrackContent {
   }
 
   draw() {
+    if (!this.letterWidth)
+      this.letterWidth = this.tCtx.measureText('0').width;
 
     this.tCtx.fillStyle = '#f3f8fe';
     this.tCtx.fillRect(0, 0, this.width, this.height);
@@ -41,16 +43,22 @@ export class SliceTrackContent extends TrackContent {
       const sliceWidth: Pixels = this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start);
       this.tCtx.fillRect(this.x.tsToPx(slice.start), 0, sliceWidth, 20);
 
-      let sliceText = '';
-      for(let i = 0; i < slice.title.length && sliceText.length * 20 < sliceWidth; i++) {
-        sliceText += slice.title[i];
+      let sliceText = null;
+      const numLetters = Math.floor((sliceWidth-20) / this.letterWidth);
+      // Three cases:
+      if (slice.title.length <= numLetters) {
+        // Whole text fits.
+        sliceText = slice.title;
+      } else if (numLetters >= 6) {
+        // Fit at least three chars + ...
+        sliceText = slice.title.slice(0, numLetters - 3) + '...';
+      } else {
+        // No text fits.
+        continue;
       }
-      if(sliceText !== slice.title) {
-        sliceText += '..';
-      }
+
       this.tCtx.fillStyle = '#000';
       this.tCtx.fillText(sliceText, this.x.tsToPx(slice.start), 15);
-
       this.tCtx.fillStyle = '#' + this.color;
     }
   }
