@@ -261,14 +261,13 @@ function table(result: any): any {
 
 const ViewerPage: m.Component = {
   oncreate(vnode) {
-    //reinitializeUI(vnode);
+    traceDataStore.initialize(
+      () => gState,
+      () => ui._invalidateProperties());
     const root = vnode.dom;
     const rect = root.getBoundingClientRect();
     const ui = new TraceUi(gState, rect.width, rect.height);
     render(html`${ui}`, root);
-    traceDataStore.initialize(
-      () => gState,
-      () => ui._invalidateProperties());
   },
 
   onupdate(vnode) {
