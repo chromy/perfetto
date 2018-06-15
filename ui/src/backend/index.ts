@@ -131,6 +131,14 @@ function updateTrackData(id: string, data: any) {
   };
 }
 
+function updateMaxVisibleWindow(start: number, end: number) {
+  return {
+    topic: 'update_max_visible_window',
+    start,
+    end
+  }
+}
+
 
 class TraceController {
   id: string;
@@ -193,7 +201,7 @@ class TraceController {
     if (this.state === 'READY' && this.remoteTraceProcessorBridge) {
       for (let [id, track] of Object.entries(state.tracks)) {
         if (track == null) continue;  // TS being a little too pedantic here.
-        console.log(state.tracks);
+        //console.log(state.tracks);
         if (this.seenTracks.has(id))
           continue;
         if (!track.query)
@@ -202,20 +210,38 @@ class TraceController {
         this.remoteTraceProcessorBridge.query(track.query).then((result: any) => {
           console.log(result);
           let slices: any = [];
+          let maxVisibleWindowChanged = false;
+          let maxVisibleWindowStart = gState.maxVisibleWindow.start;
+          let maxVisibleWindowEnd = gState.maxVisibleWindow.end;
+
           for (let i=0; i<result.numRecords; i++) {
             const start = result.columns[0].ulongValues[i] - 81473011195345;
             const length = result.columns[2].ulongValues[i];
+            const end = start + length;
             const pid = result.columns[3].ulongValues[i];
             slices.push({
               start,
-              end: start + length,
+              end: end,
               title: pidToName(pid),
               color: pidToColor(pid),
               tid: 0,
               pid,
             });
+
+            if(start < maxVisibleWindowStart) {
+              maxVisibleWindowChanged = true;
+              maxVisibleWindowStart = start;
+            }
+            if(end > maxVisibleWindowEnd) {
+              maxVisibleWindowChanged = true;
+              maxVisibleWindowEnd = end;
+            }
           }
           dispatch(updateTrackData(id, slices));
+          if(maxVisibleWindowChanged) {
+            dispatch(updateMaxVisibleWindow(maxVisibleWindowStart,
+                maxVisibleWindowEnd));
+          }
         });
       }
     }
@@ -362,6 +388,11 @@ function dispatch(action: any) {
       gState.tracksData[id] = {
         data,
       };
+      break;
+    }
+    case 'update_max_visible_window': {
+      gState.maxVisibleWindow.start = action.start;
+      gState.maxVisibleWindow.end = action.end;
       break;
     }
     default:
