@@ -36,6 +36,20 @@ export class DetailAxis {
     }
     // TODO: Figure out sub 1 labels.
 
+    let unit = 'ns';
+    let representationFactor = 1;
+
+    if(step >= 1000000) {
+      unit = 's';
+      representationFactor = 1 / 1000000;
+    } else if(step >= 1000) {
+      unit = 'ms';
+      representationFactor = 1 / 1000;
+    }
+
+    this.tCtx.fillStyle = 'black';
+    this.tCtx.fillText('Time in ' + unit, 10, 22);
+
     const start = Math.round(limits.start / step) * step;
 
     for(let t = start; t <= limits.end; t += step) {
@@ -49,7 +63,7 @@ export class DetailAxis {
       this.tCtx.stroke();
 
       this.tCtx.fillStyle = 'black';
-      const text = tRounded.toString();
+      const text = (tRounded * representationFactor).toString();
       const offset = (text.length / 2) * widthPerLetter;
       this.tCtx.fillText(text, xPos - offset, 22);
     }
