@@ -70,6 +70,7 @@ sqlite3_module SchedSliceTable::CreateModule() {
                                    "ts UNSIGNED BIG INT, "
                                    "cpu UNSIGNED INT, "
                                    "dur UNSIGNED BIG INT, "
+                                   "pid UNSIGNED BIG INT, "
                                    "PRIMARY KEY(cpu, ts)"
                                    ") WITHOUT ROWID;");
     if (res != SQLITE_OK)
@@ -240,6 +241,11 @@ int SchedSliceTable::Cursor::Column(sqlite3_context* context, int N) {
       auto duration =
           static_cast<sqlite3_int64>(slices.durations()[state.index]);
       sqlite3_result_int64(context, duration);
+      break;
+    }
+    case Column::kPid: {
+      auto pid = static_cast<int32_t>(slices.pids()[state.index]);
+      sqlite3_result_int(context, pid);
       break;
     }
   }

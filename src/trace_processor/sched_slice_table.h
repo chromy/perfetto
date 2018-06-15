@@ -93,7 +93,7 @@ class SchedSliceTable {
   int Open(sqlite3_vtab_cursor** ppCursor);
 
  private:
-  enum Column { kTimestamp = 0, kCpu = 1, kDuration = 2 };
+  enum Column { kTimestamp = 0, kCpu = 1, kDuration = 2, kPid = 3 };
 
   sqlite3_vtab base_;  // Must be first.
   const TraceStorage* const storage_;

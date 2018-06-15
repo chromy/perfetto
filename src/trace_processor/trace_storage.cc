@@ -44,7 +44,9 @@ void TraceStorage::PushSchedSwitch(uint32_t cpu,
   if (prev->valid()) {
     if (!StartsWith(prev_comm, "swapper") && prev_pid != 0) {
       uint64_t duration = timestamp - prev->timestamp;
-      cpu_events_[cpu].AddSlice(prev->timestamp, duration, prev->prev_thread_id);
+      cpu_events_[cpu].AddSlice(prev->timestamp, duration,
+                                prev->prev_thread_id, 
+                                prev->prev_thread_id);
     }
   }
 

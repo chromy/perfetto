@@ -173,7 +173,6 @@ class TraceController {
       this.remoteTraceProcessorBridge &&
       request.needs_update) {
       this.remoteTraceProcessorBridge.query(request.query).then((x: any) => {
-        console.log(x);
         this.result = x;
         dispatch(updateDone(this.id));
         dispatch(publishBackend(this.details()));
@@ -194,12 +193,13 @@ class TraceController {
           for (let i=0; i<result.numRecords; i++) {
             const start = result.columns[0].ulongValues[i] - 81473011195345;
             const length = result.columns[2].ulongValues[i];
+            const pid = result.columns[3].ulongValues[i];
             slices.push({
               start,
               end: start + length,
               title: 'SliceName',
               tid: 0,
-              pid: 0,
+              pid: pid,
             });
           }
           dispatch(updateTrackData(id, slices));

@@ -40,10 +40,12 @@ class TraceStorage {
    public:
     inline void AddSlice(uint64_t start_ns,
                          uint64_t duration_ns,
+                         uint32_t pid,
                          StringId thread_name_id) {
       start_ns_.emplace_back(start_ns);
       durations_.emplace_back(duration_ns);
       thread_names_.emplace_back(thread_name_id);
+      pids_.emplace_back(pid);
     }
 
     size_t slice_count() const {
@@ -58,11 +60,16 @@ class TraceStorage {
       return durations_;
     }
 
+    const std::deque<uint32_t>& pids() const {
+      return pids_;
+    }
+
    private:
     // Each vector below has the same number of entries (the number of slices
     // in the trace for the CPU).
     std::deque<uint64_t> start_ns_;
     std::deque<uint64_t> durations_;
+    std::deque<uint32_t> pids_;
     std::deque<StringId> thread_names_;
   };
 
