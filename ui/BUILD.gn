@@ -67,6 +67,37 @@ template("node_bin") {
   }
 }
 
+template("node_bin_multi") {
+  action_foreach(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "sources",
+                             "inputs",
+                             "outputs",
+                           ])
+    deps = [
+      ":node_modules",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    script = "../gn/standalone/build_tool_wrapper.py"
+    _node_cmd = invoker.node_cmd
+    args = []
+    if (defined(invoker.suppress_stdout) && invoker.suppress_stdout) {
+      args += [ "--suppress_stdout" ]
+    }
+    if (defined(invoker.suppress_stderr) && invoker.suppress_stderr) {
+      args += [ "--suppress_stderr" ]
+    }
+    args += [
+              "--path=$nodejs_bin",
+              "node",
+              rebase_path("node_modules/.bin/$_node_cmd", root_build_dir),
+            ] + invoker.args
+  }
+}
+
 # +----------------------------------------------------------------------------+
 # | Bundles all *.js files together resolving CommonJS require() deps.         |
 # +----------------------------------------------------------------------------+
@@ -80,7 +111,7 @@ node_bin("main_bundle") {
   ]
   node_cmd = "rollup"
   inputs = [
-    "$target_out_dir/main.js",
+    "$target_out_dir/src/main.js",
     "rollup.config.js",
   ]
   outputs = [
@@ -105,7 +136,7 @@ node_bin("worker_bundle") {
   ]
   node_cmd = "rollup"
   inputs = [
-    "$target_out_dir/worker.js",
+    "$target_out_dir/src/worker.js",
     "rollup.config.js",
   ]
   outputs = [
@@ -130,7 +161,7 @@ node_bin("processor_bundle") {
   ]
   node_cmd = "rollup"
   inputs = [
-    "$target_out_dir/processor.js",
+    "$target_out_dir/src/processor.js",
     "rollup.config.js",
   ]
   outputs = [
@@ -206,42 +237,55 @@ node_bin("protos_to_ts") {
 # +----------------------------------------------------------------------------+
 
 # Builds all .ts sources in the repo that are reachable from |sources|.
-node_bin("transpile_all_ts") {
+node_bin_multi("transpile_all_ts") {
   sources = [
+    "src/backend/atrace.ts",
+    "src/backend/index.ts",
+    "src/backend/process_names.ts",
+    "src/backend/protos.ts",
+    "src/backend/state.ts",
+    "src/cpu-track-content-data.ts",
+    "src/cpu-track-content.ts",
+    "src/detail-axis.ts",
+    "src/frontend/index.ts",
+    "src/ipc.ts",
     "src/main.ts",
+    "src/overview-timeline/cpu-timeline.ts",
+    "src/overview-timeline/frames-timeline.ts",
+    "src/overview-timeline/global-brush-timeline.ts",
+    "src/pan-content.ts",
+    "src/processor.ts",
+    "src/slice-track-content.ts",
+    "src/time-scale.ts",
+    "src/trace-data-store.ts",
+    "src/trace-ui.ts",
+    "src/trace_processor/index.ts",
+    "src/track-canvas-controller.ts",
+    "src/track-content-data.ts",
+    "src/track-content.ts",
+    "src/track-shell.ts",
+    "src/track-tree.ts",
+    "src/track.ts",
     "src/worker.ts",
   ]
   deps = [
     ":dist_symlink",
     ":protos_to_ts",
   ]
-  inputs = sources + [ "tsconfig.json" ]
+  inputs = [
+    "tsconfig.json",
+    "src/polymer.d.ts",
+  ]
   outputs = [
-    "$target_out_dir/processor.js",
-    "$target_out_dir/main.js",
-    "$target_out_dir/worker.js",
+    "$target_out_dir/../{{source_dir}}/{{source_name_part}}.js",
   ]
 
-  # Find all *.ts files and pass them as input triggers. This does NOT affect
-  # which files will get built. This defines only the set of files that, when
-  # changes, will re-trigger this rule in ninja. The files that get transpiled
-  # are the transitive dependencies of |sources|.
-  all_ts_files = exec_script("../gn/standalone/glob.py",
-                             [
-                               "--root=" + rebase_path(".", root_build_dir),
-                               "--filter=*.ts",
-                               "--exclude=node_modules",
-                               "--exclude=dist",
-                             ],
-                             "list lines",
-                             [ "." ])
-  inputs += all_ts_files
   node_cmd = "tsc"
   args = [
     "--project",
     rebase_path(".", root_build_dir),
     "--outDir",
-    rebase_path(target_out_dir, root_build_dir),
+    rebase_path("$target_out_dir/src", root_build_dir),
   ]
 }
 
