@@ -1,6 +1,6 @@
 import {LitElement} from '@polymer/lit-element';
 import {TrackCanvasContext} from './track-canvas-controller';
-import {Milliseconds, OffsetTimeScale, Pixels} from './time-scale';
+import {Nanoseconds, OffsetTimeScale, Pixels} from './time-scale';
 import {GlobalPositioningState} from './backend/state';
 
 export abstract class TrackContent extends LitElement {
@@ -41,7 +41,7 @@ export abstract class TrackContent extends LitElement {
 
     const start = Math.round(limits.start / step) * step;
 
-    for(let t: Milliseconds = start; t <= limits.end; t += step) {
+    for(let t: Nanoseconds = start; t <= limits.end; t += step) {
       const xPos: Pixels = Math.floor(this.x.tsToPx(t))+0.5;
 
       this.tCtx.beginPath();

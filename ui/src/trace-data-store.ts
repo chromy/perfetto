@@ -1,5 +1,5 @@
 import { State } from './backend/state';
-import {Milliseconds} from './time-scale';
+import {Nanoseconds} from './time-scale';
 
 // TODO: Perhaps this definition should live somewhere else.
 export interface ThreadSlice {
@@ -13,8 +13,8 @@ export interface ThreadSlice {
 
 interface ThreadSliceCache {
   // Start and end time of data that we have cached.
-  start: Milliseconds;
-  end: Milliseconds;
+  start: Nanoseconds;
+  end: Nanoseconds;
 
   slices: ThreadSlice[];
 }

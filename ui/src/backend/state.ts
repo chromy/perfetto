@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Milliseconds, Pixels} from '../time-scale';
+import {Nanoseconds, Pixels} from '../time-scale';
 
 interface ConfigEditorState {
   stream_to_host: boolean,
@@ -55,8 +55,8 @@ interface State {
 
   gps: GlobalPositioningState;
   maxVisibleWindow: {
-    start: Milliseconds;
-    end: Milliseconds;
+    start: Nanoseconds;
+    end: Nanoseconds;
   };
   rootTrackTree: string | null;
 
@@ -67,8 +67,8 @@ interface State {
 }
 
 export interface GlobalPositioningState {
-  startVisibleWindow: Milliseconds,
-  endVisibleWindow: Milliseconds,
+  startVisibleWindow: Nanoseconds,
+  endVisibleWindow: Nanoseconds,
 }
 
 interface TrackTreeID {

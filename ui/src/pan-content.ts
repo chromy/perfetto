@@ -1,7 +1,7 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {State} from './backend/state';
 import {render} from 'lit-html';
-import {Milliseconds, Pixels, TimeScale} from './time-scale';
+import {Nanoseconds, Pixels, TimeScale} from './time-scale';
 
 export class PanContent extends LitElement {
 
@@ -64,7 +64,7 @@ export class PanContent extends LitElement {
           PanContent.ZOOM_OUT_PERCENTAGE_SPEED;
       const newT = t * percentage;
 
-      const zoomPosition: Milliseconds = this.scale.pxToTs(this.mouseXpos);
+      const zoomPosition: Nanoseconds = this.scale.pxToTs(this.mouseXpos);
       const zoomPositionPercentage = (zoomPosition -
           this.state.gps.startVisibleWindow) / t;
 
@@ -93,7 +93,7 @@ export class PanContent extends LitElement {
     let panning = false;
     const pan = (left: boolean) => {
       const leftFactor = left ? -1 : 1;
-      const panAmount: Milliseconds = this.scale.relativePxToTs(PanContent.PAN_SPEED);
+      const panAmount: Nanoseconds = this.scale.relativePxToTs(PanContent.PAN_SPEED);
       this.state.gps.startVisibleWindow += leftFactor * panAmount;
       this.state.gps.endVisibleWindow += leftFactor * panAmount;
 

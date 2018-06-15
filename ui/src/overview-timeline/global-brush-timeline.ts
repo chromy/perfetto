@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import {svg} from 'lit-html';
 import {ScaleTime} from 'd3-scale';
 import {CpuTimeline} from './cpu-timeline';
-import {TimeScale, Milliseconds, Pixels} from '../time-scale';
+import {TimeScale, Nanoseconds, Pixels} from '../time-scale';
 
 export class GlobalBrushTimeline extends LitElement {
 
@@ -91,7 +91,7 @@ export class GlobalBrushTimeline extends LitElement {
   private onMouseMove(e: MouseEvent) {
     if(this.brushHandleDragState) {
       const movedPx: Pixels = e.clientX - this.brushHandleDragState.lastXPos;
-      const movedTs: Milliseconds = this.scale.relativePxToTs(movedPx);
+      const movedTs: Nanoseconds = this.scale.relativePxToTs(movedPx);
 
       if(this.brushHandleDragState.isLeft) {
         this.state.gps.startVisibleWindow += movedTs;

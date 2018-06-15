@@ -1,14 +1,14 @@
 export class TimeScale {
 
-  constructor(private tStart: Milliseconds,
-              private tEnd: Milliseconds,
+  constructor(private tStart: Nanoseconds,
+              private tEnd: Nanoseconds,
               private pxStart: Pixels,
               private pxEnd: Pixels,
               private pxOffset: Pixels = 0) {
 
   }
 
-  public tsToPx(time: Milliseconds): Pixels {
+  public tsToPx(time: Nanoseconds): Pixels {
 
     /*if(time < this.tStart) return this.pxStart;
     if(time > this.tEnd) return this.pxEnd;*/
@@ -18,16 +18,16 @@ export class TimeScale {
     return this.pxStart + percentagePx - this.pxOffset;
   }
 
-  public pxToTs(px: Pixels): Milliseconds {
+  public pxToTs(px: Pixels): Nanoseconds {
     const percentage = (px - this.pxStart) / (this.pxEnd - this.pxStart);
     return this.tStart + percentage * (this.tEnd - this.tStart);
   }
 
-  public relativePxToTs(px: Pixels): Milliseconds {
+  public relativePxToTs(px: Pixels): Nanoseconds {
     return this.pxToTs(px) - this.pxToTs(0);
   }
 
-  public setTimeLimits(tStart: Milliseconds, tEnd: Milliseconds) {
+  public setTimeLimits(tStart: Nanoseconds, tEnd: Nanoseconds) {
     this.tStart = tStart;
     this.tEnd = tEnd;
   }
@@ -47,7 +47,7 @@ export class OffsetTimeScale {
               private width: Pixels) {
   }
 
-  public tsToPx(time: Milliseconds): Pixels {
+  public tsToPx(time: Nanoseconds): Pixels {
     const result = this.scale.tsToPx(time) - this.pxOffset;
     if(result < 0) return 0;
     if(result > this.width)
@@ -56,15 +56,15 @@ export class OffsetTimeScale {
     return result;
   }
 
-  public pxToTs(px: Pixels): Milliseconds {
+  public pxToTs(px: Pixels): Nanoseconds {
     return this.scale.pxToTs(px + this.pxOffset);
   }
 
-  public relativePxToTs(px: Pixels): Milliseconds {
+  public relativePxToTs(px: Pixels): Nanoseconds {
     return this.scale.pxToTs(px + this.pxOffset) - this.scale.pxToTs(0);
   }
 
-  public getTimeLimits(): {start: Milliseconds, end: Milliseconds} {
+  public getTimeLimits(): {start: Nanoseconds, end: Nanoseconds} {
     return this.scale.getTimeLimits();
   }
 }
@@ -75,4 +75,4 @@ export class OffsetTimeScale {
 // See: https://stackoverflow.com/a/43832165
 
 export enum Pixels {}
-export enum Milliseconds {}
+export enum Nanoseconds {}
