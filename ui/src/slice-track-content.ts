@@ -11,7 +11,6 @@ export class SliceTrackContent extends TrackContent {
   static get properties() { return { data: [String], selectedSlice: String }}
 
   private selectedSlice: ThreadSlice|null = null;
-  private color: string;
   private letterWidth: number|null = null;
 
   constructor(protected tCtx: TrackCanvasContext,
@@ -21,7 +20,6 @@ export class SliceTrackContent extends TrackContent {
               protected gps: GlobalPositioningState) {
     super(tCtx, height, x, gps);
 
-    this.color = this.getRandomColor();
     //this.vis = new SliceTrackContent();
   }
 
@@ -34,11 +32,14 @@ export class SliceTrackContent extends TrackContent {
 
     this.drawGridLines();
 
-    this.tCtx.fillStyle = '#' + this.color;
     const slices = this.getCurrentData();
     for (const slice of slices) {
-      if(slice === this.selectedSlice) {
+      if (slice === this.selectedSlice) {
         this.tCtx.fillStyle = 'red';
+      } else if (slice.color) {
+        this.tCtx.fillStyle = slice.color;
+      } else {
+        this.tCtx.fillStyle = 'pink';
       }
       const sliceWidth: Pixels = this.x.tsToPx(slice.end) - this.x.tsToPx(slice.start);
       this.tCtx.fillRect(this.x.tsToPx(slice.start), 0, sliceWidth, 20);
@@ -59,7 +60,6 @@ export class SliceTrackContent extends TrackContent {
 
       this.tCtx.fillStyle = '#000';
       this.tCtx.fillText(sliceText, this.x.tsToPx(slice.start), 15);
-      this.tCtx.fillStyle = '#' + this.color;
     }
   }
 
@@ -70,18 +70,6 @@ export class SliceTrackContent extends TrackContent {
       process: 1,
       thread: 1,
     });
-  }
-
-  private getRandomColor(): string
-  {
-    return this.getRandomString(6, '0123456789abcdef');
-  }
-
-  private getRandomString(length: number,
-                          alphabet: string = 'abcdefghijklmnopqrstuvwxzy') {
-    return new Array(length).fill(0).map(() =>
-        alphabet[Math.round(Math.random()*(alphabet.length - 1))]
-      ).join('');
   }
 
   getHeight() : number {

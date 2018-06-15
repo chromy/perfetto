@@ -17,12 +17,24 @@
 import { createSender } from '../ipc';
 import { TraceProcessorBridge } from '../trace_processor';
 import { TraceConfig } from './protos';
+import { processNames } from './process_names';
 import { ConfigEditorState, FragmentParameters, State, TraceBackendInfo, TraceBackendRequest, TraceBackendState, TrackID, createZeroState } from './state';
 
 let gState: State = createZeroState();
 let gTracesController: TracesController|null = null;
 let gLargestKnownId = 0;
 let gPort: MessagePort|null = null;
+
+function pidToName(id: number): string {
+  return processNames[id % processNames.length];
+}
+
+function pidToColor(pid: number): string {
+  const colors = [
+"rgb(262, 161, 161)", "rgb(150, 292, 193)", "rgb(177, 132, 210)", "rgb(287, 265, 128)", "rgb(128, 204, 221)", "rgb(228, 134, 184)", "rgb(204, 331, 158)", "rgb(152, 149, 220)", "rgb(281, 193, 146)", "rgb(133, 256, 209)", "rgb(195, 128, 202)", "rgb(268, 308, 130)", "rgb(134, 179, 223)", "rgb(249, 148, 171)", "rgb(167, 311, 181)", "rgb(167, 137, 215)", "rgb(290, 236, 133)", "rgb(128, 222, 218)", "rgb(215, 129, 192)", "rgb(230, 331, 145)", "rgb(145, 159, 222)", "rgb(270, 172, 155)", "rgb(142, 278, 200)",
+  ];
+  return colors[pid % colors.length];
+}
 
 function createConfig(state: ConfigEditorState): Uint8Array {
   const ftraceEvents: string[] = [];
@@ -197,9 +209,10 @@ class TraceController {
             slices.push({
               start,
               end: start + length,
-              title: 'SliceName',
+              title: pidToName(pid),
+              color: pidToColor(pid),
               tid: 0,
-              pid: pid,
+              pid,
             });
           }
           dispatch(updateTrackData(id, slices));

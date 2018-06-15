@@ -8,6 +8,7 @@ export interface ThreadSlice {
   title: string,
   tid: number,
   pid: number,
+  color?: string,
 }
 
 interface ThreadSliceCache {
