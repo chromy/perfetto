@@ -395,6 +395,14 @@ function dispatch(action: any) {
       gState.maxVisibleWindow.end = action.end;
       break;
     }
+    case 'slice_selected': {
+      gState.selection = {
+        tid: action.tid,
+        pid: action.pid,
+        index: action.index
+      };
+      break;
+    }
     default:
       break
   }

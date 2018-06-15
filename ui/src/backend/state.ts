@@ -59,6 +59,11 @@ interface State {
     end: Nanoseconds;
   };
   rootTrackTree: string | null;
+  selection?: {
+    tid: number,
+    pid: number,
+    index: number
+  };
 
   // TODO: Consider unifying track and tracktrees.
   tracks: ObjectByID<TrackState>;

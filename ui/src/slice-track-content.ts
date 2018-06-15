@@ -89,7 +89,7 @@ export class SliceTrackContent extends TrackContent {
 
         for (const slice of slices) {
           if(slice.start < t && slice.end > t && slice !== this.selectedSlice) {
-            this.selectedSlice = slice;
+            this.selectSlice(slice);
             deselect = false;
           }
         }
@@ -99,10 +99,25 @@ export class SliceTrackContent extends TrackContent {
       }
 
       if(deselect) {
-        this.selectedSlice = null;
+        this.deselectSlice();
       }
-
     }
+  }
+
+  private selectSlice(slice: ThreadSlice) {
+    this.selectedSlice = slice;
+
+    /*const action = {
+      title: 'slice_selected',
+      pid: 1,
+      tid: 1,
+      index: 3
+    };*/
+    //TODO: Dispatch to worker.
+  }
+
+  private deselectSlice() {
+    this.selectedSlice = null;
   }
 
   _render() {
