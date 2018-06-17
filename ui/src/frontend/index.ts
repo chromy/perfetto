@@ -263,11 +263,23 @@ const ViewerPage: m.Component = {
   oncreate(vnode) {
     traceDataStore.initialize(
       () => gState,
-      () => ui._invalidateProperties());
+      () => {
+        const traceUI : TraceUi = (window as any).traceUI;
+        if (traceUI) traceUI._invalidateProperties();
+      });
     const root = vnode.dom;
     const rect = root.getBoundingClientRect();
-    const ui = new TraceUi(gState, rect.width, rect.height);
-    render(html`${ui}`, root);
+
+    // Turns out we were creating trace ui multiple times. We need to fix this
+    // properly in the real UI (lots of things to think about - especially
+    // around how to get rid of all the internal objects like CanvasController
+    // created by Trace UI.) For now, just cache this on window.
+    if ((window as any).traceUI) {
+      (window as any).traceUI.setState(gState);
+    } else {
+      (window as any).traceUI = new TraceUi(gState, rect.width, rect.height);
+    }
+    render(html`${(window as any).traceUI}`, root);
   },
 
   onupdate(vnode) {

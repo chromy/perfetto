@@ -88,6 +88,16 @@ export class TrackTree extends LitElement {
 
       yOffset += this.getNodeHeight(childID);
     }
+
+    const childIDs = new Set(this.trackTreeState.children.map(c => c.id));
+
+    for (const id of this.idToChildTracks.keys()) {
+      if (!childIDs.has(id)) this.idToChildTracks.delete(id);
+    }
+
+    for (const id of this.idToChildTrackTrees.keys()) {
+      if (!childIDs.has(id)) this.idToChildTrackTrees.delete(id);
+    }
   }
 
   public setState(
@@ -102,6 +112,7 @@ export class TrackTree extends LitElement {
     this.gps = gps;
     this.trackDataById = trackDataById;
     this.updateChildren();
+    this._invalidateProperties();
   }
 
   static isTrackTreeState(state: (TrackTreeState | TrackState)): state is TrackTreeState {
