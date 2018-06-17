@@ -1,22 +1,12 @@
-import { State } from './backend/state';
+import { State, TrackSlice } from './backend/state';
 import {Nanoseconds} from './time-scale';
 
-// TODO: Perhaps this definition should live somewhere else.
-export interface ThreadSlice {
-  start: number,
-  end: number
-  title: string,
-  tid: number,
-  pid: number,
-  color?: string,
-}
-
-interface ThreadSliceCache {
+interface TrackSliceCache {
   // Start and end time of data that we have cached.
   start: Nanoseconds;
   end: Nanoseconds;
 
-  slices: ThreadSlice[];
+  slices: TrackSlice[];
 }
 
 export interface TraceDataQuery {
@@ -27,17 +17,17 @@ export interface TraceDataQuery {
 }
 
 function queryEquals(q1: TraceDataQuery, q2: TraceDataQuery) {
-  return q1.start == q2.start && 
+  return q1.start == q2.start &&
     q1.end == q2.end &&
     q1.process == q2.process &&
     q1.thread == q2.thread;
 }
 
-type ThreadDataMap = Map<number, ThreadSliceCache>;
+type ThreadDataMap = Map<number, TrackSliceCache>;
 type ProcessDataMap = Map<number, ThreadDataMap>;
 
-function getFirstIndexWhereTrue(slices: ThreadSlice[],
-    testFn: (slice: ThreadSlice) => Boolean) : number {
+function getFirstIndexWhereTrue(slices: TrackSlice[],
+    testFn: (slice: TrackSlice) => Boolean) : number {
   // TODO: This should be a binary search.
   for (let i = 0; i < slices.length; i++) {
     if (testFn(slices[i])) return i;
@@ -56,7 +46,7 @@ class TraceDataStore {
   // We need to figure out what the cache keys should be, and how data
   // expiration will work (LRU?)
   private processDataMap: ProcessDataMap = new Map();
-  private pendingQueries: TraceDataQuery[] = []; 
+  private pendingQueries: TraceDataQuery[] = [];
 
   constructor() {}
 
@@ -70,14 +60,14 @@ class TraceDataStore {
     for (let pid = 1; pid < 10; pid++) {
       const threadData : ThreadDataMap = new Map();
       for (let tid = 1; tid < 10; tid++) {
-        const slices : ThreadSlice[] = [];
+        const slices : TrackSlice[] = [];
         let nextStart = 0;
         for(let t = 0; t <= 250 && nextStart < 1000; t += 1) {
           const slice = {
             start: nextStart,
             end: nextStart + Math.round(Math.abs(Math.sin(t)*50)),
             title: 'SliceName',
-            tid: tid, 
+            tid: tid,
             pid: pid,
           };
           slices.push(slice);
@@ -100,14 +90,14 @@ class TraceDataStore {
     const threadData = this.processDataMap.get(process);
 
     if (threadData == null) {
-      // If we do not have data for this process, schedule a fetch and return. 
+      // If we do not have data for this process, schedule a fetch and return.
       this.fetchDataFromBackend(query);
       return;
     }
 
     const cachedSlices = threadData.get(query.thread);
     if (cachedSlices == null) {
-      // If we do not have data for this process, schedule a fetch and return. 
+      // If we do not have data for this process, schedule a fetch and return.
       this.fetchDataFromBackend(query);
       return;
     }
@@ -163,7 +153,7 @@ class TraceDataStore {
   // Currently unused.
   checkCacheHit(query: TraceDataQuery) {
     if (query.process == null || query.thread == null) return false;
-    const threadData = this.processDataMap.get(query.process);    
+    const threadData = this.processDataMap.get(query.process);
     if (threadData == null) return false;
     const cachedSlices = threadData.get(query.thread);
     if (cachedSlices == null) return false;
@@ -172,7 +162,7 @@ class TraceDataStore {
 
   mockFetchDataFromBackend(query: TraceDataQuery) {
     if (query.process == null || query.thread == null) return;
-    let threadDataMap = 
+    let threadDataMap =
         this.processDataMap.get(query.process);
     if (threadDataMap == null) {
       threadDataMap = new Map();
@@ -180,21 +170,15 @@ class TraceDataStore {
     }
 
     let slices = [];
-        const tracksData = Object.values(this.state().tracksData);
-    if (tracksData.length > 0) {
-      slices = tracksData[0]!.data;
-    } else {
-      const sliceStartBegin = Math.floor(query.start/50) * 50;
-      const sliceStartEnd = query.end;
-      for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
-        slices.push({
-          start: t,
-          end: t + 50,
-          title: 'SliceName',
-          tid: query.thread,
-          pid: query.process,
-        });
-      }
+
+    const sliceStartBegin = Math.floor(query.start/50) * 50;
+    const sliceStartEnd = query.end;
+    for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
+      slices.push({
+        start: t,
+        end: t + 50,
+        title: 'SliceName',
+      });
     }
 
     threadDataMap.set(query.thread, {

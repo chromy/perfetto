@@ -1,5 +1,5 @@
 import {LitElement, html} from '@polymer/lit-element';
-import {TrackState, GlobalPositioningState} from './backend/state';
+import {TrackState, GlobalPositioningState, TrackData} from './backend/state';
 import {TrackShell} from './track-shell';
 import {SliceTrackContent} from './slice-track-content';
 import {TrackContent} from './track-content';
@@ -17,7 +17,8 @@ export class Track extends LitElement {
               private tCtx: TrackCanvasContext,
               private width: number,
               private x: OffsetTimeScale,
-              private gps: GlobalPositioningState)
+              private gps: GlobalPositioningState,
+              private trackData: TrackData | undefined)
   {
     super();
 
@@ -33,15 +34,17 @@ export class Track extends LitElement {
     const contentHeight = this.height - shellCp.top - shellCp.bottom;
 
     this.content = new SliceTrackContent(contentCtx, contentWidth,
-        contentHeight, contentX, this.gps); //TODO: Infer
+        contentHeight, contentX, this.gps, this.trackData); //TODO: Infer
     contentCtx.setDimensions(this.width, contentHeight);
   }
 
-  public setState(state: TrackState, gps: GlobalPositioningState) {
+  public setState(state: TrackState, gps: GlobalPositioningState,
+      trackData: TrackData | undefined) {
     this.state = state;
     this.gps = gps;
+    this.trackData = trackData;
 
-    this.content.setGps(gps);
+    this.content.setState(this.gps, this.trackData);
   }
 
   _render() {

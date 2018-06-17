@@ -107,7 +107,7 @@ const Side = {
         m("img#logo[src='logo.png'][width=384px][height=384px]"),
         m("h1", "Perfetto"),
       ),
-      m('ul.items', 
+      m('ul.items',
         m('li', { onclick: quietDispatch(navigate('/home')) }, 'Home'),
         m('li', { onclick: quietDispatch(navigate('/viewer')) }, 'Trace Viewer'),
         m('li', { onclick: quietDispatch(navigate('/config')) }, 'Config Editor'),
@@ -144,7 +144,7 @@ const HomePage = {
     return [
       m(Menu, { title: "Home" }),
       m(Side),
-      m('#content.home', 
+      m('#content.home',
         m("input[type=file].center", {
           onchange: quietDispatch((e: any) => {
             const file: Blob = e.target.files.item(0);
@@ -153,7 +153,7 @@ const HomePage = {
         }, "Load trace"),
         gState.traces.length === 0
         ? m('span.center', 'No traces loaded')
-        : m('.traces', Object.values(gState.backends).map(b => 
+        : m('.traces', Object.values(gState.backends).map(b =>
             m('.trace-card', {
               class: `trace-backend-state-${b.state}`,
             },
@@ -217,8 +217,8 @@ const QueryPage = {
     const id = m.route.param('id');
     let request = null;
     for (const trace of gState.traces) {
-      if (id === trace.id) 
-        request = trace; 
+      if (id === trace.id)
+        request = trace;
     }
 
     if (!request)
@@ -407,16 +407,16 @@ function main() {
   };
 
   gState.tracks = {
-    'foo1': { name: "Slice Track 1", height: 100, query: "" },
-    'foo2': { name: "Slice Track 2", height: 100, query: "" },
-    'foo3': { name: "Slice Track 3", height: 100, query: "" },
-    'foo4': { name: "Slice Track 4", height: 100, query: "" },
-    'foo5': { name: "Slice Track 5", height: 100, query: "" },
-    'foo6': { name: "Slice Track 6", height: 100, query: "" },
-    'foo7': { name: "Slice Track 7", height: 100, query: "" },
-    'foo8': { name: "Slice Track 8", height: 100, query: "" },
-    'foo9': { name: "Slice Track 9", height: 100, query: "" },
-    'foo10': { name: "Slice Track 10", height: 100, query: "" }
+    'foo1': { id: 'foo1', name: "Slice Track 1", height: 100, query: "" },
+    'foo2': { id: 'foo2', name: "Slice Track 2", height: 100, query: "" },
+    'foo3': { id: 'foo3', name: "Slice Track 3", height: 100, query: "" },
+    'foo4': { id: 'foo4', name: "Slice Track 4", height: 100, query: "" },
+    'foo5': { id: 'foo5', name: "Slice Track 5", height: 100, query: "" },
+    'foo6': { id: 'foo6', name: "Slice Track 6", height: 100, query: "" },
+    'foo7': { id: 'foo7', name: "Slice Track 7", height: 100, query: "" },
+    'foo8': { id: 'foo8', name: "Slice Track 8", height: 100, query: "" },
+    'foo9': { id: 'foo9', name: "Slice Track 9", height: 100, query: "" },
+    'foo10': { id: 'foo10', name: "Slice Track 10", height: 100, query: "" }
   };
 
   gState.trackTrees = {
@@ -432,7 +432,7 @@ function main() {
         { nodeType: 'TRACK', id: 'foo7'},
         { nodeType: 'TRACK', id: 'foo8'},
         { nodeType: 'TRACK', id: 'foo9'},
-        { nodeType: 'TRACK', id: 'foo10'},    
+        { nodeType: 'TRACK', id: 'foo10'},
       ]
     },
     'tree2': {

@@ -44,7 +44,7 @@ export class TraceUi extends LitElement {
     this.root = this.state.rootTrackTree != null
       ? this.root = this.createRootTree(this.state.rootTrackTree)
       : null;
-    
+
       this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
     this.pc = new PanContent(this.width,
@@ -70,7 +70,7 @@ export class TraceUi extends LitElement {
     if (rootTrackTreeState == null) return null;
     return new TrackTree(rootTrackTreeState, this.state.tracks, this.state.trackTrees,
       tracksCtx, contentWidth, new OffsetTimeScale(this.scale,0, this.width),
-      this.state.gps);
+      this.state.gps, this.state.tracksData);
   }
 
   public setState(state: State) {
@@ -78,7 +78,7 @@ export class TraceUi extends LitElement {
 
     this.overview.setState(this.state);
     this.pc.setState(this.state);
-    
+
     if (this.state.rootTrackTree != null) {
       const rootTrackTreeState = this.state.trackTrees[this.state.rootTrackTree];
       if (rootTrackTreeState == null) return;
@@ -86,7 +86,7 @@ export class TraceUi extends LitElement {
         this.root = this.createRootTree(this.state.rootTrackTree);
       } else {
         this.root.setState(rootTrackTreeState, this.state.tracks,
-          this.state.trackTrees, this.state.gps);
+          this.state.trackTrees, this.state.gps, this.state.tracksData);
       }
     }
 
@@ -109,7 +109,7 @@ export class TraceUi extends LitElement {
     this.detailAxis.render();
 
     const panContentContent = html`
-        
+
       <style>
       :host {
         display: block;
@@ -122,7 +122,7 @@ export class TraceUi extends LitElement {
         top: ${TraceUi.AXIS_HEIGHT}px
       }
     </style>
-    
+
     <div id='ui' class="ui">
       ${this.overview}
       <div class="content">

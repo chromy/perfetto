@@ -1,5 +1,5 @@
 import { LitElement, html } from '@polymer/lit-element';
-import { GlobalPositioningState, TrackNodeID, TrackState, TrackTreeState, ObjectByID } from './backend/state';
+import { GlobalPositioningState, TrackNodeID, TrackState, TrackTreeState, ObjectByID, TrackData } from './backend/state';
 import { OffsetTimeScale } from './time-scale';
 import { Track } from './track';
 import { TrackCanvasContext } from './track-canvas-controller';
@@ -16,7 +16,8 @@ export class TrackTree extends LitElement {
               private tCtx: TrackCanvasContext,
               private width: number,
               private scale: OffsetTimeScale,
-              private gps: GlobalPositioningState) {
+              private gps: GlobalPositioningState,
+              private trackDataById: ObjectByID<TrackData>) {
     super();
     this.idToChildTracks = new Map();
     this.idToChildTrackTrees = new Map();
@@ -29,7 +30,7 @@ export class TrackTree extends LitElement {
       if (track == null) throw 'Non-existent track';
       return track.height;
     }
-    
+
     // Else, it's a tracktree.
     const trackTree = this.trackTrees[nodeID.id];
     if (trackTree == null) throw 'Non-existent track tree';
@@ -50,19 +51,20 @@ export class TrackTree extends LitElement {
     const cScale = new OffsetTimeScale(this.scale, this.contentPosition.left,
         reducedWidth);
     let yOffset = this.contentPosition.top + 1;  // 1px for border.
-    
+
     for (const childID of this.trackTreeState.children) {
       switch (childID.nodeType) {
         case 'TRACK': {  // Intentionally using new block.
           const childState = this.tracks[childID.id];
           if (childState == null) throw 'Non-existent track';
           const child = this.idToChildTracks.get(childID.id);
+          const trackData = this.trackDataById[childID.id];
           if (child == null) {
             const childTrackCtx = this.createTrackCtx(this.contentPosition.left, yOffset);
             this.idToChildTracks.set(childID.id,
-              new Track(childState, childTrackCtx, reducedWidth, cScale, this.gps));
+              new Track(childState, childTrackCtx, reducedWidth, cScale, this.gps, trackData));
           } else {
-            child.setState(childState, this.gps);
+            child.setState(childState, this.gps, trackData);
           }
           break;
         }
@@ -76,14 +78,14 @@ export class TrackTree extends LitElement {
             this.idToChildTrackTrees.set(childID.id,
               // TODO: Constructor takes in way too many things. Refactor.
               new TrackTree(childState, this.tracks, this.trackTrees,
-                childTrackCtx, reducedWidth, cScale, this.gps));
+                childTrackCtx, reducedWidth, cScale, this.gps, this.trackDataById));
           } else {
-            child.setState(childState, this.tracks, this.trackTrees, this.gps);
+            child.setState(childState, this.tracks, this.trackTrees, this.gps, this.trackDataById);
           }
           break;
         }
       }
-          
+
       yOffset += this.getNodeHeight(childID);
     }
   }
@@ -92,11 +94,13 @@ export class TrackTree extends LitElement {
       state: TrackTreeState,
       tracks: ObjectByID<TrackState>,
       trackTrees: ObjectByID<TrackTreeState>,
-      gps: GlobalPositioningState) {
+      gps: GlobalPositioningState,
+      trackDataById: ObjectByID<TrackData>) {
     this.trackTreeState = state;
     this.tracks = tracks;
     this.trackTrees = trackTrees;
     this.gps = gps;
+    this.trackDataById = trackDataById;
     this.updateChildren();
   }
 
@@ -143,13 +147,13 @@ export class TrackTree extends LitElement {
         box-sizing: border-box;
         position: relative;
         width: ${this.width}px;
-        border: 1px solid #777; 
+        border: 1px solid #777;
       }
       .content {
         position: absolute;
         top: ${this.contentPosition.top}px;
         left: ${this.contentPosition.left}px;
-        width: ${this.width - 
+        width: ${this.width -
     this.contentPosition.left - this.contentPosition.right + 'px'};
       }
       .titlebar {

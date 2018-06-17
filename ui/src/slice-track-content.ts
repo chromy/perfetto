@@ -1,24 +1,24 @@
 import {TrackContent} from './track-content';
 import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
-import {ThreadSlice, traceDataStore} from './trace-data-store';
 import {OffsetTimeScale, Pixels} from './time-scale';
-import { GlobalPositioningState } from './backend/state';
+import { GlobalPositioningState, TrackSlice, TrackData } from './backend/state';
+import { traceDataStore } from './trace-data-store';
 
 export class SliceTrackContent extends TrackContent {
-  //private state: TrackState | undefined;
-  //private vis: TrackContent;
   static get properties() { return { data: [String], selectedSlice: String }}
 
-  private selectedSlice: ThreadSlice|null = null;
+  private selectedSlice: TrackSlice|null = null;
   private letterWidth: number|null = null;
 
   constructor(protected tCtx: TrackCanvasContext,
               private width: number,
               protected height: number,
               protected x: OffsetTimeScale,
-              protected gps: GlobalPositioningState) {
-    super(tCtx, height, x, gps);
+              protected gps: GlobalPositioningState,
+              // TODO: Remove any here.
+              trackData: TrackData | undefined) {
+    super(tCtx, height, x, gps, trackData);
 
     //this.vis = new SliceTrackContent();
   }
@@ -64,6 +64,9 @@ export class SliceTrackContent extends TrackContent {
   }
 
   private getCurrentData() {
+    if (this.trackData) return this.trackData.data;
+
+    // This code path is only for mock data now.
     return traceDataStore.getData({
       start: this.gps.startVisibleWindow,
       end: this.gps.endVisibleWindow,
@@ -104,7 +107,7 @@ export class SliceTrackContent extends TrackContent {
     }
   }
 
-  private selectSlice(slice: ThreadSlice) {
+  private selectSlice(slice: TrackSlice) {
     this.selectedSlice = slice;
 
     /*const action = {

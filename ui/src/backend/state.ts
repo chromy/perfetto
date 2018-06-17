@@ -89,18 +89,27 @@ interface TrackID {
 type TrackNodeID = TrackTreeID | TrackID;
 
 interface TrackTreeState {
-  name: string, 
+  name: string,
   children: TrackNodeID[],
 }
 
 interface TrackState {
-  name: string,
-  height: Pixels,
-  query?: string,
+  id: string;
+  name: string;
+  height: Pixels;
+  query?: string;
 }
 
 interface TrackData {
-  data: any,
+  data: TrackSlice[],
+}
+
+// TODO: TrackSlice is a terrible name. Everything goes in a track.
+interface TrackSlice {
+  start: number;
+  end: number;
+  title: string;
+  color?: string;
 }
 
 function createZeroState(): State {
@@ -142,9 +151,11 @@ export {
   TraceBackendRequest,
   TraceBackendState,
   TraceBackendInfo,
+  TrackData,
   TrackID,
   TrackNodeID,
   TrackTreeID,
+  TrackSlice,
   TrackState,
   TrackTreeState,
   State,

@@ -39,7 +39,7 @@ function pidToColor(pid: number): string {
 function createConfig(state: ConfigEditorState): Uint8Array {
   const ftraceEvents: string[] = [];
   const atraceCategories = Object.keys(state.atrace_categories);
-  const sizeKb = state.buffer_size_kb ? state.buffer_size_kb : 1024; 
+  const sizeKb = state.buffer_size_kb ? state.buffer_size_kb : 1024;
   const durationMs = state.trace_duration_ms ? state.trace_duration_ms : 1000;
   const writeIntoFile = !!state.stream_to_host;
   const fileWritePeriodMs = writeIntoFile ? 1000 : 0;
@@ -201,14 +201,12 @@ class TraceController {
     if (this.state === 'READY' && this.remoteTraceProcessorBridge) {
       for (let [id, track] of Object.entries(state.tracks)) {
         if (track == null) continue;  // TS being a little too pedantic here.
-        //console.log(state.tracks);
         if (this.seenTracks.has(id))
           continue;
         if (!track.query)
           continue;
         this.seenTracks.add(id);
         this.remoteTraceProcessorBridge.query(track.query).then((result: any) => {
-          console.log(result);
           let slices: any = [];
           let maxVisibleWindowChanged = false;
           let maxVisibleWindowStart = gState.maxVisibleWindow.start;
@@ -224,8 +222,6 @@ class TraceController {
               end: end,
               title: pidToName(pid),
               color: pidToColor(pid),
-              tid: 0,
-              pid,
             });
 
             if(start < maxVisibleWindowStart) {
@@ -343,9 +339,10 @@ function dispatch(action: any) {
         query: '',
       });
       const trackIds : TrackID[] = [];
-      for (let i=0; i<8; i++) { 
+      for (let i=0; i<8; i++) {
         const id = ''+gLargestKnownId++;
         gState.tracks[id] = {
+          id,
           name: `CPU ${i}`,
           height: 100,
           query: `select * from sched_slices where cpu = ${i} limit 100;`,
@@ -419,7 +416,7 @@ function dispatch(action: any) {
 
 function main() {
   console.log('Hello from the worker!');
-  
+
   gTracesController = new TracesController();
 
   const any_self = (self as any);

@@ -1,7 +1,7 @@
 import {LitElement} from '@polymer/lit-element';
 import {TrackCanvasContext} from './track-canvas-controller';
 import {Nanoseconds, OffsetTimeScale, Pixels} from './time-scale';
-import {GlobalPositioningState} from './backend/state';
+import {GlobalPositioningState, TrackData} from './backend/state';
 
 export abstract class TrackContent extends LitElement {
 
@@ -14,12 +14,14 @@ export abstract class TrackContent extends LitElement {
   constructor(protected tCtx: TrackCanvasContext,
               protected height: number,
               protected x: OffsetTimeScale,
-              protected gps: GlobalPositioningState) {
+              protected gps: GlobalPositioningState,
+              protected trackData: TrackData | undefined) {
     super();
   }
 
-  public setGps(gps: GlobalPositioningState) {
+  public setState(gps: GlobalPositioningState, trackData: TrackData | undefined) {
     this.gps = gps;
+    this.trackData = trackData;
   }
 
   protected drawGridLines(): void {
