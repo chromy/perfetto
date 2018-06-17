@@ -1,4 +1,4 @@
-import { State, TrackSlice } from './backend/state';
+import { TrackSlice } from './backend/state';
 import {Nanoseconds} from './time-scale';
 
 interface TrackSliceCache {
@@ -50,9 +50,8 @@ class TraceDataStore {
 
   constructor() {}
 
-  initialize(stateGetter: () => State, rerenderCallback: () => any) {
+  initialize( rerenderCallback: () => any) {
     this.onNewDataReceived = rerenderCallback;
-    this.state = stateGetter;
   }
 
   // Currently unused.
@@ -119,10 +118,6 @@ class TraceDataStore {
 
   onNewDataReceived() {
     throw new Error("TraceDataStore must be initialized with rerender callback");
-  }
-
-  state(): State {
-    throw new Error("TraceDataStore must be initialized with stateGetter");
   }
 
   queryPending(query: TraceDataQuery) {

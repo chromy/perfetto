@@ -261,7 +261,6 @@ function table(result: any): any {
 const ViewerPage: m.Component = {
   oncreate(vnode) {
     traceDataStore.initialize(
-      () => stateStore.gState,
       () => {
         const traceUI : TraceUi = (window as any).traceUI;
         if (traceUI) traceUI._invalidateProperties();
