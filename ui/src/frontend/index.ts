@@ -20,9 +20,8 @@ import * as Atrace from  '../backend/atrace';
 import { TraceUi } from '../trace-ui';
 import { html, render } from 'lit-html';
 import { traceDataStore } from '../trace-data-store';
-
-let gState: State = createZeroState();
-let gDispatch: (msg: any) => void = _ => {};
+import stateStore from './ui-state-store';
+import dispatcher from './ui-dispatcher';
 
 function q(f: (e: any) => void): (e: any) => void {
   return function(e) {
@@ -35,9 +34,9 @@ function quietDispatch(action: ((e: any) => any)|any): (e: any) => void {
   return function(e: any): void {
     e.redraw = false;
     if (action instanceof Function) {
-      return gDispatch(action(e));
+      return dispatcher.gDispatch(action(e));
     }
-    return gDispatch(action);
+    return dispatcher.gDispatch(action);
   }
 }
 
@@ -151,9 +150,9 @@ const HomePage = {
             return loadTraceFile(file);
           }),
         }, "Load trace"),
-        gState.traces.length === 0
+        stateStore.gState.traces.length === 0
         ? m('span.center', 'No traces loaded')
-        : m('.traces', Object.values(gState.backends).map(b =>
+        : m('.traces', Object.values(stateStore.gState.backends).map(b =>
             m('.trace-card', {
               class: `trace-backend-state-${b.state}`,
             },
@@ -183,28 +182,28 @@ const ConfigPage = {
         m('.group', 'Trace Config'),
         m(Checkbox, {
           label: 'Stream to host',
-          checked: gState.config_editor.stream_to_host,
-          setter: (c: boolean) => gDispatch(setStreamToHost(c)),
+          checked: stateStore.gState.config_editor.stream_to_host,
+          setter: (c: boolean) => dispatcher.gDispatch(setStreamToHost(c)),
         }),
         m('label', m('input[type=number][min=0]', {
-            value: (gState.config_editor.trace_duration_ms || 0) / 1000,
-            onchange: q(m.withAttr('value', v => gDispatch(setTraceDuration(v)))),
+            value: (stateStore.gState.config_editor.trace_duration_ms || 0) / 1000,
+            onchange: q(m.withAttr('value', v => dispatcher.gDispatch(setTraceDuration(v)))),
         }), 'Trace duration (seconds)'),
         m('label', m('input[type=number][min=0]', {
-            value: (gState.config_editor.buffer_size_kb || 0) / 1024,
-            onchange: q(m.withAttr('value', v => gDispatch(setBufferSize(v)))),
+            value: (stateStore.gState.config_editor.buffer_size_kb || 0) / 1024,
+            onchange: q(m.withAttr('value', v => dispatcher.gDispatch(setBufferSize(v)))),
         }), 'Buffer size (mb)'),
         Atrace.categories.map(category =>
           m(Checkbox, {
             label: category.name,
-            checked: gState.config_editor.atrace_categories[category.tag],
-            setter: (c: boolean) => gDispatch(setCategory(category.tag, c)),
+            checked: stateStore.gState.config_editor.atrace_categories[category.tag],
+            setter: (c: boolean) => dispatcher.gDispatch(setCategory(category.tag, c)),
           }),
         ),
-        gState.config_commandline && [
-          m('code.block', gState.config_commandline),
+        stateStore.gState.config_commandline && [
+          m('code.block', stateStore.gState.config_commandline),
           m('button', {
-            onclick: () => copy(gState.config_commandline)
+            onclick: () => copy(stateStore.gState.config_commandline)
           }, 'Copy to clipboard'),
         ],
       ),
@@ -216,7 +215,7 @@ const QueryPage = {
   view: function() {
     const id = m.route.param('id');
     let request = null;
-    for (const trace of gState.traces) {
+    for (const trace of stateStore.gState.traces) {
       if (id === trace.id)
         request = trace;
     }
@@ -230,9 +229,9 @@ const QueryPage = {
       m('#content',
         m('input.big', {
             value: request.query,
-            onchange: q(m.withAttr('value', v => gDispatch(updateQuery(id, v)))),
+            onchange: q(m.withAttr('value', v => dispatcher.gDispatch(updateQuery(id, v)))),
         }),
-        table(gState.backends[id].result),
+        table(stateStore.gState.backends[id].result),
       ),
     ];
   },
@@ -262,7 +261,7 @@ function table(result: any): any {
 const ViewerPage: m.Component = {
   oncreate(vnode) {
     traceDataStore.initialize(
-      () => gState,
+      () => stateStore.gState,
       () => {
         const traceUI : TraceUi = (window as any).traceUI;
         if (traceUI) traceUI._invalidateProperties();
@@ -275,16 +274,16 @@ const ViewerPage: m.Component = {
     // around how to get rid of all the internal objects like CanvasController
     // created by Trace UI.) For now, just cache this on window.
     if ((window as any).traceUI) {
-      (window as any).traceUI.setState(gState);
+      (window as any).traceUI.setState(stateStore.gState);
     } else {
-      (window as any).traceUI = new TraceUi(gState, rect.width, rect.height);
+      (window as any).traceUI = new TraceUi(stateStore.gState, rect.width, rect.height);
     }
     render(html`${(window as any).traceUI}`, root);
   },
 
   onupdate(vnode) {
     const ui = (vnode.dom.firstElementChild as TraceUi);
-    ui.setState(gState);
+    ui.setState(stateStore.gState);
   },
 
   view() {
@@ -341,12 +340,12 @@ function tryReadState(): State {
 }
 
 function updateState(new_state: State): void {
-  const old_state = gState;
-  gState = new_state;
+  const old_state = stateStore.gState;
+  stateStore.gState = new_state;
 
   if (old_state.fragment == new_state.fragment) {
     if (new_state.fragment === '/config') {
-      m.route.set(gState.fragment, new_state.fragment_params, {
+      m.route.set(stateStore.gState.fragment, new_state.fragment_params, {
         replace: true,
         state: {
         }
@@ -356,7 +355,7 @@ function updateState(new_state: State): void {
     return;
   }
 
-  m.route.set(gState.fragment, new_state.fragment_params, {
+  m.route.set(stateStore.gState.fragment, new_state.fragment_params, {
     replace: false,
     state: {
     }
@@ -407,18 +406,18 @@ function main() {
     "/query/:id": QueryPage,
   });
 
-  gState = tryReadState();
+  stateStore.gState = tryReadState();
 
-  gState.gps = {
+  stateStore.gState.gps = {
     startVisibleWindow: 10,
     endVisibleWindow: 2000,
   };
-  gState.maxVisibleWindow = {
+  stateStore.gState.maxVisibleWindow = {
     start: 0,
     end: 10000,
   };
 
-  gState.tracks = {
+  stateStore.gState.tracks = {
     'foo1': { id: 'foo1', name: "Slice Track 1", height: 100, query: "" },
     'foo2': { id: 'foo2', name: "Slice Track 2", height: 100, query: "" },
     'foo3': { id: 'foo3', name: "Slice Track 3", height: 100, query: "" },
@@ -431,7 +430,7 @@ function main() {
     'foo10': { id: 'foo10', name: "Slice Track 10", height: 100, query: "" }
   };
 
-  gState.trackTrees = {
+  stateStore.gState.trackTrees = {
     'tree1': {
       name: 'Trace 1: Pinpoint job 347',
       children: [
@@ -461,14 +460,14 @@ function main() {
     },
   }
 
-  gState.rootTrackTree = 'tree1';
+  stateStore.gState.rootTrackTree = 'tree1';
 
   m.redraw();
 
-  gDispatch = worker.postMessage.bind(worker);
-  gDispatch({
+  dispatcher.initialize(worker.postMessage.bind(worker));
+  dispatcher.gDispatch({
     topic: 'init',
-    initial_state: gState,
+    initial_state: stateStore.gState,
   });
 }
 

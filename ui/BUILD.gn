@@ -266,6 +266,8 @@ node_bin_multi("transpile_all_ts") {
     "src/track-shell.ts",
     "src/track-tree.ts",
     "src/track.ts",
+    "src/frontend/ui-dispatcher.ts",
+    "src/frontend/ui-state-store.ts",
     "src/worker.ts",
   ]
   deps = [
