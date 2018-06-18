@@ -7,6 +7,7 @@ import {PanContent} from './pan-content';
 import {render} from 'lit-html';
 import {OffsetTimeScale, TimeScale} from './time-scale';
 import {DetailAxis} from './detail-axis';
+import {SideDetailPanel} from './slice-detail-panel';
 
 export class TraceUi extends LitElement {
 
@@ -23,6 +24,7 @@ export class TraceUi extends LitElement {
   //private overviewScale: TimeScale;
   private scale: TimeScale;
   private detailAxis: DetailAxis;
+  private detailPanel: SideDetailPanel;
 
   constructor(private state: State, private width: number,
               private height: number) {
@@ -58,6 +60,7 @@ export class TraceUi extends LitElement {
         this.root.height + TraceUi.AXIS_HEIGHT;
     this.cc.setMaxHeight(canvasMaxHeight);
     this.detailAxis = new DetailAxis(tCtx, this.width, TraceUi.AXIS_HEIGHT, this.scale);
+    this.detailPanel = new SideDetailPanel(this.state, contentWidth);
   }
 
   private createRootTree(rootTrackTreeID: string) {
@@ -78,6 +81,7 @@ export class TraceUi extends LitElement {
 
     this.overview.setState(this.state);
     this.pc.setState(this.state);
+    this.detailPanel.setState(this.state);
 
     if (this.state.rootTrackTree != null) {
       const rootTrackTreeState = this.state.trackTrees[this.state.rootTrackTree];
@@ -107,6 +111,7 @@ export class TraceUi extends LitElement {
     if (this.root) this.root._invalidateProperties();
     this.pc._invalidateProperties();
     this.detailAxis.render();
+    this.detailPanel._invalidateProperties();
 
     const panContentContent = html`
 
@@ -130,6 +135,7 @@ export class TraceUi extends LitElement {
           ${this.root}
         </div>
         ${this.cc}
+        ${this.detailPanel}
       </div>
     </div>
     `;

@@ -255,6 +255,7 @@ node_bin_multi("transpile_all_ts") {
     "src/overview-timeline/global-brush-timeline.ts",
     "src/pan-content.ts",
     "src/processor.ts",
+    "src/slice-detail-panel.ts",
     "src/slice-track-content.ts",
     "src/time-scale.ts",
     "src/trace-data-store.ts",

@@ -18,6 +18,12 @@ export interface TraceDataQuery {
   readonly thread?: number;
 }
 
+export interface TraceSliceDataQuery {
+  readonly process?: number;
+  readonly thread?: number;
+  readonly sliceId: string;
+}
+
 function queryEquals(q1: TraceDataQuery, q2: TraceDataQuery) {
   return q1.start == q2.start &&
     q1.end == q2.end &&
@@ -55,6 +61,31 @@ class TraceDataStore {
 
   initialize( rerenderCallback: () => any) {
     this.onNewDataReceived = rerenderCallback;
+  }
+
+  getSlice(query: TraceSliceDataQuery) {
+    //TODO: Fix code duplication
+    if (query.process == null || query.thread == null) return;
+    const process = query.process;
+    const threadData = this.processDataMap.get(process);
+
+    if (threadData == null) {
+      return;
+    }
+
+    const cachedSlices = threadData.get(query.thread);
+    if (cachedSlices == null) {
+      return;
+    }
+
+    const slices = cachedSlices.slices;
+    const ids = slices.map(s => s.id);
+    const index = ids.indexOf(query.sliceId);
+
+    if(index === -1) {
+      throw new Error('Slice Not Found');
+    }
+    return slices[index];
   }
 
   * getData(query: TraceDataQuery) {
