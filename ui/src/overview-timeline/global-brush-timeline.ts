@@ -54,7 +54,7 @@ export class GlobalBrushTimeline extends LitElement {
 
     this.setScales();
 
-    this.cpuTimeline = new CpuTimeline(this.state, this.x);
+    this.cpuTimeline = new CpuTimeline(this.state, this.scale);
   }
 
   public setState(state: State) {
@@ -65,7 +65,6 @@ export class GlobalBrushTimeline extends LitElement {
   }
 
   private setScales() {
-
     this.scale.setTimeLimits(this.state.maxVisibleWindow.start,
         this.state.maxVisibleWindow.end);
     this.x.domain([this.state.maxVisibleWindow.start,
@@ -217,7 +216,7 @@ export class GlobalBrushTimeline extends LitElement {
       on-mouseup="${() => { this.onMouseUp(); }}">
       <div class="brush">
         <div class="brush-left">
-          <div class="handle" 
+          <div class="handle"
             on-mousedown=${(e: MouseEvent) => { this.brushHandleMouseDown(e, true); }}>${handleBars}</div>
         </div>
         <div class="brush-right">

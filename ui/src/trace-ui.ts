@@ -47,7 +47,7 @@ export class TraceUi extends LitElement {
       ? this.root = this.createRootTree(this.state.rootTrackTree)
       : null;
 
-      this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
+    this.overview = new GlobalBrushTimeline(this.state, contentWidth, reRender);
     //const totalHeight = this.overview.height + this.root.height;
     this.pc = new PanContent(this.width,
         this.height,

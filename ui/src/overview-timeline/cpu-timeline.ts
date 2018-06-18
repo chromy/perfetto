@@ -1,22 +1,21 @@
-import {LitElement, html} from '@polymer/lit-element';
-import {State} from '../backend/state';
-import {render, svg} from 'lit-html';
+import { LitElement, html } from '@polymer/lit-element';
 import * as d3 from 'd3';
+import { render, svg } from 'lit-html';
+import { CpuDataPoint, State } from '../backend/state';
+import { TimeScale } from '../time-scale';
 
 export class CpuTimeline extends LitElement {
 
   private height = 100;
-  private cpuData: { time: number, cpu: number}[] = [];
+  private cpuData: CpuDataPoint[] = [];
   private path: SVGPathElement;
   private y: ((v: number) => number);
 
   static get properties() { return { height: Number, cpuData: [String] }}
 
-  constructor(private state: State, private x: ((v: number) => number))
+  constructor(private state: State, private scale: TimeScale)
   {
     super();
-
-    console.log(this.state);
 
     this.y = (cpu) => { return this.height - cpu * this.height };
 
@@ -31,6 +30,11 @@ export class CpuTimeline extends LitElement {
 
   public setState(state: State) {
     this.state = state;
+    if (this.state.traceCpuData.length > 0) {
+      this.cpuData = this.state.traceCpuData;
+      const maxCpu = Math.max(...this.cpuData.map(d => d.cpu));
+      this.y = (cpu) => (this.height - (cpu/ maxCpu) * this.height);
+    }
   }
 
   private setRandomCpuData()
@@ -51,7 +55,7 @@ export class CpuTimeline extends LitElement {
 
     for(const dataPoint of this.cpuData)
     {
-      d += this.x(dataPoint.time) +  ' ' + this.y(dataPoint.cpu) + ' L';
+      d += this.scale.tsToPx(dataPoint.time) +  ' ' + this.y(dataPoint.cpu) + ' L';
     }
     d = d.substr(0, d.length - 1);
 
