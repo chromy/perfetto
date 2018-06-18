@@ -95,10 +95,6 @@ export class SliceTrackContent extends TrackContent {
     return 100;
   }
 
-  public setWidth(width: number) {
-    this.width = width;
-  }
-
   onClick(e: MouseEvent) {
     if(e.target) {
       const eventTarget: HTMLElement = <HTMLElement> e.target;

@@ -29,8 +29,9 @@ export abstract class TrackContent extends LitElement {
     this.trackState = trackState;
   }
 
-  public setWidth(width: number) {
+  public setWidth(width: number, x: OffsetTimeScale) {
     this.width = width;
+    this.x = x;
   }
 
   protected drawGridLines(): void {

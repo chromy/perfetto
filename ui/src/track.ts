@@ -58,7 +58,7 @@ export class Track extends LitElement {
     const contentWidth = this.shell.getContentWidth();
     const shellCp = this.shell.contentPosition;
     this.contentX = new OffsetTimeScale(this.x, shellCp.left, contentWidth);
-    this.content.setWidth(contentWidth);
+    this.content.setWidth(contentWidth, this.contentX);
     this.contentCtx.setDimensions(this.width, contentHeight);
   }
 
