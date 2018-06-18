@@ -25,18 +25,40 @@ export class SideDetailPanel extends LitElement {
         <style>
           .wrap {
             height: 100px;
-            padding: 10px 15px;
+          }
+          header, .content {
+            padding: 8px 16px;
+          }
+          header {
+            background: #73a6ff;
+            font-weight: bold;
+          }
+          .id {
+            font-family: Roboto, sans-serif;
+            font-weight: normal;
+            font-size: 10px;
+          }
+          .id:before {
+            content: "("
+          }
+          .id:after {
+            content: ")"
           }
         </style>
         
-          <b>${this.slice.title}</b><br />
+        <header>
+          ${this.slice.title} 
+          <span class="id">ID: ${this.slice.id}</span>
+        </header>
+        <div class="content">
+          
           Start: ${this.slice.start} ns<br />
           End: ${this.slice.end} ns
         </div>
       `;
     }
     else {
-      content = html`  `;
+      content = html` `;
     }
 
     return html`
@@ -47,7 +69,7 @@ export class SideDetailPanel extends LitElement {
     }
     .wrap {
       box-sizing: border-box;
-      background: #73a6ff;
+      background: rgb(185,212,255);
       transition: height 200ms ease;
       height: 0;
       width: ${this.width}px;
