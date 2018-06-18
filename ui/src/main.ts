@@ -17,3 +17,15 @@
 import { main } from './frontend';
 
 main();
+
+let raf = () => {
+  const start = Date.now();
+  let i = 0;
+  while(Date.now() - start < 100) {
+    i++;
+  }
+  console.log(i);
+  requestAnimationFrame(raf);
+};
+
+raf();

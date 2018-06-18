@@ -114,8 +114,20 @@ export class TraceUi extends LitElement {
     this.detailPanel._invalidateProperties();
 
     const panContentContent = html`
+      ${this.overview}
+      <div class="content">
+        <div class="tracks-list">
+          ${this.root}
+        </div>
+        ${this.cc}
+      </div>
+    </div>
+    `;
 
-      <style>
+    render(panContentContent, this.pc);
+
+    return html`
+    <style>
       :host {
         display: block;
       }
@@ -127,23 +139,10 @@ export class TraceUi extends LitElement {
         top: ${TraceUi.AXIS_HEIGHT}px
       }
     </style>
-
     <div id='ui' class="ui">
-      ${this.overview}
-      <div class="content">
-        <div class="tracks-list">
-          ${this.root}
-        </div>
-        ${this.cc}
-        ${this.detailPanel}
-      </div>
+      ${this.pc}
+      ${this.detailPanel}
     </div>
-    `;
-
-    render(panContentContent, this.pc);
-
-    return html`
-    ${this.pc}
     `;
   }
 

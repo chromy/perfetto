@@ -16,7 +16,6 @@ export class SideDetailPanel extends LitElement {
   public setState(state: State) {
     this.state = state;
     this.slice = this.state.selection;
-    console.log(this.slice);
   }
 
   _render() {
@@ -42,6 +41,7 @@ export class SideDetailPanel extends LitElement {
       display: block;
       box-sizing: border-box;
       position: fixed;
+      /*will-change: transform;*/
       bottom: 0;
     }
     .wrap {
