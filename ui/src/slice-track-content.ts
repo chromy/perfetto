@@ -11,10 +11,10 @@ import uiDispatcher from './frontend/ui-dispatcher';
 import uiStateStore from './frontend/ui-state-store';
 
 // TODO: We might need a smarter way to address slices.
-function updateSliceSelection(sliceId: string | null) {
+function updateSliceSelection(slice: TrackSlice | null) {
   return {
     topic: 'update_slice_selection',
-    sliceId,
+    slice,
   }
 }
 
@@ -39,12 +39,14 @@ export class SliceTrackContent extends TrackContent {
 
     this.tCtx.fillStyle = '#f3f8fe';
     this.tCtx.fillRect(0, 0, this.width, this.height);
+    const selectedSliceId = uiStateStore.gState.selection ?
+        uiStateStore.gState.selection.id : '';
 
     this.drawGridLines();
 
     const slices = this.getCurrentData();
     for (const slice of slices) {
-      if (slice.id === uiStateStore.gState.selection) {
+      if (slice.id === selectedSliceId) {
         this.tCtx.fillStyle = 'red';
       } else if (slice.color) {
         this.tCtx.fillStyle = slice.color;
@@ -99,6 +101,8 @@ export class SliceTrackContent extends TrackContent {
       const bcr = <DOMRect> eventTarget.getBoundingClientRect();
       const rel = { x: e.clientX - bcr.x, y: e.clientY - bcr.y };
       let deselect = true;
+      const selectedSliceId = uiStateStore.gState.selection ?
+          uiStateStore.gState.selection.id : '';
 
       if(rel.y >= 0 && rel.y <= 20) {
         const t = this.x.pxToTs(rel.x);
@@ -106,7 +110,7 @@ export class SliceTrackContent extends TrackContent {
 
         for (const slice of slices) {
           if(slice.start < t && slice.end > t
-              && slice.id !== uiStateStore.gState.selection) {
+              && slice.id !== selectedSliceId) {
             this.selectSlice(slice);
             deselect = false;
           }
@@ -123,7 +127,7 @@ export class SliceTrackContent extends TrackContent {
   }
 
   private selectSlice(slice: TrackSlice) {
-    uiDispatcher.gDispatch(updateSliceSelection(slice.id));
+    uiDispatcher.gDispatch(updateSliceSelection(slice));
   }
 
   private deselectSlice() {

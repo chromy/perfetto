@@ -1,11 +1,10 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {State, TrackSlice} from './backend/state';
 import {TemplateResult} from 'lit-html';
-import {traceDataStore} from './trace-data-store';
 
 export class SideDetailPanel extends LitElement {
-  public height: number = 50;
-  private slice: TrackSlice|undefined;
+  public height: number = 100;
+  private slice: TrackSlice|null = null;
 
   constructor(private state: State, private width: number)
   {
@@ -16,20 +15,8 @@ export class SideDetailPanel extends LitElement {
 
   public setState(state: State) {
     this.state = state;
-
-
-    if(this.state.selection) {
-      this.slice = this.getSlice(this.state.selection);
-    }
-  }
-
-  private getSlice(sliceId: string): TrackSlice|undefined {
-    return traceDataStore.getSlice({
-      sliceId: sliceId,
-      process: 1,
-      thread: 1
-    });
-
+    this.slice = this.state.selection;
+    console.log(this.slice);
   }
 
   _render() {
@@ -37,8 +24,8 @@ export class SideDetailPanel extends LitElement {
     if(this.slice) {
       content = html`
         <div class="wrap">
-          ${this.slice.title}<br />
-          Start: ${this.slice.start} ns
+          <b>${this.slice.title}</b><br />
+          Start: ${this.slice.start} ns<br />
           End: ${this.slice.end} ns
         </div>
       `;
@@ -55,14 +42,13 @@ export class SideDetailPanel extends LitElement {
       display: block;
       box-sizing: border-box;
       position: fixed;
-      bottom: 25px;
+      bottom: 0;
     }
     .wrap {
       height: 100%;
       background: #73a6ff;
-      padding: 5px 10px;
-      border-radius: 5px;
-      margin: 8px;
+      padding: 10px 15px;
+      box-sizing: border-box;
     }
     </style>
     ${content}

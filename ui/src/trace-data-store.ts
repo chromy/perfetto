@@ -63,31 +63,6 @@ class TraceDataStore {
     this.onNewDataReceived = rerenderCallback;
   }
 
-  getSlice(query: TraceSliceDataQuery) {
-    //TODO: Fix code duplication
-    if (query.process == null || query.thread == null) return;
-    const process = query.process;
-    const threadData = this.processDataMap.get(process);
-
-    if (threadData == null) {
-      return;
-    }
-
-    const cachedSlices = threadData.get(query.thread);
-    if (cachedSlices == null) {
-      return;
-    }
-
-    const slices = cachedSlices.slices;
-    const ids = slices.map(s => s.id);
-    const index = ids.indexOf(query.sliceId);
-
-    if(index === -1) {
-      throw new Error('Slice Not Found');
-    }
-    return slices[index];
-  }
-
   * getData(query: TraceDataQuery) {
     // At the moment, we need either process or thread in the query.
     if (query.process == null || query.thread == null) return;

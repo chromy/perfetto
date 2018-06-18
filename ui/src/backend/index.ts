@@ -420,7 +420,7 @@ function dispatch(action: any) {
       break;
     }
     case 'update_slice_selection': {
-      gState.selection = action.sliceId;
+      gState.selection = action.slice;
       break;
     }
     default:
