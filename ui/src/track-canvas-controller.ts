@@ -57,6 +57,10 @@ export class CanvasController  extends LitElement {
     //TODO
   }
 
+  setWinHeight(winHeight: number) {
+    this.winHeight = winHeight;
+  }
+
   setHeight(height: number) {
     this.height = height;
     this.canvas.setAttribute('height', this.height.toString());

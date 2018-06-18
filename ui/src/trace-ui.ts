@@ -61,6 +61,8 @@ export class TraceUi extends LitElement {
     this.cc.setMaxHeight(canvasMaxHeight);
     this.detailAxis = new DetailAxis(tCtx, this.width, TraceUi.AXIS_HEIGHT, this.scale);
     this.detailPanel = new SideDetailPanel(this.state, contentWidth);
+
+    this.listenResize();
   }
 
   private createRootTree(rootTrackTreeID: string) {
@@ -103,6 +105,33 @@ export class TraceUi extends LitElement {
     this._invalidateProperties();
   }
 
+  listenResize() {
+    //TODO: Better resize detection needed. Didn't get it to work with event
+    // listeners.
+    let w: number = 0, h: number = 0;
+    let raf = () => {
+      if(this.offsetWidth && this.offsetHeight) {
+        const newH = this.offsetHeight - this.offsetTop;
+        if(w !== this.offsetWidth || h !== newH) {
+          w = this.offsetWidth;
+          h = newH;
+          this.resize(w, h);
+        }
+      }
+      requestAnimationFrame(raf);
+    };
+    raf();
+  }
+
+  resize(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+
+    this.cc.setWinHeight(this.height);
+    this.pc.setWinHeight(this.height);
+    this._invalidateProperties();
+  }
+
   _render() {
     this.scale.setTimeLimits(this.state.gps.startVisibleWindow,
         this.state.gps.endVisibleWindow);
@@ -130,9 +159,14 @@ export class TraceUi extends LitElement {
     <style>
       :host {
         display: block;
+        width: 100%;
+        height: 100%;
+        position: fixed;
       }
       .ui , .content {
         position: relative;
+        /*height: 100%;
+        overflow: hidden;*/
       }
       .tracks-list {
         position: relative;

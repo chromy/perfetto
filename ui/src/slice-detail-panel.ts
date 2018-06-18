@@ -3,7 +3,7 @@ import {State, TrackSlice} from './backend/state';
 import {TemplateResult} from 'lit-html';
 
 export class SideDetailPanel extends LitElement {
-  public height: number = 100;
+  public height: number = 0;
   private slice: TrackSlice|null = null;
 
   constructor(private state: State, private width: number)
@@ -16,6 +16,8 @@ export class SideDetailPanel extends LitElement {
   public setState(state: State) {
     this.state = state;
     this.slice = this.state.selection;
+
+    this.height = this.slice ? 100 : 0;
   }
 
   _render() {
@@ -23,9 +25,6 @@ export class SideDetailPanel extends LitElement {
     if(this.slice) {
       content = html`
         <style>
-          .wrap {
-            height: 100px;
-          }
           header, .content {
             padding: 8px 16px;
           }
@@ -71,7 +70,7 @@ export class SideDetailPanel extends LitElement {
       box-sizing: border-box;
       background: rgb(185,212,255);
       transition: height 200ms ease;
-      height: 0;
+      height: ${this.height}px;
       width: ${this.width}px;
       position: fixed;
       bottom: 0;

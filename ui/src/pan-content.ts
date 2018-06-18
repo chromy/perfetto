@@ -34,6 +34,11 @@ export class PanContent extends LitElement {
     this.state = state;
   }
 
+  public setWinHeight(windowHeight: number) {
+    this.windowHeight = windowHeight;
+    this._invalidateProperties();
+  }
+
   protected handleKeyNavigation() {
 
     let zooming = false;
@@ -172,6 +177,10 @@ export class PanContent extends LitElement {
     render(scrollerContent, this.scroller);
 
     return html`<style>
+      :host {
+        display: block;
+        height: 100%;
+      }
       .event-capture {
         width: ${this.width}px;
         height: ${this.windowHeight}px;
