@@ -108,8 +108,9 @@ export class TraceUi extends LitElement {
     let raf = () => {
       if(this.offsetWidth && this.offsetHeight) {
         const newH = this.offsetHeight - this.offsetTop;
-        if(w !== this.offsetWidth || h !== newH) {
-          w = this.offsetWidth;
+        const newW = this.offsetWidth - this.offsetLeft;
+        if(w !== newW || h !== newH) {
+          w = newW;
           h = newH;
           this.resize(w, h);
         }
@@ -132,7 +133,7 @@ export class TraceUi extends LitElement {
     this.pc.setWinDimensions(this.width, this.height);
     this.overview.setWidth(contentWidth);
     if(this.root) {
-      this.root.setWidth(this.width, new OffsetTimeScale(this.scale,0, this.width));
+      this.root.setWidth(contentWidth, new OffsetTimeScale(this.scale,0, this.width));
     }
     this.detailAxis.setWidth(this.width);
     this._invalidateProperties();
