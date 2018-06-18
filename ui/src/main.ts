@@ -18,6 +18,7 @@ import { main } from './frontend';
 
 main();
 
+/*
 let raf = () => {
   const start = Date.now();
   let i = 0;
@@ -28,4 +29,4 @@ let raf = () => {
   requestAnimationFrame(raf);
 };
 
-raf();
+raf();*/
