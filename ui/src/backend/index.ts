@@ -16,9 +16,9 @@
 
 import { createSender } from '../ipc';
 import { TraceProcessorBridge } from '../trace_processor';
-import { TraceConfig } from './protos';
 import { processNames } from './process_names';
-import { ConfigEditorState, FragmentParameters, State, TraceBackendInfo, TraceBackendRequest, TraceBackendState, TrackID, createZeroState } from './state';
+import { TraceConfig } from './protos';
+import { ConfigEditorState, FragmentParameters, State, TraceBackendInfo, TraceBackendRequest, TraceBackendState, TrackID, createZeroState, ObjectByID, TrackData } from './state';
 
 let gState: State = createZeroState();
 let gTracesController: TracesController|null = null;
@@ -110,6 +110,37 @@ function computeFragmentParams(state: State): FragmentParameters {
   return {};
 }
 
+// Taken from first prototype.
+function computeCpuTime(
+  tracksData: ObjectByID<TrackData>,
+  num_buckets: number,
+  traceDataWindow: {start: number, end: number}) {
+  const n = num_buckets;
+  const trace_duration_ns = traceDataWindow.end - traceDataWindow.start;
+  let bucket_size_ns = trace_duration_ns / num_buckets;
+  let buckets = [];
+  for (let i=0; i<n+1; i++) {
+    buckets.push({time: traceDataWindow.start + i * bucket_size_ns, cpu: 0});
+  }
+  for (const trackData of Object.values(tracksData)) {
+    if (trackData == null) throw 'trackData should not be null';
+    for (let slice of trackData.data) {
+      let first_bucket = Math.floor(
+        (slice.start - traceDataWindow.start) / bucket_size_ns);
+      let last_bucket = Math.ceil(
+        (slice.end - traceDataWindow.start) / bucket_size_ns);
+      for (let i=first_bucket; i<last_bucket; i++) {
+        let bucket_start = i * bucket_size_ns;
+        let bucket_end = bucket_start + bucket_size_ns;
+        let start = Math.max(bucket_start, slice.start);
+        let end = Math.min(bucket_end, slice.end);
+        buckets[i].cpu += Math.max(0, end - start);
+      }
+    }
+  }
+  return buckets;
+}
+
 function publishBackend(info: TraceBackendInfo) {
   return {
     topic: 'publish_backend',
@@ -130,14 +161,6 @@ function updateTrackData(id: string, data: any) {
     id,
     data,
   };
-}
-
-function updateMaxVisibleWindow(start: number, end: number) {
-  return {
-    topic: 'update_max_visible_window',
-    start,
-    end
-  }
 }
 
 
@@ -209,9 +232,6 @@ class TraceController {
         this.seenTracks.add(id);
         this.remoteTraceProcessorBridge.query(track.query).then((result: any) => {
           let slices: any = [];
-          let maxVisibleWindowChanged = false;
-          let maxVisibleWindowStart = gState.maxVisibleWindow.start;
-          let maxVisibleWindowEnd = gState.maxVisibleWindow.end;
 
           for (let i=0; i<result.numRecords; i++) {
             const start = result.columns[0].ulongValues[i] - 81473011195345;
@@ -225,21 +245,10 @@ class TraceController {
               title: pidToName(pid),
               color: pidToColor(pid),
             });
+          }
 
-            if(start < maxVisibleWindowStart) {
-              maxVisibleWindowChanged = true;
-              maxVisibleWindowStart = start;
-            }
-            if(end > maxVisibleWindowEnd) {
-              maxVisibleWindowChanged = true;
-              maxVisibleWindowEnd = end;
-            }
-          }
           dispatch(updateTrackData(id, slices));
-          if(maxVisibleWindowChanged) {
-            dispatch(updateMaxVisibleWindow(maxVisibleWindowStart,
-                maxVisibleWindowEnd));
-          }
+
         });
       }
     }
@@ -388,11 +397,26 @@ function dispatch(action: any) {
       gState.tracksData[id] = {
         data,
       };
-      break;
-    }
-    case 'update_max_visible_window': {
-      gState.maxVisibleWindow.start = action.start;
-      gState.maxVisibleWindow.end = action.end;
+
+      let maxVisibleWindowStart = +Infinity;
+      let maxVisibleWindowEnd = -Infinity;
+
+      for (const trackData of Object.values(gState.tracksData)) {
+        if (trackData == null) throw 'Cannot happen';
+        const trackDataStart = trackData.data[0].start;
+        const trackDataEnd = trackData.data[trackData.data.length - 1].end;
+        if (trackDataStart < maxVisibleWindowStart) {
+          maxVisibleWindowStart = trackDataStart;
+        }
+        if (trackDataEnd > maxVisibleWindowEnd) {
+          maxVisibleWindowEnd = trackDataEnd;
+        }
+      }
+
+      gState.maxVisibleWindow.start = maxVisibleWindowStart;
+      gState.maxVisibleWindow.end = maxVisibleWindowEnd;
+      gState.traceCpuData = computeCpuTime(gState.tracksData,
+          200, gState.maxVisibleWindow);
       break;
     }
     case 'update_slice_selection': {

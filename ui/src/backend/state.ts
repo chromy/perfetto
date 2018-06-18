@@ -64,6 +64,12 @@ interface State {
   tracks: ObjectByID<TrackState>;
   trackTrees: ObjectByID<TrackTreeState>;
   tracksData: ObjectByID<TrackData>;
+  traceCpuData: CpuDataPoint[];
+}
+
+interface CpuDataPoint {
+  time: number,
+  cpu: number,
 }
 
 export interface GlobalPositioningState {
@@ -125,6 +131,7 @@ function createZeroState(): State {
     tracks: {},
     trackTrees: {},
     tracksData: {},
+    traceCpuData: [],
 
     rootTrackTree: null,
 
@@ -143,6 +150,7 @@ function createZeroState(): State {
 export {
   createZeroState,
   FragmentParameters,
+  CpuDataPoint,
   ConfigEditorState,
   ObjectByID,
   TraceBackendRequest,
