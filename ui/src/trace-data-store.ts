@@ -1,6 +1,8 @@
 import { TrackSlice } from './backend/state';
 import {Nanoseconds} from './time-scale';
 
+let gUiMockSliceId = 0;
+
 interface TrackSliceCache {
   // Start and end time of data that we have cached.
   start: Nanoseconds;
@@ -47,39 +49,12 @@ class TraceDataStore {
   // expiration will work (LRU?)
   private processDataMap: ProcessDataMap = new Map();
   private pendingQueries: TraceDataQuery[] = [];
+  private terribleSliceCache: Map<string, TrackSlice> = new Map();
 
   constructor() {}
 
   initialize( rerenderCallback: () => any) {
     this.onNewDataReceived = rerenderCallback;
-  }
-
-  // Currently unused.
-  populateWithMockData() {
-    for (let pid = 1; pid < 10; pid++) {
-      const threadData : ThreadDataMap = new Map();
-      for (let tid = 1; tid < 10; tid++) {
-        const slices : TrackSlice[] = [];
-        let nextStart = 0;
-        for(let t = 0; t <= 250 && nextStart < 1000; t += 1) {
-          const slice = {
-            start: nextStart,
-            end: nextStart + Math.round(Math.abs(Math.sin(t)*50)),
-            title: 'SliceName',
-            tid: tid,
-            pid: pid,
-          };
-          slices.push(slice);
-          nextStart = slice.end + Math.round(Math.abs(Math.sin(t)*20));
-        }
-        threadData.set(tid, {
-          start: slices[0].start,
-          end: slices[slices.length - 1].end,
-          slices,
-        });
-      }
-      this.processDataMap.set(pid, threadData);
-    }
   }
 
   * getData(query: TraceDataQuery) {
@@ -164,16 +139,22 @@ class TraceDataStore {
       this.processDataMap.set(query.process, threadDataMap);
     }
 
-    let slices = [];
-
-    const sliceStartBegin = Math.floor(query.start/50) * 50;
+    const sliceStartBegin = Math.floor(query.start/100) * 100;
     const sliceStartEnd = query.end;
+    const slices : TrackSlice[] = [];
     for (let t = sliceStartBegin; t < sliceStartEnd; t+= 100) {
-      slices.push({
-        start: t,
-        end: t + 50,
-        title: 'SliceName',
-      });
+      const cacheKey = '' + t + '-' + query.thread + '-' + query.process;
+      let slice = this.terribleSliceCache.get(cacheKey);
+      if (slice == null) {
+        slice = {
+          id: 'mock-' + (gUiMockSliceId++),
+          start: t,
+          end: t + 50,
+          title: 'SliceName',
+        };
+        this.terribleSliceCache.set(cacheKey, slice);
+      }
+      slices.push(slice);
     }
 
     threadDataMap.set(query.thread, {

@@ -341,6 +341,9 @@ function tryReadState(): State {
 function updateState(new_state: State): void {
   const old_state = stateStore.gState;
   stateStore.gState = new_state;
+  // TODO: Hack - Preserve the old gps until we know how to sync frontend
+  // and backend gps.
+  stateStore.gState.gps = old_state.gps;
 
   if (old_state.fragment == new_state.fragment) {
     if (new_state.fragment === '/config') {

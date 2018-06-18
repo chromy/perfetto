@@ -34,7 +34,7 @@ export class Track extends LitElement {
     const contentHeight = this.height - shellCp.top - shellCp.bottom;
 
     this.content = new SliceTrackContent(contentCtx, contentWidth,
-        contentHeight, contentX, this.gps, this.trackData); //TODO: Infer
+        contentHeight, contentX, this.gps, this.trackData, this.state); //TODO: Infer
     contentCtx.setDimensions(this.width, contentHeight);
   }
 
@@ -44,7 +44,7 @@ export class Track extends LitElement {
     this.gps = gps;
     this.trackData = trackData;
 
-    this.content.setState(this.gps, this.trackData);
+    this.content.setState(this.gps, this.trackData, this.state);
   }
 
   _render() {

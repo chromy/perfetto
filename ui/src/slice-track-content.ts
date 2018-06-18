@@ -2,13 +2,25 @@ import {TrackContent} from './track-content';
 import {html} from 'lit-html/lib/lit-extended';
 import { TrackCanvasContext } from './track-canvas-controller';
 import {OffsetTimeScale, Pixels} from './time-scale';
-import { GlobalPositioningState, TrackSlice, TrackData } from './backend/state';
+import { GlobalPositioningState, TrackSlice, TrackData, TrackState } from './backend/state';
 import { traceDataStore } from './trace-data-store';
+import uiDispatcher from './frontend/ui-dispatcher';
+
+// TODO: Think about whether UI state store should be directly accessed by a
+// web component.
+import uiStateStore from './frontend/ui-state-store';
+
+// TODO: We might need a smarter way to address slices.
+function updateSliceSelection(sliceId: string | null) {
+  return {
+    topic: 'update_slice_selection',
+    sliceId,
+  }
+}
 
 export class SliceTrackContent extends TrackContent {
   static get properties() { return { data: [String], selectedSlice: String }}
 
-  private selectedSlice: TrackSlice|null = null;
   private letterWidth: number|null = null;
 
   constructor(protected tCtx: TrackCanvasContext,
@@ -16,11 +28,9 @@ export class SliceTrackContent extends TrackContent {
               protected height: number,
               protected x: OffsetTimeScale,
               protected gps: GlobalPositioningState,
-              // TODO: Remove any here.
-              trackData: TrackData | undefined) {
-    super(tCtx, height, x, gps, trackData);
-
-    //this.vis = new SliceTrackContent();
+              trackData: TrackData | undefined,
+              trackState: TrackState) {
+    super(tCtx, height, x, gps, trackData, trackState);
   }
 
   draw() {
@@ -34,7 +44,7 @@ export class SliceTrackContent extends TrackContent {
 
     const slices = this.getCurrentData();
     for (const slice of slices) {
-      if (slice === this.selectedSlice) {
+      if (slice.id === uiStateStore.gState.selection) {
         this.tCtx.fillStyle = 'red';
       } else if (slice.color) {
         this.tCtx.fillStyle = slice.color;
@@ -67,11 +77,15 @@ export class SliceTrackContent extends TrackContent {
     if (this.trackData) return this.trackData.data;
 
     // This code path is only for mock data now.
+    // TODO: Get proper process/thread instead of this giant hack.
+    const process = parseInt(this.trackState.id.substring(3));
+    const thread = parseInt(this.trackState.id.substring(3));
+
     return traceDataStore.getData({
       start: this.gps.startVisibleWindow,
       end: this.gps.endVisibleWindow,
-      process: 1,
-      thread: 1,
+      process,
+      thread,
     });
   }
 
@@ -91,7 +105,8 @@ export class SliceTrackContent extends TrackContent {
         const slices = this.getCurrentData();
 
         for (const slice of slices) {
-          if(slice.start < t && slice.end > t && slice !== this.selectedSlice) {
+          if(slice.start < t && slice.end > t
+              && slice.id !== uiStateStore.gState.selection) {
             this.selectSlice(slice);
             deselect = false;
           }
@@ -108,19 +123,11 @@ export class SliceTrackContent extends TrackContent {
   }
 
   private selectSlice(slice: TrackSlice) {
-    this.selectedSlice = slice;
-
-    /*const action = {
-      title: 'slice_selected',
-      pid: 1,
-      tid: 1,
-      index: 3
-    };*/
-    //TODO: Dispatch to worker.
+    uiDispatcher.gDispatch(updateSliceSelection(slice.id));
   }
 
   private deselectSlice() {
-    this.selectedSlice = null;
+    uiDispatcher.gDispatch(updateSliceSelection(null));
   }
 
   _render() {

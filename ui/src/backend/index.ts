@@ -23,6 +23,7 @@ import { ConfigEditorState, FragmentParameters, State, TraceBackendInfo, TraceBa
 let gState: State = createZeroState();
 let gTracesController: TracesController|null = null;
 let gLargestKnownId = 0;
+let gLargestKnownSliceId = 0;
 let gPort: MessagePort|null = null;
 
 function pidToName(id: number): string {
@@ -218,6 +219,7 @@ class TraceController {
             const end = start + length;
             const pid = result.columns[3].ulongValues[i];
             slices.push({
+              id: 'worker-' + gLargestKnownSliceId++,
               start,
               end: end,
               title: pidToName(pid),
@@ -283,6 +285,7 @@ class TracesController {
 }
 
 function dispatch(action: any) {
+  console.log("Worker: Received action: ", action);
   const any_self = (self as any);
   switch (action.topic) {
     case 'processor_started': {
@@ -392,12 +395,8 @@ function dispatch(action: any) {
       gState.maxVisibleWindow.end = action.end;
       break;
     }
-    case 'slice_selected': {
-      gState.selection = {
-        tid: action.tid,
-        pid: action.pid,
-        index: action.index
-      };
+    case 'update_slice_selection': {
+      gState.selection = action.sliceId;
       break;
     }
     default:

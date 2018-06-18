@@ -59,12 +59,7 @@ interface State {
     end: Nanoseconds;
   };
   rootTrackTree: string | null;
-  selection?: {
-    tid: number,
-    pid: number,
-    index: number
-  };
-
+  selection: string | null;
   // TODO: Consider unifying track and tracktrees.
   tracks: ObjectByID<TrackState>;
   trackTrees: ObjectByID<TrackTreeState>;
@@ -106,6 +101,7 @@ interface TrackData {
 
 // TODO: TrackSlice is a terrible name. Everything goes in a track.
 interface TrackSlice {
+  id: string;
   start: number;
   end: number;
   title: string;
@@ -140,6 +136,7 @@ function createZeroState(): State {
       start: 0,
       end: 0,
     },
+    selection: null,
   };
 }
 
