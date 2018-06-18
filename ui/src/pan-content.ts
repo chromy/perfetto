@@ -34,7 +34,8 @@ export class PanContent extends LitElement {
     this.state = state;
   }
 
-  public setWinHeight(windowHeight: number) {
+  public setWinDimensions(windowWidth: number, windowHeight: number) {
+    this.width = windowWidth;
     this.windowHeight = windowHeight;
     this._invalidateProperties();
   }

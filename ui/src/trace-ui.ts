@@ -33,12 +33,10 @@ export class TraceUi extends LitElement {
 
     const reRender = () => this._invalidateProperties();
 
-    const canvasHeight = 2 * this.height;
-
     this.scale = new TimeScale(0, 1000, TraceUi.CONTENT_MARGIN_LEFT,
         this.width);
 
-    this.cc = new CanvasController(this.width, canvasHeight, this.height, reRender);
+    this.cc = new CanvasController(this.width, 2, this.height, reRender);
     const tCtx = this.cc.getTrackCanvasContext();
 
     const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
@@ -96,8 +94,6 @@ export class TraceUi extends LitElement {
       }
     }
 
-    const canvasHeight = 2 * this.height;
-    this.cc.setHeight(canvasHeight);
     const canvasMaxHeight = !this.root ? 0 :
         this.root.height + TraceUi.AXIS_HEIGHT;
     this.cc.setMaxHeight(canvasMaxHeight);
@@ -127,8 +123,18 @@ export class TraceUi extends LitElement {
     this.width = width;
     this.height = height;
 
-    this.cc.setWinHeight(this.height);
-    this.pc.setWinHeight(this.height);
+    const contentWidth = this.width - TraceUi.SCROLLBAR_WIDTH;
+
+    this.scale.setPxLimits(TraceUi.CONTENT_MARGIN_LEFT,
+        this.width);
+
+    this.cc.setWinDimensions(this.width, this.height);
+    this.pc.setWinDimensions(this.width, this.height);
+    this.overview.setWidth(contentWidth);
+    if(this.root) {
+      this.root.setWidth(this.width, new OffsetTimeScale(this.scale,0, this.width));
+    }
+    this.detailAxis.setWidth(this.width);
     this._invalidateProperties();
   }
 

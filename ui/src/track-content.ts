@@ -12,6 +12,7 @@ export abstract class TrackContent extends LitElement {
 
 
   constructor(protected tCtx: TrackCanvasContext,
+              protected width: number,
               protected height: number,
               protected x: OffsetTimeScale,
               protected gps: GlobalPositioningState,
@@ -26,6 +27,10 @@ export abstract class TrackContent extends LitElement {
     this.gps = gps;
     this.trackData = trackData;
     this.trackState = trackState;
+  }
+
+  public setWidth(width: number) {
+    this.width = width;
   }
 
   protected drawGridLines(): void {
@@ -58,4 +63,5 @@ export abstract class TrackContent extends LitElement {
   }
 
   render? (ctx: CanvasRenderingContext2D): void;
+
 }

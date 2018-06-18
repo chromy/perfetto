@@ -8,6 +8,10 @@ export class DetailAxis {
               private height: number, private x: TimeScale) {
   }
 
+  public setWidth(width: number) {
+    this.width = width;
+  }
+
   render() {
     this.tCtx.fillStyle = '#f3f8fe';
     this.tCtx.fillRect(0, 0, this.width, this.height);

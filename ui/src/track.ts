@@ -12,6 +12,8 @@ export class Track extends LitElement {
   content: TrackContent;
   type: string; //? Class? something;
   public height: number;
+  private contentCtx: TrackCanvasContext;
+  private contentX: OffsetTimeScale;
 
   constructor(private state: TrackState,
               private tCtx: TrackCanvasContext,
@@ -29,13 +31,13 @@ export class Track extends LitElement {
     const contentWidth = this.shell.getContentWidth();
 
     const shellCp = this.shell.contentPosition;
-    const contentX = new OffsetTimeScale(this.x, shellCp.left, contentWidth);
-    const contentCtx = new TrackCanvasContext(this.tCtx, shellCp.left, shellCp.top);
-    const contentHeight = this.height - shellCp.top - shellCp.bottom;
+    this.contentX = new OffsetTimeScale(this.x, shellCp.left, contentWidth);
+    this.contentCtx = new TrackCanvasContext(this.tCtx, shellCp.left, shellCp.top);
+    const contentHeight = this.getContentHeight();
 
-    this.content = new SliceTrackContent(contentCtx, contentWidth,
-        contentHeight, contentX, this.gps, this.trackData, this.state); //TODO: Infer
-    contentCtx.setDimensions(this.width, contentHeight);
+    this.content = new SliceTrackContent(this.contentCtx, contentWidth,
+        contentHeight, this.contentX, this.gps, this.trackData, this.state); //TODO: Infer
+    this.contentCtx.setDimensions(this.width, contentHeight);
   }
 
   public setState(state: TrackState, gps: GlobalPositioningState,
@@ -45,6 +47,24 @@ export class Track extends LitElement {
     this.trackData = trackData;
 
     this.content.setState(this.gps, this.trackData, this.state);
+  }
+
+  public setWidth(width: number, scale: OffsetTimeScale) {
+    //TODO: Too much code duplication with constructor.
+    this.width = width;
+    this.x = scale;
+    this.shell.setWidth(width);
+    const contentHeight = this.getContentHeight();
+    const contentWidth = this.shell.getContentWidth();
+    const shellCp = this.shell.contentPosition;
+    this.contentX = new OffsetTimeScale(this.x, shellCp.left, contentWidth);
+    this.content.setWidth(contentWidth);
+    this.contentCtx.setDimensions(this.width, contentHeight);
+  }
+
+  private getContentHeight(): number {
+    const shellCp = this.shell.contentPosition;
+    return this.height - shellCp.top - shellCp.bottom;
   }
 
   _render() {

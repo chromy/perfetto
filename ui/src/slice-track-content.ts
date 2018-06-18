@@ -24,13 +24,13 @@ export class SliceTrackContent extends TrackContent {
   private letterWidth: number|null = null;
 
   constructor(protected tCtx: TrackCanvasContext,
-              private width: number,
+              protected width: number,
               protected height: number,
               protected x: OffsetTimeScale,
               protected gps: GlobalPositioningState,
               trackData: TrackData | undefined,
               trackState: TrackState) {
-    super(tCtx, height, x, gps, trackData, trackState);
+    super(tCtx, width, height, x, gps, trackData, trackState);
   }
 
   draw() {
@@ -93,6 +93,10 @@ export class SliceTrackContent extends TrackContent {
 
   getHeight() : number {
     return 100;
+  }
+
+  public setWidth(width: number) {
+    this.width = width;
   }
 
   onClick(e: MouseEvent) {

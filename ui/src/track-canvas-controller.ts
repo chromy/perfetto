@@ -10,18 +10,20 @@ export class CanvasController  extends LitElement {
   private ctx: CanvasRenderingContext2D;
   private tCtx : TrackCanvasContext;
   private top = 0;
+  private height: number;
   private maxHeight = 100000;
 
   constructor(private width: number,
-              private height: number,
+              private heightWindowFactor: number,
               private winHeight: number,
               private reRender: () => void)
   {
     super();
+    this.height = winHeight * this.heightWindowFactor;
 
     this.canvas = document.createElement('canvas');
-    this.canvas.setAttribute('height', this.height.toString());
     this.canvas.setAttribute('width', this.width.toString());
+    this.canvas.setAttribute('height', this.height.toString());
     console.log('Canvas created.');
 
     //TODO: getContext can return null. Need better solution.
@@ -57,12 +59,11 @@ export class CanvasController  extends LitElement {
     //TODO
   }
 
-  setWinHeight(winHeight: number) {
+  setWinDimensions(winWidth:number, winHeight: number) {
+    this.width = winWidth;
     this.winHeight = winHeight;
-  }
-
-  setHeight(height: number) {
-    this.height = height;
+    this.height = winHeight * this.heightWindowFactor;
+    this.canvas.setAttribute('width', this.width.toString());
     this.canvas.setAttribute('height', this.height.toString());
     this.tCtx.setDimensions(this.width, this.height);
   }

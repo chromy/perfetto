@@ -64,6 +64,16 @@ export class GlobalBrushTimeline extends LitElement {
     this.setScales();
   }
 
+  public setWidth(width: number) {
+    this.width = width;
+    this.x.range([this.margin.left, this.width - this.margin.right]);
+    this.scale.setPxLimits(this.margin.left, this.width - this.margin.right);
+
+    this._invalidateProperties();
+    this.axisEl
+        .call(this.xAxis);
+  }
+
   private setScales() {
     this.scale.setTimeLimits(this.state.maxVisibleWindow.start,
         this.state.maxVisibleWindow.end);

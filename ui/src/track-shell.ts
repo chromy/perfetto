@@ -19,6 +19,11 @@ export class TrackShell extends LitElement {
     return this.width - this.contentPosition.left - this.contentPosition.right;
   }
 
+  public setWidth(width: number) {
+    this.width = width;
+    this._invalidateProperties();
+  }
+
   public _render() {
     return html`
     <style>

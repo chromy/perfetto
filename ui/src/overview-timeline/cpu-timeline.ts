@@ -66,7 +66,7 @@ export class CpuTimeline extends LitElement {
 
     const d = this.getPathD();
 
-    d3.select(this.path).transition().attr('d', d);
+    d3.select(this.path).attr('d', d);
 
     const svgContent = svg`${this.path}`;
 

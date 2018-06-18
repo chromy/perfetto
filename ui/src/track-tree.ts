@@ -65,6 +65,7 @@ export class TrackTree extends LitElement {
               new Track(childState, childTrackCtx, reducedWidth, cScale, this.gps, trackData));
           } else {
             child.setState(childState, this.gps, trackData);
+            child.setWidth(reducedWidth, cScale);
           }
           break;
         }
@@ -81,6 +82,7 @@ export class TrackTree extends LitElement {
                 childTrackCtx, reducedWidth, cScale, this.gps, this.trackDataById));
           } else {
             child.setState(childState, this.tracks, this.trackTrees, this.gps, this.trackDataById);
+            child.setWidth(reducedWidth, cScale);
           }
           break;
         }
@@ -129,6 +131,13 @@ export class TrackTree extends LitElement {
     // This should be all constants.
     return this.contentPosition.top + childrenHeight
       + this.contentPosition.bottom;
+  }
+
+  public setWidth(width: number, scale: OffsetTimeScale) {
+    this.width = width;
+    this.scale = scale;
+    this.updateChildren();
+    this._invalidateProperties();
   }
 
   get contentPosition() : { top: number, right: number, bottom: number, left: number } {

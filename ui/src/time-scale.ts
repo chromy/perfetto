@@ -32,6 +32,11 @@ export class TimeScale {
     this.tEnd = tEnd;
   }
 
+  public setPxLimits(pxStart: Pixels, pxEnd: Pixels) {
+    this.pxStart = pxStart;
+    this.pxEnd = pxEnd;
+  }
+
   public getTimeLimits() {
     return {
       start: this.tStart,
@@ -66,6 +71,10 @@ export class OffsetTimeScale {
 
   public getTimeLimits(): {start: Nanoseconds, end: Nanoseconds} {
     return this.scale.getTimeLimits();
+  }
+
+  public setWidth(width: number) {
+    this.width = width;
   }
 }
 
