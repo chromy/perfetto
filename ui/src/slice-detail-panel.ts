@@ -22,7 +22,13 @@ export class SideDetailPanel extends LitElement {
     let content: TemplateResult;
     if(this.slice) {
       content = html`
-        <div class="wrap">
+        <style>
+          .wrap {
+            height: 100px;
+            padding: 10px 15px;
+          }
+        </style>
+        
           <b>${this.slice.title}</b><br />
           Start: ${this.slice.start} ns<br />
           End: ${this.slice.end} ns
@@ -36,22 +42,24 @@ export class SideDetailPanel extends LitElement {
     return html`
     <style>
     :host {
-      height: ${this.height}px;
-      width: ${this.width}px;
       display: block;
       box-sizing: border-box;
-      position: fixed;
-      /*will-change: transform;*/
-      bottom: 0;
     }
     .wrap {
-      height: 100%;
-      background: #73a6ff;
-      padding: 10px 15px;
       box-sizing: border-box;
+      background: #73a6ff;
+      transition: height 200ms ease;
+      height: 0;
+      width: ${this.width}px;
+      position: fixed;
+      bottom: 0;
+      display: block;
+      /*will-change: transform;*/
     }
     </style>
-    ${content}
+    <div class="wrap">
+      ${content}
+    </div>
     `;
   }
 }
