@@ -24,7 +24,7 @@ export class CpuTimeline extends LitElement {
     //setInterval(() => this.setRandomCpuData(), 2000);
 
     this.path = document.createElementNS('http://www.w3.org/2000/svg', "path");
-    this.path.setAttribute('stroke', '#d70');
+    this.path.setAttribute('stroke', '#000');
     this.path.setAttribute('fill', 'none');
   }
 
@@ -91,7 +91,6 @@ export class CpuTimeline extends LitElement {
     <div class="wrap">
       <svg>
         ${g}
-        <text y="20" x="20">Cpu Timeline</text>
       </svg>
     </div>`;
   }

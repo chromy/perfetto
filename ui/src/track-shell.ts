@@ -65,10 +65,6 @@ export class TrackShell extends LitElement {
     <div class="wrap">
       <div class="shell-content">
         <b>${this.name}</b>
-        <ul>
-          <li>Some Important</li>
-          <li>Information</li>
-        </ul>
       </div>
       <div class="track-content">
         <slot></slot>

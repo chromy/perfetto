@@ -172,7 +172,6 @@ export class SliceTrackContent extends TrackContent {
     </style>
     <div class="wrap" on-click=${(e: MouseEvent) => { this.onClick(e);}}>
       <div class="content">
-        Slice Track Content
       </div>
     </div>`;
   }

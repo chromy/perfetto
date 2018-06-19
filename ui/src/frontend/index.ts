@@ -288,7 +288,6 @@ const ViewerPage: m.Component = {
   view() {
     return [
       m('#trace-ui-container'),
-      m(Menu, { title: "Home" }),
       m(Side),
     ];
   },

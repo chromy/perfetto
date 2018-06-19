@@ -2,13 +2,13 @@ import {LitElement, html} from '@polymer/lit-element';
 import {State} from '../backend/state';
 import * as d3 from 'd3';
 import {svg} from 'lit-html';
-import {ScaleTime} from 'd3-scale';
+import {ScaleLinear} from 'd3-scale';
 import {CpuTimeline} from './cpu-timeline';
 import {TimeScale, Nanoseconds, Pixels} from '../time-scale';
 
 export class GlobalBrushTimeline extends LitElement {
 
-  private x: ScaleTime<number, number>;
+  private x: ScaleLinear<number, number>;
   private xAxis: any;
   private axisEl: any;
   private g: SVGGElement;
@@ -34,19 +34,19 @@ export class GlobalBrushTimeline extends LitElement {
     super();
 
     this.margin = {
-      top: 10,
+      top: 20,
       right: 20,
-      bottom: 20,
+      bottom: 10,
       left: 20
     };
 
-    this.x = d3.scaleTime().range([this.margin.left, this.width - this.margin.right]);
-    this.xAxis = d3.axisBottom(this.x);
+    this.x = d3.scaleLinear().range([this.margin.left, this.width - this.margin.right]);
+    this.xAxis = d3.axisTop(this.x);
     this.g = document.createElementNS('http://www.w3.org/2000/svg', "g");
 
     this.axisEl = d3.select(this.g).append("g")
         .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + (this.height - this.margin.bottom) + ")");
+        .attr("transform", "translate(0," + (this.margin.top) + ")");
 
     this.scale = new TimeScale(this.state.maxVisibleWindow.start,
         this.state.maxVisibleWindow.end, this.margin.left,
@@ -171,7 +171,7 @@ export class GlobalBrushTimeline extends LitElement {
         top: -1px;
         height: 150px;
         width: ${this.width}px;
-        background:#eee;
+        background: #f3f8fe;
         box-sizing: border-box;
         z-index: 500;
         will-change: transform;
