@@ -330,6 +330,27 @@ function dispatch(action: any) {
       gState.backends[action.info.id] = action.info;
       break;
     }
+    case 'show_hide': {
+      //const cpu = (action.cpu as any);
+      //for (const track of Object.values(gState.tracks)) {
+      //  if (track.name !== `CPU ${cpu}`)
+      //    continue;
+      //  let i = -1;
+      //  let j = 0;
+      //  for (const child of gState.trackTrees.children) {
+      //    if (child.id === track.id)
+      //      i = j;
+      //    j++;
+      //  }
+      //  if (i !== -1) {
+      //    gState.trackTrees.children.splice(i, 1);
+      //  } else {
+      //    gState.trackTrees.children.push({ nodeType: 'TRACK', id: track.id});
+      //  }
+      //  break;
+      //}
+      break;
+    }
     case 'set_category': {
       const config = gState.config_editor;
       const category = action.category;
@@ -356,7 +377,7 @@ function dispatch(action: any) {
         gState.tracks[id] = {
           id,
           name: `CPU ${i}`,
-          height: 100,
+          height: 50,
           query: `select * from sched_slices where cpu = ${i} limit 100;`,
         };
         trackIds.push({ nodeType: 'TRACK', id});

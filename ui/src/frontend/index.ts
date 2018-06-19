@@ -55,6 +55,14 @@ function updateQuery(id: string, query: string) {
   };
 }
 
+function showHide(id: string, cpu: number) {
+  return {
+    topic: 'show_hide',
+    id,
+    cpu,
+  };
+}
+
 function setStreamToHost(enabled: boolean) {
   return {
     topic: 'set_stream_to_host',
@@ -111,6 +119,15 @@ const Side = {
         m('li', { onclick: quietDispatch(navigate('/viewer')) }, 'Trace Viewer'),
         m('li', { onclick: quietDispatch(navigate('/config')) }, 'Config Editor'),
       ),
+      Object.values(stateStore.gState.backends).map((t: any) => m('.trace-items',
+        m('.trace-item', t.name),
+        m('button', {
+          onclick: quietDispatch(navigate(`/query/${t.id}`))
+        }, 'Query'),
+        [...Array(8).keys()].map(i => m('button', {
+          onclick: quietDispatch(showHide(t.id, i))
+        }, `Show/Hide CPU ${i}`)),
+      )),
     );
   },
 };

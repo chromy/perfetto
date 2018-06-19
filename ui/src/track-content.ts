@@ -35,7 +35,7 @@ export abstract class TrackContent extends LitElement {
   }
 
   protected drawGridLines(): void {
-    this.tCtx.strokeStyle = 'black';
+    this.tCtx.strokeStyle = '#999999';
     this.tCtx.lineWidth = 1;
 
     const limits = this.x.getTimeLimits();
