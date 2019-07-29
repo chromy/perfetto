@@ -34,6 +34,10 @@ import textwrap
 
 import gn_utils
 
+# XXX
+# proto_src_root_path = '//third_party/perfetto/protos'
+proto_src_root_path = '//protos'
+
 # Copyright header for generated code.
 header = """# Copyright (C) 2019 The Android Open Source Project
 #
@@ -54,19 +58,21 @@ header = """# Copyright (C) 2019 The Android Open Source Project
 
 # Arguments for the GN output directory.
 # host_os="linux" is to generate the right build files from Mac OS.
-gn_args = 'target_os="linux" is_debug=false host_os="linux"'
+gn_args = 'target_os="linux" is_debug=false host_os="linux" monolithic_binaries=true'
 
 # Default targets to translate to the blueprint file.
 default_targets = [
-  '//:trace_processor_shell',
+#  '//:trace_processor_shell',
+  '//:traced',
+  '//:traced_probes',
   '//src/protozero:libprotozero',
-  '//src/trace_processor:trace_processor',
-  '//tools/trace_to_text:trace_to_text_host(//gn/standalone/toolchain:gcc_like_host)',
-  '//tools/trace_to_text:libpprofbuilder',
+#  '//src/trace_processor:trace_processor',
+#  '//tools/trace_to_text:trace_to_text_host(//gn/standalone/toolchain:gcc_like_host)',
+#  '//tools/trace_to_text:libpprofbuilder',
   '//protos/perfetto/config:merged_config_gen',
   '//protos/perfetto/trace:merged_trace_gen',
-  '//protos/perfetto/trace_processor:lite_gen',
-  '//protos/perfetto/metrics:lite_gen'
+#  '//protos/perfetto/trace_processor:lite_gen',
+#  '//protos/perfetto/metrics:lite_gen'
 ]
 
 # Aliases to add to the BUILD file
@@ -78,33 +84,41 @@ alias_targets = {
 
 
 def enable_sqlite(module):
-  module.deps.add(Label('//third_party/sqlite'))
-  module.deps.add(Label('//third_party/sqlite:sqlite_ext_percentile'))
+  #module.deps.add(Label('//third_party/sqlite'))
+  #module.deps.add(Label('//third_party/sqlite:sqlite_ext_percentile'))
+  pass
 
 
 def enable_jsoncpp(module):
-  module.deps.add(Label('//third_party/perfetto/google:jsoncpp'))
+  #module.deps.add(Label('//third_party/perfetto/google:jsoncpp'))
+  pass
 
 
 def enable_linenoise(module):
-  module.deps.add(Label('//third_party/perfetto/google:linenoise'))
+  #module.deps.add(Label('//third_party/perfetto/google:linenoise'))
+  pass
 
 
 def enable_gtest_prod(module):
-  module.deps.add(Label('//third_party/perfetto/google:gtest_prod'))
+  pass
+  #module.deps.add(Label('//third_party/perfetto/google:gtest_prod'))
 
 
 def enable_protobuf_full(module):
-  module.deps.add(Label('//third_party/protobuf:libprotoc_legacy'))
-  module.deps.add(Label('//third_party/protobuf:protobuf_legacy'))
+  #module.deps.add(Label('//third_party/protobuf:libprotoc_legacy'))
+  #module.deps.add(Label('//third_party/protobuf:protobuf_legacy'))
+  module.deps.add(Label('@com_google_protobuf//:protoc'))
+  module.deps.add(Label('@com_google_protobuf//:protobuf'))
 
 
 def enable_perfetto_version(module):
-  module.deps.add(Label('//third_party/perfetto/google:perfetto_version'))
+  #module.deps.add(Label('//third_party/perfetto/google:perfetto_version'))
+  pass
 
 
 def enable_zlib(module):
-  module.deps.add(Label('//third_party/zlib:zlibsystem'))
+  #module.deps.add(Label('//third_party/zlib:zlibsystem'))
+  pass
 
 
 def disable_module(module):
@@ -239,6 +253,7 @@ class Target(object):
     self.srcs = set()
     self.hdrs = set()
     self.deps = set()
+    self.includes = set()
     self.visibility = set()
     self.gn_name = gn_name
     self.cc_proto_fields = False
@@ -255,14 +270,15 @@ class Target(object):
     writer.variable('name', self.name)
     writer.variable('srcs', self.srcs)
     writer.variable('hdrs', self.hdrs)
+    writer.variable('includes', self.includes)
 
     if self.cc_proto_fields:
       assert(self.type == 'proto_library')
-      if self.srcs:
-        writer.variable('has_services', 1)
-      writer.variable('cc_api_version', 2)
-      if self.srcs:
-        writer.variable('cc_generic_services', 1)
+      #if self.srcs:
+      #  writer.variable('has_services', 1)
+      #writer.variable('cc_api_version', 2)
+      #if self.srcs:
+      #  writer.variable('cc_generic_services', 1)
 
     writer.variable('src_proto_library', self.src_proto_library)
 
@@ -336,12 +352,15 @@ class BuildGenerator(object):
     proto_cc_import = 'load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")'
     descriptor_set_import = 'load("//tools/build_defs/proto:descriptor_set.bzl", "transitive_descriptor_set")'
     pbzero_cc_import = 'load("//third_party/perfetto/google:build_defs.bzl", "pbzero_cc_proto_library")'
-    self.proto_build = Build(public=False,
-                             header_lines=[
-                               proto_cc_import,
-                               descriptor_set_import,
-                               pbzero_cc_import,
-                             ])
+
+    header_lines = [
+        #proto_cc_import,
+        #descriptor_set_import,
+        #pbzero_cc_import,
+        'load("//:bazel/protozero.bzl", "pbzero_cc_proto_library")',
+        'load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")',
+    ]
+    self.proto_build = Build(public=False, header_lines=header_lines)
 
     for target in targets:
       self.create_target(target)
@@ -416,7 +435,7 @@ class BuildGenerator(object):
       args = dep_desc['args']
       if "gen_merged_sql_metrics" in dep_name:
         dep_target = self.create_merged_sql_metrics_target(dep_name)
-        target.deps.add(Label("//third_party/perfetto:" + dep_target.name))
+        #target.deps.add(Label("//third_party/perfetto:" + dep_target.name))
 
         if target.type == 'cc_library' or target.type == 'cc_binary':
           target.srcs.update(dep_target.outs)
@@ -430,13 +449,13 @@ class BuildGenerator(object):
         else:
           dep_target_name = cc_target.name
         target.deps.add(
-            Label("//third_party/perfetto/protos:" + dep_target_name))
+            Label(proto_src_root_path + ":" + dep_target_name))
       else:
         raise Error('Unsupported action in target %s: %s' % (dep_target_name,
                                                             args))
     elif dep_desc['type'] == 'static_library':
       dep_target = self.create_target(dep_name)
-      target.deps.add(Label("//third_party/perfetto:" + dep_target.name))
+      target.deps.add(Label(proto_src_root_path + ":" + dep_target.name))
     elif dep_desc['type'] == 'group':
       for inner_name in self.resolve_dependencies(dep_name):
         self.apply_module_dependency(target, inner_name)
@@ -519,7 +538,7 @@ class BuildGenerator(object):
       # library.
       cc_deps = [
         dep for dep in proto_target.deps
-        if not dep.label.startswith('//third_party/perfetto/protos')
+        if not dep.label.startswith(proto_src_root_path)
       ]
       proto_target.deps.difference_update(cc_deps)
 
@@ -531,8 +550,7 @@ class BuildGenerator(object):
       cc_target.deps.update(cc_deps)
 
       # Add the proto_library to the cc_target.
-      cc_target.src_proto_library = \
-          "//third_party/perfetto/protos:" + proto_target.name
+      cc_target.src_proto_library = proto_src_root_path + ":" + proto_target.name
 
       self.proto_build.add_target(cc_target)
     else:
@@ -541,7 +559,7 @@ class BuildGenerator(object):
                         cc_target_name, gn_name=gn_target_name_no_toolchain)
       cc_target.visibility.add("//visibility:public")
       cc_target.deps.add(
-          Label("//third_party/perfetto/protos:" + proto_target.name))
+          Label(proto_src_root_path + ":" + proto_target.name))
       self.proto_build.add_target(cc_target)
 
       java_target_name = proto_target.name + "_java_proto"
@@ -550,7 +568,7 @@ class BuildGenerator(object):
                            gn_name=gn_target_name_no_toolchain)
       java_target.visibility.add("//visibility:public")
       java_target.deps.add(
-          Label("//third_party/perfetto/protos:" + proto_target.name))
+          Label(proto_src_root_path + ":" + proto_target.name))
       self.proto_build.add_target(java_target)
 
     return (proto_target, cc_target)
@@ -594,6 +612,10 @@ class BuildGenerator(object):
         for src in target_desc.get('sources', [])
         if src not in self.action_generated_files
     )
+
+    if target_type == 'cc_library':
+      target.includes.add('include')
+
 
     for dep_name in self.resolve_dependencies(gn_target_name):
       self.apply_module_dependency(target, dep_name)

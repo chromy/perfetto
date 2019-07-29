@@ -1,14 +1,4 @@
-gensignature(
-    name = "trace_processor_sig",
-    srcs = [
-        ":trace_processor_shell",
-        ":trace_to_text",
-    ],
-    tags = [
-        "__TRACE_PROCESSOR_SIG_TAG1",
-        "__TRACE_PROCESSOR_SIG_TAG2",
-    ],
-)
+load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 
 py_binary(
     name = "gen_merged_sql_metrics_py",
