@@ -1,0 +1,152 @@
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<title>scaletto</title>
+<style>
+
+.home {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  grid-template:
+            "overview overview" auto
+            "filter filter" auto
+            "controls controls" auto
+            "query-editor viz-editor" auto
+            "query-result viz-result" 1fr
+            "history history" auto / 1fr 1fr;
+  row-gap: 1ch;
+  column-gap: 1ch;
+  height: 100%;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.home-just-query {
+  grid-template:
+            "overview overview" auto
+            "filter filter" auto
+            "controls controls" auto
+            "query-editor viz-editor" auto
+            "query-result viz-result" 1fr
+            "history history" auto / 1fr 0;
+}
+
+.home-just-viz {
+  grid-template:
+            "overview overview" auto
+            "filter filter" auto
+            "controls controls" auto
+            "query-editor viz-editor" auto
+            "query-result viz-result" 1fr
+            "history history" auto / 0 1fr;
+}
+
+
+.pane {
+  border: solid 1px rgba(0, 0, 0, 0.26);
+  border-radius: 2px;
+  padding: 0.25rem;
+}
+
+.query-result-content {
+}
+
+pre {
+  text-align: center;
+}
+
+.overview {
+  font-size: xx-small;
+  grid-area: overview;
+}
+
+.center {
+  min-width: 90ch;
+}
+
+.status {
+  margin: 1rem;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.progressive-filter {
+  display: flex;
+  align-items: center;
+  grid-area: filter;
+  padding: 0.3rem;
+}
+
+.progressive-filter > a {
+  align-items: center;
+  display: flex;
+  text-decoration: none;
+}
+
+.chevron {
+  color: rgb(156 163 175);
+  overflow: visible;
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-left: 0.75rem;
+  margin-right: 0.75rem;
+  display: block;
+  vertical-align: middle;
+}
+
+.meta-controls {
+  height: 2rem;
+  display: flex;
+  grid-area: controls;
+  align-items: center;
+}
+
+.history {
+  height: 2rem;
+  display: flex;
+  grid-area: history;
+  align-items: center;
+}
+
+.viz-editor {
+  justify-self: stretch;
+  height: 10rem;
+  grid-area: viz-editor;
+  overflow: auto;
+}
+
+.viz-result {
+  justify-self: stretch;
+  grid-area: viz-result;
+}
+
+.query-editor {
+  justify-self: stretch;
+  height: 10rem;
+  grid-area: query-editor;
+  overflow: auto;
+}
+
+.query-result {
+  justify-self: stretch;
+  grid-area: query-result;
+  overflow: scroll;
+}
+
+
+</style>
+</head>
+<body>
+  <main>
+  </main>
+  <script src="vega.js"></script>
+  <script src="vega-lite.js"></script>
+  <script src="vega-embed.js"></script>
+  <script src="ed.js"></script>
+  <script src="mithril.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

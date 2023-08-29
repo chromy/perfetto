@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+from __future__ import print_function
+import sys
+import os
+import time
+import argparse
+import socket
+import subprocess
+
+from perfetto.trace_processor import TraceProcessor
+
+VERSION = '0.0.1'
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+
+try:
+  import socketserver
+  from http.server import SimpleHTTPRequestHandler
+except ImportError:
+  import SocketServer as socketserver
+  import SimpleHTTPServer
+  SimpleHTTPRequestHandler = SimpleHTTPServer.SimpleHTTPRequestHandler
+
+class TCPServer(socketserver.TCPServer):
+  def server_bind(self):
+    self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    self.socket.bind(self.server_address)
+
+class Server(object):
+  def __init__(self, port, ctp):
+    self.port = port
+    self.ctp = ctp
+    self.directory = DIR
+
+  def serve(self):
+    this = self
+    class Handler(SimpleHTTPRequestHandler):
+      extensions_map = {
+        "": "text/html",
+      }
+
+      def __init__(self, *args, **kwargs):
+        SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
+
+      def translate_path(self, path):
+        path = SimpleHTTPRequestHandler.translate_path(self, path)
+        relpath = os.path.relpath(path, os.getcwd())
+        fullpath = os.path.join(this.directory, relpath)
+        return fullpath
+
+      def do_GET(self):
+        return SimpleHTTPRequestHandler.do_GET(self)
+
+    print('Starting server at http://localhost:{}'.format(self.port))
+    httpd = TCPServer(('', self.port), Handler)
+    try:
+      httpd.serve_forever()
+    except KeyboardInterrupt:
+      httpd.shutdown()
+    httpd.server_close()
+
+class Ctp(object):
+  def __init__(self, traces):
+    self.traces = traces
+    self.tps = [TraceProcessor(trace=trace) for trace in traces]
+    print(self.tps)
+
+def main(argv):
+  parser = argparse.ArgumentParser(description='Process some integers.')
+  parser.add_argument('-p', '--port', help='port number (default: 8000)', type=int, default=8000)
+  parser.add_argument('--version', default=False, help='Show the version number')
+  parser.add_argument('trace', default='', nargs='+', help='Traces to load')
+
+  args = parser.parse_args(argv)
+
+  if args.version:
+    print(VERSION)
+    return 0
+
+  ctp = Ctp(args.trace)
+  server = Server(args.port, ctp)
+  server.serve()
+  return 0
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))
