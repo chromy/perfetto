@@ -35,3 +35,15 @@ message DmaFenceWaitEndFtraceEvent {
   optional uint32 seqno = 3;
   optional string timeline = 4;
 }
+message DmaFenceDestroyFtraceEvent {
+  optional string driver = 1;
+  optional string timeline = 2;
+  optional uint32 context = 3;
+  optional uint32 seqno = 4;
+}
+message DmaFenceEnableSignalFtraceEvent {
+  optional string driver = 1;
+  optional string timeline = 2;
+  optional uint32 context = 3;
+  optional uint32 seqno = 4;
+}

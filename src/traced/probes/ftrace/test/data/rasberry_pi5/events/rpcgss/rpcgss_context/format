@@ -1,0 +1,16 @@
+name: rpcgss_context
+ID: 1279
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long expiry;	offset:8;	size:8;	signed:0;
+	field:unsigned long now;	offset:16;	size:8;	signed:0;
+	field:unsigned int timeout;	offset:24;	size:4;	signed:0;
+	field:u32 window_size;	offset:28;	size:4;	signed:0;
+	field:int len;	offset:32;	size:4;	signed:1;
+	field:__data_loc char[] acceptor;	offset:36;	size:4;	signed:0;
+
+print fmt: "win_size=%u expiry=%lu now=%lu timeout=%u acceptor=%.*s", REC->window_size, REC->expiry, REC->now, REC->timeout, REC->len, __get_str(acceptor)

@@ -1,0 +1,14 @@
+name: vma_store
+ID: 285
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:struct maple_tree * mt;	offset:8;	size:8;	signed:0;
+	field:struct vm_area_struct * vma;	offset:16;	size:8;	signed:0;
+	field:unsigned long vm_start;	offset:24;	size:8;	signed:0;
+	field:unsigned long vm_end;	offset:32;	size:8;	signed:0;
+
+print fmt: "mt_mod %p, (%p), STORE, %lu, %lu,", REC->mt, REC->vma, (unsigned long) REC->vm_start, (unsigned long) REC->vm_end

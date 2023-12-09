@@ -1,0 +1,26 @@
+name: get_mapping_status
+ID: 1305
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u64 data_ack;	offset:8;	size:8;	signed:0;
+	field:u64 data_seq;	offset:16;	size:8;	signed:0;
+	field:u32 subflow_seq;	offset:24;	size:4;	signed:0;
+	field:u16 data_len;	offset:28;	size:2;	signed:0;
+	field:u16 csum;	offset:30;	size:2;	signed:0;
+	field:u8 use_map;	offset:32;	size:1;	signed:0;
+	field:u8 dsn64;	offset:33;	size:1;	signed:0;
+	field:u8 data_fin;	offset:34;	size:1;	signed:0;
+	field:u8 use_ack;	offset:35;	size:1;	signed:0;
+	field:u8 ack64;	offset:36;	size:1;	signed:0;
+	field:u8 mpc_map;	offset:37;	size:1;	signed:0;
+	field:u8 frozen;	offset:38;	size:1;	signed:0;
+	field:u8 reset_transient;	offset:39;	size:1;	signed:0;
+	field:u8 reset_reason;	offset:40;	size:1;	signed:0;
+	field:u8 csum_reqd;	offset:41;	size:1;	signed:0;
+	field:u8 infinite_map;	offset:42;	size:1;	signed:0;
+
+print fmt: "data_ack=%llu data_seq=%llu subflow_seq=%u data_len=%u csum=%x use_map=%u dsn64=%u data_fin=%u use_ack=%u ack64=%u mpc_map=%u frozen=%u reset_transient=%u reset_reason=%u csum_reqd=%u infinite_map=%u", REC->data_ack, REC->data_seq, REC->subflow_seq, REC->data_len, REC->csum, REC->use_map, REC->dsn64, REC->data_fin, REC->use_ack, REC->ack64, REC->mpc_map, REC->frozen, REC->reset_transient, REC->reset_reason, REC->csum_reqd, REC->infinite_map

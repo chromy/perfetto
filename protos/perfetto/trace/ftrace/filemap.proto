@@ -11,6 +11,7 @@ message MmFilemapAddToPageCacheFtraceEvent {
   optional uint64 index = 3;
   optional uint64 s_dev = 4;
   optional uint64 page = 5;
+  optional uint32 order = 6;
 }
 message MmFilemapDeleteFromPageCacheFtraceEvent {
   optional uint64 pfn = 1;
@@ -18,4 +19,16 @@ message MmFilemapDeleteFromPageCacheFtraceEvent {
   optional uint64 index = 3;
   optional uint64 s_dev = 4;
   optional uint64 page = 5;
+  optional uint32 order = 6;
+}
+message FileCheckAndAdvanceWbErrFtraceEvent {
+  optional uint64 file = 1;
+  optional uint64 i_ino = 2;
+  optional uint64 s_dev = 3;
+  optional uint32 old = 4;
+}
+message FilemapSetWbErrFtraceEvent {
+  optional uint64 i_ino = 1;
+  optional uint64 s_dev = 2;
+  optional uint32 errseq = 3;
 }

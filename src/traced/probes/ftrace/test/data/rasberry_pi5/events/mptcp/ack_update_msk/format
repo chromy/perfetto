@@ -1,0 +1,15 @@
+name: ack_update_msk
+ID: 1304
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u64 data_ack;	offset:8;	size:8;	signed:0;
+	field:u64 old_snd_una;	offset:16;	size:8;	signed:0;
+	field:u64 new_snd_una;	offset:24;	size:8;	signed:0;
+	field:u64 new_wnd_end;	offset:32;	size:8;	signed:0;
+	field:u64 msk_wnd_end;	offset:40;	size:8;	signed:0;
+
+print fmt: "data_ack=%llu old_snd_una=%llu new_snd_una=%llu new_wnd_end=%llu msk_wnd_end=%llu", REC->data_ack, REC->old_snd_una, REC->new_snd_una, REC->new_wnd_end, REC->msk_wnd_end

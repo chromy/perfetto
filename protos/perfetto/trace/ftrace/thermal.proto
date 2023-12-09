@@ -15,3 +15,9 @@ message CdevUpdateFtraceEvent {
   optional uint64 target = 1;
   optional string type = 2;
 }
+message ThermalZoneTripFtraceEvent {
+  optional string thermal_zone = 1;
+  optional int32 id = 2;
+  optional int32 trip = 3;
+  optional uint32 trip_type = 4;
+}

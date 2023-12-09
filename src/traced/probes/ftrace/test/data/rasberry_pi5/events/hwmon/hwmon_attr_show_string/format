@@ -1,0 +1,13 @@
+name: hwmon_attr_show_string
+ID: 1044
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int index;	offset:8;	size:4;	signed:1;
+	field:__data_loc char[] attr_name;	offset:12;	size:4;	signed:0;
+	field:__data_loc char[] label;	offset:16;	size:4;	signed:0;
+
+print fmt: "index=%d, attr_name=%s, val=%s", REC->index, __get_str(attr_name), __get_str(label)

@@ -1,0 +1,15 @@
+name: vc4_submit_cl
+ID: 1347
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u32 dev;	offset:8;	size:4;	signed:0;
+	field:bool is_render;	offset:12;	size:1;	signed:0;
+	field:u64 seqno;	offset:16;	size:8;	signed:0;
+	field:u32 ctnqba;	offset:24;	size:4;	signed:0;
+	field:u32 ctnqea;	offset:28;	size:4;	signed:0;
+
+print fmt: "dev=%u, %s, seqno=%llu, 0x%08x..0x%08x", REC->dev, REC->is_render ? "RCL" : "BCL", REC->seqno, REC->ctnqba, REC->ctnqea

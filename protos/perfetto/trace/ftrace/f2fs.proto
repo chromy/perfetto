@@ -225,6 +225,7 @@ message F2fsWriteCheckpointFtraceEvent {
   optional uint32 is_umount = 2;
   optional string msg = 3;
   optional int32 reason = 4;
+  optional string dest_msg = 5;
 }
 message F2fsWriteEndFtraceEvent {
   optional uint64 dev = 1;
@@ -257,6 +258,11 @@ message F2fsIostatFtraceEvent {
   optional uint64 fs_mrio = 21;
   optional uint64 fs_nio = 22;
   optional uint64 fs_nrio = 23;
+  optional uint64 app_bcdio = 24;
+  optional uint64 app_mcdio = 25;
+  optional uint64 fs_cdio = 26;
+  optional uint64 app_bcrio = 27;
+  optional uint64 app_mcrio = 28;
 }
 message F2fsIostatLatencyFtraceEvent {
   optional uint32 d_rd_avg = 1;
@@ -287,4 +293,368 @@ message F2fsIostatLatencyFtraceEvent {
   optional uint32 n_wr_s_avg = 26;
   optional uint32 n_wr_s_cnt = 27;
   optional uint32 n_wr_s_peak = 28;
+}
+message F2fsBackgroundGcFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 wait_ms = 2;
+  optional uint32 prefree = 3;
+  optional uint32 free = 4;
+}
+message F2fsBmapFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 lblock = 3;
+  optional uint64 pblock = 4;
+}
+message F2fsCompressPagesEndFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 idx = 3;
+  optional uint32 size = 4;
+  optional uint32 ret = 5;
+}
+message F2fsCompressPagesStartFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 idx = 3;
+  optional uint32 size = 4;
+  optional uint32 algtype = 5;
+}
+message F2fsDatareadEndFtraceEvent {
+  optional uint64 ino = 1;
+  optional int64 offset = 2;
+  optional int32 bytes = 3;
+}
+message F2fsDatareadStartFtraceEvent {
+  optional string pathbuf = 1;
+  optional int64 offset = 2;
+  optional int32 bytes = 3;
+  optional int64 i_size = 4;
+  optional string cmdline = 5;
+  optional int32 pid = 6;
+  optional uint64 ino = 7;
+}
+message F2fsDatawriteEndFtraceEvent {
+  optional uint64 ino = 1;
+  optional int64 offset = 2;
+  optional int32 bytes = 3;
+}
+message F2fsDatawriteStartFtraceEvent {
+  optional string pathbuf = 1;
+  optional int64 offset = 2;
+  optional int32 bytes = 3;
+  optional int64 i_size = 4;
+  optional string cmdline = 5;
+  optional int32 pid = 6;
+  optional uint64 ino = 7;
+}
+message F2fsDecompressPagesEndFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 idx = 3;
+  optional uint32 size = 4;
+  optional uint32 ret = 5;
+}
+message F2fsDecompressPagesStartFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 idx = 3;
+  optional uint32 size = 4;
+  optional uint32 algtype = 5;
+}
+message F2fsDestroyExtentTreeFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 node_cnt = 3;
+  optional uint32 type = 4;
+}
+message F2fsDirectIOEnterFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int64 pos = 3;
+  optional uint64 len = 4;
+  optional int32 rw = 5;
+  optional int64 ki_pos = 6;
+  optional int32 ki_flags = 7;
+  optional uint32 ki_ioprio = 8;
+}
+message F2fsDirectIOExitFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int64 pos = 3;
+  optional uint64 len = 4;
+  optional int32 rw = 5;
+  optional int32 ret = 6;
+}
+message F2fsDoWriteDataPageFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int32 type = 3;
+  optional int32 dir = 4;
+  optional uint64 index = 5;
+  optional int32 dirty = 6;
+  optional int32 uptodate = 7;
+}
+message F2fsDropInodeFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int32 ret = 3;
+}
+message F2fsFiemapFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 lblock = 3;
+  optional uint64 pblock = 4;
+  optional uint64 len = 5;
+  optional uint32 flags = 6;
+  optional int32 ret = 7;
+}
+message F2fsFilemapFaultFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 index = 3;
+  optional uint64 ret = 4;
+}
+message F2fsFileWriteIterFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int64 offset = 3;
+  optional uint64 length = 4;
+  optional int64 ret = 5;
+}
+message F2fsGcBeginFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 sync = 2;
+  optional uint32 background = 3;
+  optional int64 dirty_nodes = 4;
+  optional int64 dirty_dents = 5;
+  optional int64 dirty_imeta = 6;
+  optional uint32 free_sec = 7;
+  optional uint32 free_seg = 8;
+  optional int32 reserved_seg = 9;
+  optional uint32 prefree_seg = 10;
+  optional int32 gc_type = 11;
+  optional uint32 no_bg_gc = 12;
+  optional uint32 nr_free_secs = 13;
+}
+message F2fsGcEndFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 ret = 2;
+  optional int32 seg_freed = 3;
+  optional int32 sec_freed = 4;
+  optional int64 dirty_nodes = 5;
+  optional int64 dirty_dents = 6;
+  optional int64 dirty_imeta = 7;
+  optional uint32 free_sec = 8;
+  optional uint32 free_seg = 9;
+  optional int32 reserved_seg = 10;
+  optional uint32 prefree_seg = 11;
+}
+message F2fsIssueDiscardFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 blkstart = 2;
+  optional uint32 blklen = 3;
+}
+message F2fsIssueFlushFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 nobarrier = 2;
+  optional uint32 flush_merge = 3;
+  optional int32 ret = 4;
+}
+message F2fsIssueResetZoneFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 blkstart = 2;
+}
+message F2fsLookupEndFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional string name = 3;
+  optional uint32 cino = 4;
+  optional int32 err = 5;
+}
+message F2fsLookupExtentTreeStartFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 pgofs = 3;
+  optional uint32 type = 4;
+}
+message F2fsLookupReadExtentTreeEndFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 pgofs = 3;
+  optional uint32 fofs = 4;
+  optional uint32 len = 5;
+  optional uint32 blk = 6;
+}
+message F2fsLookupStartFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional string name = 3;
+  optional uint32 flags = 4;
+}
+message F2fsMapBlocksFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 m_lblk = 3;
+  optional uint32 m_pblk = 4;
+  optional uint32 m_len = 5;
+  optional uint32 m_flags = 6;
+  optional int32 m_seg_type = 7;
+  optional uint32 m_may_create = 8;
+  optional int32 ret = 9;
+  optional uint32 m_multidev_dio = 10;
+  optional int32 create = 11;
+  optional int32 flag = 12;
+}
+message F2fsPrepareReadBioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 target = 2;
+  optional int64 op = 3;
+  optional int64 op_flags = 4;
+  optional int32 type = 5;
+  optional uint64 sector = 6;
+  optional uint32 size = 7;
+}
+message F2fsPrepareWriteBioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 target = 2;
+  optional int64 op = 3;
+  optional int64 op_flags = 4;
+  optional int32 type = 5;
+  optional uint64 sector = 6;
+  optional uint32 size = 7;
+}
+message F2fsQueueDiscardFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 blkstart = 2;
+  optional uint32 blklen = 3;
+}
+message F2fsReaddirFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int64 start = 3;
+  optional int64 end = 4;
+  optional int32 err = 5;
+}
+message F2fsReadpagesFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 start = 3;
+  optional uint32 nrpage = 4;
+}
+message F2fsRemoveDiscardFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 blkstart = 2;
+  optional uint32 blklen = 3;
+}
+message F2fsReplaceAtomicWriteBlockFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 cow_ino = 3;
+  optional uint64 index = 4;
+  optional uint32 old_addr = 5;
+  optional uint32 new_addr = 6;
+  optional uint32 recovery = 7;
+}
+message F2fsReserveNewBlocksFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 nid = 2;
+  optional uint32 ofs_in_node = 3;
+  optional uint64 count = 4;
+}
+message F2fsShrinkExtentTreeFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 node_cnt = 2;
+  optional uint32 tree_cnt = 3;
+  optional uint32 type = 4;
+}
+message F2fsShutdownFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 mode = 2;
+  optional int32 ret = 3;
+}
+message F2fsSubmitPageBioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 index = 3;
+  optional uint32 old_blkaddr = 4;
+  optional uint32 new_blkaddr = 5;
+  optional int64 op = 6;
+  optional int64 op_flags = 7;
+  optional int32 temp = 8;
+  optional int32 type = 9;
+}
+message F2fsSubmitPageWriteFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 index = 3;
+  optional uint32 old_blkaddr = 4;
+  optional uint32 new_blkaddr = 5;
+  optional int64 op = 6;
+  optional int64 op_flags = 7;
+  optional int32 temp = 8;
+  optional int32 type = 9;
+}
+message F2fsSubmitReadBioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 target = 2;
+  optional int64 op = 3;
+  optional int64 op_flags = 4;
+  optional int32 type = 5;
+  optional uint64 sector = 6;
+  optional uint32 size = 7;
+}
+message F2fsSubmitWriteBioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 target = 2;
+  optional int64 op = 3;
+  optional int64 op_flags = 4;
+  optional int32 type = 5;
+  optional uint64 sector = 6;
+  optional uint32 size = 7;
+}
+message F2fsSyncDirtyInodesEnterFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 type = 2;
+  optional int64 count = 3;
+}
+message F2fsSyncDirtyInodesExitFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 type = 2;
+  optional int64 count = 3;
+}
+message F2fsUpdateReadExtentTreeRangeFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 pgofs = 3;
+  optional uint32 blk = 4;
+  optional uint32 len = 5;
+  optional uint32 c_len = 6;
+}
+message F2fsWritepageFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int32 type = 3;
+  optional int32 dir = 4;
+  optional uint64 index = 5;
+  optional int32 dirty = 6;
+  optional int32 uptodate = 7;
+}
+message F2fsWritepagesFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional int32 type = 3;
+  optional int32 dir = 4;
+  optional int64 nr_to_write = 5;
+  optional int64 pages_skipped = 6;
+  optional int64 range_start = 7;
+  optional int64 range_end = 8;
+  optional uint64 writeback_index = 9;
+  optional int32 sync_mode = 10;
+  optional uint32 for_kupdate = 11;
+  optional uint32 for_background = 12;
+  optional uint32 tagged_writepages = 13;
+  optional uint32 for_reclaim = 14;
+  optional uint32 range_cyclic = 15;
+  optional uint32 for_sync = 16;
 }

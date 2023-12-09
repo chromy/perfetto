@@ -1,0 +1,12 @@
+name: subflow_check_data_avail
+ID: 1303
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u8 status;	offset:8;	size:1;	signed:0;
+	field:const void * skb;	offset:16;	size:8;	signed:0;
+
+print fmt: "mapping_status=%s, skb=%p", __print_symbolic(REC->status, { 0, "MAPPING_OK" }, { 1, "MAPPING_INVALID" }, { 2, "MAPPING_EMPTY" }, { 3, "MAPPING_DATA_FIN" }, { 4, "MAPPING_DUMMY" }), REC->skb

@@ -1,0 +1,15 @@
+name: rpc_clnt_new
+ID: 1267
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int client_id;	offset:8;	size:4;	signed:0;
+	field:__data_loc char[] addr;	offset:12;	size:4;	signed:0;
+	field:__data_loc char[] port;	offset:16;	size:4;	signed:0;
+	field:__data_loc char[] program;	offset:20;	size:4;	signed:0;
+	field:__data_loc char[] server;	offset:24;	size:4;	signed:0;
+
+print fmt: "client=%08x peer=[%s]:%s program=%s server=%s", REC->client_id, __get_str(addr), __get_str(port), __get_str(program), __get_str(server)

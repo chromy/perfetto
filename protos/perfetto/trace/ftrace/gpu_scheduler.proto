@@ -24,3 +24,10 @@ message DrmRunJobFtraceEvent {
 message DrmSchedProcessJobFtraceEvent {
   optional uint64 fence = 1;
 }
+message DrmSchedJobWaitDepFtraceEvent {
+  optional string name = 1;
+  optional uint64 id = 2;
+  optional uint64 fence = 3;
+  optional uint64 ctx = 4;
+  optional uint32 seqno = 5;
+}

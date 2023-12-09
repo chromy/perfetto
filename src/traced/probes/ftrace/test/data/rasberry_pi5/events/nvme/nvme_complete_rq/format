@@ -1,0 +1,18 @@
+name: nvme_complete_rq
+ID: 920
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:char disk[32];	offset:8;	size:32;	signed:0;
+	field:int ctrl_id;	offset:40;	size:4;	signed:1;
+	field:int qid;	offset:44;	size:4;	signed:1;
+	field:int cid;	offset:48;	size:4;	signed:1;
+	field:u64 result;	offset:56;	size:8;	signed:0;
+	field:u8 retries;	offset:64;	size:1;	signed:0;
+	field:u8 flags;	offset:65;	size:1;	signed:0;
+	field:u16 status;	offset:66;	size:2;	signed:0;
+
+print fmt: "nvme%d: %sqid=%d, cmdid=%u, res=%#llx, retries=%u, flags=0x%x, status=%#x", REC->ctrl_id, nvme_trace_disk_name(p, REC->disk), REC->qid, REC->cid, REC->result, REC->retries, REC->flags, REC->status

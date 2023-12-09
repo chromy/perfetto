@@ -1,0 +1,17 @@
+name: binder_txn_latency_free
+ID: 1084
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int debug_id;	offset:8;	size:4;	signed:1;
+	field:int from_proc;	offset:12;	size:4;	signed:1;
+	field:int from_thread;	offset:16;	size:4;	signed:1;
+	field:int to_proc;	offset:20;	size:4;	signed:1;
+	field:int to_thread;	offset:24;	size:4;	signed:1;
+	field:unsigned int code;	offset:28;	size:4;	signed:0;
+	field:unsigned int flags;	offset:32;	size:4;	signed:0;
+
+print fmt: "transaction=%d from %d:%d to %d:%d flags=0x%x code=0x%x", REC->debug_id, REC->from_proc, REC->from_thread, REC->to_proc, REC->to_thread, REC->code, REC->flags

@@ -45,3 +45,126 @@ message BinderCommandFtraceEvent {
 message BinderReturnFtraceEvent {
   optional uint32 cmd = 1;
 }
+message BinderAllocLruEndFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderAllocLruStartFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderAllocPageEndFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderAllocPageStartFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderFreeLruEndFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderFreeLruStartFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderIoctlFtraceEvent {
+  optional uint32 cmd = 1;
+  optional uint64 arg = 2;
+}
+message BinderIoctlDoneFtraceEvent {
+  optional int32 ret = 1;
+}
+message BinderReadDoneFtraceEvent {
+  optional int32 ret = 1;
+}
+message BinderTransactionBufferReleaseFtraceEvent {
+  optional int32 debug_id = 1;
+  optional uint64 data_size = 2;
+  optional uint64 offsets_size = 3;
+  optional uint64 extra_buffers_size = 4;
+}
+message BinderTransactionFailedBufferReleaseFtraceEvent {
+  optional int32 debug_id = 1;
+  optional uint64 data_size = 2;
+  optional uint64 offsets_size = 3;
+  optional uint64 extra_buffers_size = 4;
+}
+message BinderTransactionFdRecvFtraceEvent {
+  optional int32 debug_id = 1;
+  optional int32 fd = 2;
+  optional uint64 offset = 3;
+}
+message BinderTransactionFdSendFtraceEvent {
+  optional int32 debug_id = 1;
+  optional int32 fd = 2;
+  optional uint64 offset = 3;
+}
+message BinderTransactionNodeToRefFtraceEvent {
+  optional int32 debug_id = 1;
+  optional int32 node_debug_id = 2;
+  optional uint64 node_ptr = 3;
+  optional int32 ref_debug_id = 4;
+  optional uint32 ref_desc = 5;
+}
+message BinderTransactionRefToNodeFtraceEvent {
+  optional int32 debug_id = 1;
+  optional int32 ref_debug_id = 2;
+  optional uint32 ref_desc = 3;
+  optional int32 node_debug_id = 4;
+  optional uint64 node_ptr = 5;
+}
+message BinderTransactionRefToRefFtraceEvent {
+  optional int32 debug_id = 1;
+  optional int32 node_debug_id = 2;
+  optional int32 src_ref_debug_id = 3;
+  optional uint32 src_ref_desc = 4;
+  optional int32 dest_ref_debug_id = 5;
+  optional uint32 dest_ref_desc = 6;
+}
+message BinderTransactionUpdateBufferReleaseFtraceEvent {
+  optional int32 debug_id = 1;
+  optional uint64 data_size = 2;
+  optional uint64 offsets_size = 3;
+  optional uint64 extra_buffers_size = 4;
+}
+message BinderTxnLatencyFreeFtraceEvent {
+  optional int32 debug_id = 1;
+  optional int32 from_proc = 2;
+  optional int32 from_thread = 3;
+  optional int32 to_proc = 4;
+  optional int32 to_thread = 5;
+  optional uint32 code = 6;
+  optional uint32 flags = 7;
+}
+message BinderUnmapKernelEndFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderUnmapKernelStartFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderUnmapUserEndFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderUnmapUserStartFtraceEvent {
+  optional int32 proc = 1;
+  optional uint64 page_index = 2;
+}
+message BinderUpdatePageRangeFtraceEvent {
+  optional int32 proc = 1;
+  optional uint32 allocate = 2;
+  optional uint64 offset = 3;
+  optional uint64 size = 4;
+}
+message BinderWaitForWorkFtraceEvent {
+  optional uint32 proc_work = 1;
+  optional uint32 transaction_stack = 2;
+  optional uint32 thread_todo = 3;
+}
+message BinderWriteDoneFtraceEvent {
+  optional int32 ret = 1;
+}

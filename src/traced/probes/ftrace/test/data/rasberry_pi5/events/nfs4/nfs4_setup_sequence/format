@@ -1,0 +1,14 @@
+name: nfs4_setup_sequence
+ID: 683
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int session;	offset:8;	size:4;	signed:0;
+	field:unsigned int slot_nr;	offset:12;	size:4;	signed:0;
+	field:unsigned int seq_nr;	offset:16;	size:4;	signed:0;
+	field:unsigned int highest_used_slotid;	offset:20;	size:4;	signed:0;
+
+print fmt: "session=0x%08x slot_nr=%u seq_nr=%u highest_used_slotid=%u", REC->session, REC->slot_nr, REC->seq_nr, REC->highest_used_slotid

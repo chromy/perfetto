@@ -1,0 +1,16 @@
+name: svc_stats_latency
+ID: 1186
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:__data_loc u8[] server;	offset:8;	size:4;	signed:0;
+	field:__data_loc u8[] client;	offset:12;	size:4;	signed:0;
+	field:unsigned int netns_ino;	offset:16;	size:4;	signed:0;
+	field:u32 xid;	offset:20;	size:4;	signed:0;
+	field:unsigned long execute;	offset:24;	size:8;	signed:0;
+	field:__data_loc char[] procedure;	offset:32;	size:4;	signed:0;
+
+print fmt: "xid=0x%08x server=%pISpc client=%pISpc proc=%s execute-us=%lu", REC->xid, __get_sockaddr(server), __get_sockaddr(client), __get_str(procedure), REC->execute

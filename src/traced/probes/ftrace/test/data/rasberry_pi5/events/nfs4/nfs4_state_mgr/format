@@ -1,0 +1,12 @@
+name: nfs4_state_mgr
+ID: 682
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long state;	offset:8;	size:8;	signed:0;
+	field:__data_loc char[] hostname;	offset:16;	size:4;	signed:0;
+
+print fmt: "hostname=%s clp state=%s", __get_str(hostname), __print_flags(REC->state, "|", { ((((1UL))) << (0)), "MANAGER_RUNNING" }, { ((((1UL))) << (1)), "CHECK_LEASE" }, { ((((1UL))) << (2)), "LEASE_EXPIRED" }, { ((((1UL))) << (3)), "RECLAIM_REBOOT" }, { ((((1UL))) << (4)), "RECLAIM_NOGRACE" }, { ((((1UL))) << (5)), "DELEGRETURN" }, { ((((1UL))) << (6)), "SESSION_RESET" }, { ((((1UL))) << (7)), "LEASE_CONFIRM" }, { ((((1UL))) << (8)), "SERVER_SCOPE_MISMATCH" }, { ((((1UL))) << (9)), "PURGE_STATE" }, { ((((1UL))) << (10)), "BIND_CONN_TO_SESSION" }, { ((((1UL))) << (11)), "MOVED" }, { ((((1UL))) << (12)), "LEASE_MOVED" }, { ((((1UL))) << (13)), "DELEGATION_EXPIRED" }, { ((((1UL))) << (14)), "RUN_MANAGER" }, { ((((1UL))) << (15)), "MANAGER_AVAILABLE" }, { ((((1UL))) << (16)), "RECALL_RUNNING" }, { ((((1UL))) << (17)), "RECALL_ANY_LAYOUT_READ" }, { ((((1UL))) << (18)), "RECALL_ANY_LAYOUT_RW" }, { ((((1UL))) << (19)), "DELERETURN_DELAYED" })

@@ -13,3 +13,33 @@ message OomScoreAdjUpdateFtraceEvent {
 message MarkVictimFtraceEvent {
   optional int32 pid = 1;
 }
+message CompactRetryFtraceEvent {
+  optional int32 order = 1;
+  optional int32 priority = 2;
+  optional int32 result = 3;
+  optional int32 retries = 4;
+  optional int32 max_retries = 5;
+  optional uint32 ret = 6;
+}
+message FinishTaskReapingFtraceEvent {
+  optional int32 pid = 1;
+}
+message ReclaimRetryZoneFtraceEvent {
+  optional int32 node = 1;
+  optional int32 zone_idx = 2;
+  optional int32 order = 3;
+  optional uint64 reclaimable = 4;
+  optional uint64 available = 5;
+  optional uint64 min_wmark = 6;
+  optional int32 no_progress_loops = 7;
+  optional uint32 wmark_check = 8;
+}
+message SkipTaskReapingFtraceEvent {
+  optional int32 pid = 1;
+}
+message StartTaskReapingFtraceEvent {
+  optional int32 pid = 1;
+}
+message WakeReaperFtraceEvent {
+  optional int32 pid = 1;
+}

@@ -1,0 +1,12 @@
+name: nfs_cb_no_clp
+ID: 677
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u32 xid;	offset:8;	size:4;	signed:0;
+	field:u32 cbident;	offset:12;	size:4;	signed:0;
+
+print fmt: "xid=0x%08x cb_ident=0x%08x", REC->xid, REC->cbident

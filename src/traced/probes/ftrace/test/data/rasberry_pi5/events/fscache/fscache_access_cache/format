@@ -1,0 +1,14 @@
+name: fscache_access_cache
+ID: 364
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int cache;	offset:8;	size:4;	signed:0;
+	field:int ref;	offset:12;	size:4;	signed:1;
+	field:int n_accesses;	offset:16;	size:4;	signed:1;
+	field:enum fscache_access_trace why;	offset:20;	size:4;	signed:0;
+
+print fmt: "C=%08x %s r=%d a=%d", REC->cache, __print_symbolic(REC->why, { 0, "BEGIN acq_vol" }, { 1, "END   acq_vol" }, { 2, "PIN   cache  " }, { 3, "UNPIN cache  " }, { 4, "BEGIN inval  " }, { 5, "END   inval  " }, { 6, "END   io     " }, { 7, "END   io_notl" }, { 8, "BEGIN io_read" }, { 9, "BEGIN io_resz" }, { 10, "WAIT  io     " }, { 11, "BEGIN io_writ" }, { 12, "BEGIN lookup " }, { 13, "END   lookup " }, { 14, "END   lookupf" }, { 15, "BEGIN rlq_vol" }, { 16, "END   rlq_vol" }, { 17, "END   unlive " }), REC->ref, REC->n_accesses

@@ -694,3 +694,196 @@ message Ext4ZeroRangeFtraceEvent {
   optional int64 len = 4;
   optional int32 mode = 5;
 }
+message Ext4ErrorFtraceEvent {
+  optional uint64 dev = 1;
+  optional string function = 2;
+  optional uint32 line = 3;
+}
+message Ext4EsFindExtentRangeEnterFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 lblk = 3;
+}
+message Ext4EsFindExtentRangeExitFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 lblk = 3;
+  optional uint32 len = 4;
+  optional uint64 pblk = 5;
+  optional uint32 status = 6;
+}
+message Ext4EsInsertDelayedBlockFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint32 lblk = 3;
+  optional uint32 len = 4;
+  optional uint64 pblk = 5;
+  optional uint32 status = 6;
+  optional uint32 allocated = 7;
+}
+message Ext4FcCleanupFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 j_fc_off = 2;
+  optional int32 full = 3;
+  optional uint32 tid = 4;
+}
+message Ext4FcCommitStartFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 tid = 2;
+}
+message Ext4FcCommitStopFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 nblks = 2;
+  optional int32 reason = 3;
+  optional int32 num_fc = 4;
+  optional int32 num_fc_ineligible = 5;
+  optional int32 nblks_agg = 6;
+  optional uint32 tid = 7;
+}
+message Ext4FcReplayFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 tag = 2;
+  optional int32 ino = 3;
+  optional int32 priv1 = 4;
+  optional int32 priv2 = 5;
+}
+message Ext4FcReplayScanFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 error = 2;
+  optional int32 off = 3;
+}
+message Ext4FcStatsFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 sbi = 2;
+  optional int32 count = 3;
+  optional uint64 fc_commits = 4;
+  optional uint64 fc_ineligible_commits = 5;
+  optional uint64 fc_numblks = 6;
+}
+message Ext4FcTrackCreateFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 ino = 2;
+  optional int32 error = 3;
+  optional uint32 t_tid = 4;
+  optional uint64 i_ino = 5;
+  optional uint32 i_sync_tid = 6;
+}
+message Ext4FcTrackInodeFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 ino = 2;
+  optional int32 error = 3;
+  optional uint32 t_tid = 4;
+  optional uint64 i_ino = 5;
+  optional uint32 i_sync_tid = 6;
+}
+message Ext4FcTrackLinkFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 ino = 2;
+  optional int32 error = 3;
+  optional uint32 t_tid = 4;
+  optional uint64 i_ino = 5;
+  optional uint32 i_sync_tid = 6;
+}
+message Ext4FcTrackRangeFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 ino = 2;
+  optional int64 start = 3;
+  optional int64 end = 4;
+  optional int32 error = 5;
+  optional uint32 t_tid = 6;
+  optional uint64 i_ino = 7;
+  optional uint32 i_sync_tid = 8;
+}
+message Ext4FcTrackUnlinkFtraceEvent {
+  optional uint64 dev = 1;
+  optional int32 ino = 2;
+  optional int32 error = 3;
+  optional uint32 t_tid = 4;
+  optional uint64 i_ino = 5;
+  optional uint32 i_sync_tid = 6;
+}
+message Ext4FsmapHighKeyFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 keydev = 2;
+  optional uint32 agno = 3;
+  optional uint64 bno = 4;
+  optional uint64 len = 5;
+  optional uint64 owner = 6;
+}
+message Ext4FsmapLowKeyFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 keydev = 2;
+  optional uint32 agno = 3;
+  optional uint64 bno = 4;
+  optional uint64 len = 5;
+  optional uint64 owner = 6;
+}
+message Ext4FsmapMappingFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 keydev = 2;
+  optional uint32 agno = 3;
+  optional uint64 bno = 4;
+  optional uint64 len = 5;
+  optional uint64 owner = 6;
+}
+message Ext4GetfsmapHighKeyFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 keydev = 2;
+  optional uint64 block = 3;
+  optional uint64 len = 4;
+  optional uint64 owner = 5;
+  optional uint64 flags = 6;
+}
+message Ext4GetfsmapLowKeyFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 keydev = 2;
+  optional uint64 block = 3;
+  optional uint64 len = 4;
+  optional uint64 owner = 5;
+  optional uint64 flags = 6;
+}
+message Ext4GetfsmapMappingFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 keydev = 2;
+  optional uint64 block = 3;
+  optional uint64 len = 4;
+  optional uint64 owner = 5;
+  optional uint64 flags = 6;
+}
+message Ext4InvalidateFolioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 index = 3;
+  optional uint64 offset = 4;
+  optional uint64 length = 5;
+}
+message Ext4JournalledInvalidateFolioFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+  optional uint64 index = 3;
+  optional uint64 offset = 4;
+  optional uint64 length = 5;
+}
+message Ext4LazyItableInitFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 group = 2;
+}
+message Ext4NfsCommitMetadataFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 ino = 2;
+}
+message Ext4PrefetchBitmapsFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 group = 2;
+  optional uint32 next = 3;
+  optional uint32 ios = 4;
+}
+message Ext4ShutdownFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint32 flags = 2;
+}
+message Ext4UpdateSbFtraceEvent {
+  optional uint64 dev = 1;
+  optional uint64 fsblk = 2;
+  optional uint32 flags = 3;
+}

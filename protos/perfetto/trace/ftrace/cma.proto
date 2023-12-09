@@ -7,7 +7,7 @@ package perfetto.protos;
 
 message CmaAllocStartFtraceEvent {
   optional uint32 align = 1;
-  optional uint32 count = 2;
+  optional uint64 count = 2;
   optional string name = 3;
 }
 message CmaAllocInfoFtraceEvent {
@@ -21,4 +21,24 @@ message CmaAllocInfoFtraceEvent {
   optional uint64 nr_migrated = 8;
   optional uint64 nr_reclaimed = 9;
   optional uint64 pfn = 10;
+}
+message CmaAllocBusyRetryFtraceEvent {
+  optional string name = 1;
+  optional uint64 pfn = 2;
+  optional uint64 page = 3;
+  optional uint64 count = 4;
+  optional uint32 align = 5;
+}
+message CmaAllocFinishFtraceEvent {
+  optional string name = 1;
+  optional uint64 pfn = 2;
+  optional uint64 page = 3;
+  optional uint64 count = 4;
+  optional uint32 align = 5;
+}
+message CmaReleaseFtraceEvent {
+  optional string name = 1;
+  optional uint64 pfn = 2;
+  optional uint64 page = 3;
+  optional uint64 count = 4;
 }

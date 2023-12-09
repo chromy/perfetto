@@ -1,0 +1,14 @@
+name: nfs4_find_deviceid
+ID: 607
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:dev_t dev;	offset:8;	size:4;	signed:0;
+	field:int status;	offset:12;	size:4;	signed:1;
+	field:__data_loc char[] dstaddr;	offset:16;	size:4;	signed:0;
+	field:unsigned char deviceid[16];	offset:20;	size:16;	signed:0;
+
+print fmt: "dev=%02x:%02x: deviceid=%s, dstaddr=%s, status=%d", ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), __print_hex(REC->deviceid, 16), __get_str(dstaddr), REC->status

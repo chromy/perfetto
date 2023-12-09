@@ -1,0 +1,16 @@
+name: netfs_read
+ID: 357
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int rreq;	offset:8;	size:4;	signed:0;
+	field:unsigned int cookie;	offset:12;	size:4;	signed:0;
+	field:loff_t start;	offset:16;	size:8;	signed:1;
+	field:size_t len;	offset:24;	size:8;	signed:0;
+	field:enum netfs_read_trace what;	offset:32;	size:1;	signed:0;
+	field:unsigned int netfs_inode;	offset:36;	size:4;	signed:0;
+
+print fmt: "R=%08x %s c=%08x ni=%x s=%llx %zx", REC->rreq, __print_symbolic(REC->what, { 0, "EXPANDED " }, { 1, "READAHEAD" }, { 2, "READPAGE " }, { 3, "WRITEBEGN" }), REC->cookie, REC->netfs_inode, REC->start, REC->len

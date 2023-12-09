@@ -16,3 +16,28 @@ message InetSockSetStateFtraceEvent {
   optional uint64 skaddr = 8;
   optional uint32 sport = 9;
 }
+message InetSkErrorReportFtraceEvent {
+  optional int32 error = 1;
+  optional uint32 sport = 2;
+  optional uint32 dport = 3;
+  optional uint32 family = 4;
+  optional uint32 protocol = 5;
+  optional uint32 saddr = 6;
+  optional uint32 daddr = 7;
+}
+message SockExceedBufLimitFtraceEvent {
+  optional string name = 1;
+  optional uint64 sysctl_mem = 2;
+  optional int64 allocated = 3;
+  optional int32 sysctl_rmem = 4;
+  optional int32 rmem_alloc = 5;
+  optional int32 sysctl_wmem = 6;
+  optional int32 wmem_alloc = 7;
+  optional int32 wmem_queued = 8;
+  optional int32 kind = 9;
+}
+message SockRcvqueueFullFtraceEvent {
+  optional int32 rmem_alloc = 1;
+  optional uint32 truesize = 2;
+  optional int32 sk_rcvbuf = 3;
+}

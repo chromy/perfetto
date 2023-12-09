@@ -1,0 +1,13 @@
+name: xprt_disconnect_done
+ID: 1216
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long state;	offset:8;	size:8;	signed:0;
+	field:__data_loc char[] addr;	offset:16;	size:4;	signed:0;
+	field:__data_loc char[] port;	offset:20;	size:4;	signed:0;
+
+print fmt: "peer=[%s]:%s state=%s", __get_str(addr), __get_str(port), __print_flags(REC->state, "|", { ((((1UL))) << ((0))), "LOCKED" }, { ((((1UL))) << ((1))), "CONNECTED" }, { ((((1UL))) << ((2))), "CONNECTING" }, { ((((1UL))) << ((3))), "CLOSE_WAIT" }, { ((((1UL))) << ((4))), "BOUND" }, { ((((1UL))) << ((5))), "BINDING" }, { ((((1UL))) << ((6))), "CLOSING" }, { ((((1UL))) << ((7))), "OFFLINE" }, { ((((1UL))) << ((8))), "REMOVE" }, { ((((1UL))) << ((9))), "CONGESTED" }, { ((((1UL))) << ((10))), "CWND_WAIT" }, { ((((1UL))) << ((11))), "WRITE_SPACE" }, { ((((1UL))) << ((12))), "SND_IS_COOKIE" })

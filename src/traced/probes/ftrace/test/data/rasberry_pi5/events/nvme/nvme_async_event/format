@@ -1,0 +1,12 @@
+name: nvme_async_event
+ID: 919
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int ctrl_id;	offset:8;	size:4;	signed:1;
+	field:u32 result;	offset:12;	size:4;	signed:0;
+
+print fmt: "nvme%d: NVME_AEN=%#08x [%s]", REC->ctrl_id, REC->result, __print_symbolic(REC->result & 0x7, { NVME_AER_ERROR, "NVME_AER_ERROR" }, { NVME_AER_SMART, "NVME_AER_SMART" }, { NVME_AER_NOTICE, "NVME_AER_NOTICE" }, { NVME_AER_CSS, "NVME_AER_CSS" }, { NVME_AER_VS, "NVME_AER_VS" })

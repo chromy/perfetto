@@ -1,0 +1,17 @@
+name: nfs_xdr_status
+ID: 504
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int task_id;	offset:8;	size:4;	signed:0;
+	field:unsigned int client_id;	offset:12;	size:4;	signed:0;
+	field:u32 xid;	offset:16;	size:4;	signed:0;
+	field:int version;	offset:20;	size:4;	signed:1;
+	field:unsigned long error;	offset:24;	size:8;	signed:0;
+	field:__data_loc char[] program;	offset:32;	size:4;	signed:0;
+	field:__data_loc char[] procedure;	offset:36;	size:4;	signed:0;
+
+print fmt: "task:%08x@%08x xid=0x%08x %sv%d %s error=%ld (%s)", REC->task_id, REC->client_id, REC->xid, __get_str(program), REC->version, __get_str(procedure), -REC->error, __print_symbolic(REC->error, { 0, "OK" }, { 1, "PERM" }, { 2, "NOENT" }, { 5, "IO" }, { 6, "NXIO" }, { 10, "CHILD" }, { 11, "AGAIN" }, { 13, "ACCES" }, { 17, "EXIST" }, { 18, "XDEV" }, { 19, "NODEV" }, { 20, "NOTDIR" }, { 21, "ISDIR" }, { 22, "INVAL" }, { 27, "FBIG" }, { 28, "NOSPC" }, { 30, "ROFS" }, { 31, "MLINK" }, { 45, "OPNOTSUPP" }, { 63, "NAMETOOLONG" }, { 66, "NOTEMPTY" }, { 69, "DQUOT" }, { 70, "STALE" }, { 71, "REMOTE" }, { 99, "WFLUSH" }, { 10001, "BADHANDLE" }, { 10002, "NOTSYNC" }, { 10003, "BADCOOKIE" }, { 10004, "NOTSUPP" }, { 10005, "TOOSMALL" }, { 10006, "REMOTEIO" }, { 10007, "BADTYPE" }, { 10008, "JUKEBOX" })

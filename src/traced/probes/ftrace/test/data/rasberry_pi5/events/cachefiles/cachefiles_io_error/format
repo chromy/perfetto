@@ -1,0 +1,14 @@
+name: cachefiles_io_error
+ID: 706
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int obj;	offset:8;	size:4;	signed:0;
+	field:unsigned int backer;	offset:12;	size:4;	signed:0;
+	field:enum cachefiles_error_trace where;	offset:16;	size:4;	signed:0;
+	field:short error;	offset:20;	size:2;	signed:1;
+
+print fmt: "o=%08x B=%x %s e=%d", REC->obj, REC->backer, __print_symbolic(REC->where, { 0, "fallocate" }, { 1, "getxattr" }, { 2, "link" }, { 3, "lookup" }, { 4, "mkdir" }, { 5, "notify_change" }, { 6, "open" }, { 7, "read" }, { 8, "remxattr" }, { 9, "rename" }, { 10, "seek" }, { 11, "setxattr" }, { 12, "statfs" }, { 13, "tmpfile" }, { 14, "trunc" }, { 15, "unlink" }, { 16, "write" }), REC->error

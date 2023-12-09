@@ -1,0 +1,13 @@
+name: vma_mas_szero
+ID: 286
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:struct maple_tree * mt;	offset:8;	size:8;	signed:0;
+	field:unsigned long start;	offset:16;	size:8;	signed:0;
+	field:unsigned long end;	offset:24;	size:8;	signed:0;
+
+print fmt: "mt_mod %p, (NULL), SNULL, %lu, %lu,", REC->mt, (unsigned long) REC->start, (unsigned long) REC->end

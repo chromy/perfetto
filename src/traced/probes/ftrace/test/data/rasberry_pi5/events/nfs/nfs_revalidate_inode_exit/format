@@ -1,0 +1,19 @@
+name: nfs_revalidate_inode_exit
+ID: 588
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long error;	offset:8;	size:8;	signed:0;
+	field:dev_t dev;	offset:16;	size:4;	signed:0;
+	field:u32 fhandle;	offset:20;	size:4;	signed:0;
+	field:unsigned char type;	offset:24;	size:1;	signed:0;
+	field:u64 fileid;	offset:32;	size:8;	signed:0;
+	field:u64 version;	offset:40;	size:8;	signed:0;
+	field:loff_t size;	offset:48;	size:8;	signed:1;
+	field:unsigned long nfsi_flags;	offset:56;	size:8;	signed:0;
+	field:unsigned long cache_validity;	offset:64;	size:8;	signed:0;
+
+print fmt: "error=%ld (%s) fileid=%02x:%02x:%llu fhandle=0x%08x type=%u (%s) version=%llu size=%lld cache_validity=0x%lx (%s) nfs_flags=0x%lx (%s)", -REC->error, __print_symbolic(REC->error, { 0, "OK" }, { 1, "PERM" }, { 2, "NOENT" }, { 5, "IO" }, { 6, "NXIO" }, { 10, "CHILD" }, { 11, "AGAIN" }, { 13, "ACCES" }, { 17, "EXIST" }, { 18, "XDEV" }, { 19, "NODEV" }, { 20, "NOTDIR" }, { 21, "ISDIR" }, { 22, "INVAL" }, { 27, "FBIG" }, { 28, "NOSPC" }, { 30, "ROFS" }, { 31, "MLINK" }, { 45, "OPNOTSUPP" }, { 63, "NAMETOOLONG" }, { 66, "NOTEMPTY" }, { 69, "DQUOT" }, { 70, "STALE" }, { 71, "REMOTE" }, { 99, "WFLUSH" }, { 10001, "BADHANDLE" }, { 10002, "NOTSYNC" }, { 10003, "BADCOOKIE" }, { 10004, "NOTSUPP" }, { 10005, "TOOSMALL" }, { 10006, "REMOTEIO" }, { 10007, "BADTYPE" }, { 10008, "JUKEBOX" }), ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), (unsigned long long)REC->fileid, REC->fhandle, REC->type, __print_symbolic(REC->type, { 0, "UNKNOWN" }, { 1, "FIFO" }, { 2, "CHR" }, { 4, "DIR" }, { 6, "BLK" }, { 8, "REG" }, { 10, "LNK" }, { 12, "SOCK" }, { 14, "WHT" }), (unsigned long long)REC->version, (long long)REC->size, REC->cache_validity, __print_flags(REC->cache_validity, "|", { ((((1UL))) << (1)), "INVALID_DATA" }, { ((((1UL))) << (2)), "INVALID_ATIME" }, { ((((1UL))) << (3)), "INVALID_ACCESS" }, { ((((1UL))) << (4)), "INVALID_ACL" }, { ((((1UL))) << (6)), "REVAL_FORCED" }, { ((((1UL))) << (7)), "INVALID_LABEL" }, { ((((1UL))) << (8)), "INVALID_CHANGE" }, { ((((1UL))) << (9)), "INVALID_CTIME" }, { ((((1UL))) << (10)), "INVALID_MTIME" }, { ((((1UL))) << (11)), "INVALID_SIZE" }, { ((((1UL))) << (12)), "INVALID_OTHER" }, { ((((1UL))) << (13)), "DATA_INVAL_DEFER" }, { ((((1UL))) << (14)), "INVALID_BLOCKS" }, { ((((1UL))) << (15)), "INVALID_XATTR" }, { ((((1UL))) << (16)), "INVALID_NLINK" }, { ((((1UL))) << (17)), "INVALID_MODE" }), REC->nfsi_flags, __print_flags(REC->nfsi_flags, "|", { ((((1UL))) << ((1))), "STALE" }, { ((((1UL))) << ((2))), "ACL_LRU_SET" }, { ((((1UL))) << ((3))), "INVALIDATING" }, { ((((1UL))) << ((5))), "FSCACHE" }, { ((((1UL))) << ((9))), "NEED_LAYOUTCOMMIT" }, { ((((1UL))) << ((10))), "LAYOUTCOMMIT" }, { ((((1UL))) << ((11))), "LAYOUTSTATS" }, { ((((1UL))) << ((12))), "ODIRECT" })

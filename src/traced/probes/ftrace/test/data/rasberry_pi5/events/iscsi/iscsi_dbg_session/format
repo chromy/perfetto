@@ -1,0 +1,12 @@
+name: iscsi_dbg_session
+ID: 916
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:__data_loc char[] dname;	offset:8;	size:4;	signed:0;
+	field:__data_loc char[] msg;	offset:12;	size:4;	signed:0;
+
+print fmt: "%s: %s", __get_str(dname), __get_str(msg)

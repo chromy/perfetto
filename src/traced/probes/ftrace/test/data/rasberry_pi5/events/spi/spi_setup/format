@@ -1,0 +1,16 @@
+name: spi_setup
+ID: 928
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int bus_num;	offset:8;	size:4;	signed:1;
+	field:int chip_select;	offset:12;	size:4;	signed:1;
+	field:unsigned long mode;	offset:16;	size:8;	signed:0;
+	field:unsigned int bits_per_word;	offset:24;	size:4;	signed:0;
+	field:unsigned int max_speed_hz;	offset:28;	size:4;	signed:0;
+	field:int status;	offset:32;	size:4;	signed:1;
+
+print fmt: "spi%d.%d setup mode %lu, %s%s%s%s%u bits/w, %u Hz max --> %d", REC->bus_num, REC->chip_select, (REC->mode & ((((1UL)) << (1))|(((1UL)) << (0)))), (REC->mode & (((1UL)) << (2))) ? "cs_high, " : "", (REC->mode & (((1UL)) << (3))) ? "lsb, " : "", (REC->mode & (((1UL)) << (4))) ? "3wire, " : "", (REC->mode & (((1UL)) << (5))) ? "loopback, " : "", REC->bits_per_word, REC->max_speed_hz, REC->status

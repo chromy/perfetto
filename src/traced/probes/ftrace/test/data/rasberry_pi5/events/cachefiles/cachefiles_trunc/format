@@ -1,0 +1,15 @@
+name: cachefiles_trunc
+ID: 711
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int obj;	offset:8;	size:4;	signed:0;
+	field:unsigned int backer;	offset:12;	size:4;	signed:0;
+	field:enum cachefiles_trunc_trace why;	offset:16;	size:4;	signed:0;
+	field:loff_t from;	offset:24;	size:8;	signed:1;
+	field:loff_t to;	offset:32;	size:8;	signed:1;
+
+print fmt: "o=%08x B=%x %s l=%llx->%llx", REC->obj, REC->backer, __print_symbolic(REC->why, { 0, "DIOADJ" }, { 1, "EXPTMP" }, { 2, "SHRINK" }), REC->from, REC->to

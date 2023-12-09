@@ -1,0 +1,19 @@
+name: netfs_sreq
+ID: 355
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int rreq;	offset:8;	size:4;	signed:0;
+	field:unsigned short index;	offset:12;	size:2;	signed:0;
+	field:short error;	offset:14;	size:2;	signed:1;
+	field:unsigned short flags;	offset:16;	size:2;	signed:0;
+	field:enum netfs_io_source source;	offset:18;	size:1;	signed:0;
+	field:enum netfs_sreq_trace what;	offset:19;	size:1;	signed:0;
+	field:size_t len;	offset:24;	size:8;	signed:0;
+	field:size_t transferred;	offset:32;	size:8;	signed:0;
+	field:loff_t start;	offset:40;	size:8;	signed:1;
+
+print fmt: "R=%08x[%u] %s %s f=%02x s=%llx %zx/%zx e=%d", REC->rreq, REC->index, __print_symbolic(REC->source, { 0, "ZERO" }, { 1, "DOWN" }, { 2, "READ" }, { 3, "INVL" }), __print_symbolic(REC->what, { 0, "RDOWN" }, { 1, "FREE " }, { 2, "PREP " }, { 3, "SHORT" }, { 4, "SUBMT" }, { 5, "TERM " }, { 6, "WRITE" }, { 7, "SKIP " }, { 8, "WTERM" }), REC->flags, REC->start, REC->transferred, REC->len, REC->error

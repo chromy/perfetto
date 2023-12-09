@@ -1,0 +1,13 @@
+name: svcsock_new_socket
+ID: 1172
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long type;	offset:8;	size:8;	signed:0;
+	field:unsigned long family;	offset:16;	size:8;	signed:0;
+	field:bool listener;	offset:24;	size:1;	signed:0;
+
+print fmt: "type=%s family=%s%s", __print_symbolic(REC->type, { 1, "STREAM" }, { 2, "DGRAM" }, { 3, "RAW" }, { 4, "RDM" }, { 5, "SEQPACKET" }, { 6, "DCCP" }, { 10, "PACKET" }), __print_symbolic(REC->family, { 0, "AF_UNSPEC" }, { 1, "AF_UNIX" }, { 1, "AF_LOCAL" }, { 2, "AF_INET" }, { 10, "AF_INET6" }), REC->listener ? " (listener)" : ""

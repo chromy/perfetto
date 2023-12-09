@@ -1,0 +1,14 @@
+name: xs_stream_read_data
+ID: 1200
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:ssize_t err;	offset:8;	size:8;	signed:1;
+	field:size_t total;	offset:16;	size:8;	signed:0;
+	field:__data_loc char[] addr;	offset:24;	size:4;	signed:0;
+	field:__data_loc char[] port;	offset:28;	size:4;	signed:0;
+
+print fmt: "peer=[%s]:%s err=%zd total=%zu", __get_str(addr), __get_str(port), REC->err, REC->total

@@ -138,8 +138,9 @@ message KmallocFtraceEvent {
   optional uint64 bytes_alloc = 1;
   optional uint64 bytes_req = 2;
   optional uint64 call_site = 3;
-  optional uint32 gfp_flags = 4;
+  optional uint64 gfp_flags = 4;
   optional uint64 ptr = 5;
+  optional int32 node = 6;
 }
 message KmallocNodeFtraceEvent {
   optional uint64 bytes_alloc = 1;
@@ -153,8 +154,10 @@ message KmemCacheAllocFtraceEvent {
   optional uint64 bytes_alloc = 1;
   optional uint64 bytes_req = 2;
   optional uint64 call_site = 3;
-  optional uint32 gfp_flags = 4;
+  optional uint64 gfp_flags = 4;
   optional uint64 ptr = 5;
+  optional int32 node = 6;
+  optional uint32 accounted = 7;
 }
 message KmemCacheAllocNodeFtraceEvent {
   optional uint64 bytes_alloc = 1;
@@ -167,6 +170,7 @@ message KmemCacheAllocNodeFtraceEvent {
 message KmemCacheFreeFtraceEvent {
   optional uint64 call_site = 1;
   optional uint64 ptr = 2;
+  optional string name = 3;
 }
 message MigratePagesEndFtraceEvent {
   optional int32 mode = 1;
@@ -178,7 +182,7 @@ message MigrateRetryFtraceEvent {
   optional int32 tries = 1;
 }
 message MmPageAllocFtraceEvent {
-  optional uint32 gfp_flags = 1;
+  optional uint64 gfp_flags = 1;
   optional int32 migratetype = 2;
   optional uint32 order = 3;
   optional uint64 page = 4;
@@ -198,6 +202,7 @@ message MmPageAllocZoneLockedFtraceEvent {
   optional uint32 order = 2;
   optional uint64 page = 3;
   optional uint64 pfn = 4;
+  optional int32 percpu_refill = 5;
 }
 message MmPageFreeFtraceEvent {
   optional uint32 order = 1;

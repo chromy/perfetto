@@ -1,0 +1,24 @@
+name: rdev_add_link_station
+ID: 1364
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:char wiphy_name[32];	offset:8;	size:32;	signed:0;
+	field:char name[16];	offset:40;	size:16;	signed:0;
+	field:int ifindex;	offset:56;	size:4;	signed:1;
+	field:u8 mld_mac[6];	offset:60;	size:6;	signed:0;
+	field:u8 link_mac[6];	offset:66;	size:6;	signed:0;
+	field:u32 link_id;	offset:72;	size:4;	signed:0;
+	field:__data_loc u8[] supported_rates;	offset:76;	size:4;	signed:0;
+	field:u8 ht_capa[26];	offset:80;	size:26;	signed:0;
+	field:u8 vht_capa[12];	offset:106;	size:12;	signed:0;
+	field:u8 opmode_notif;	offset:118;	size:1;	signed:0;
+	field:bool opmode_notif_used;	offset:119;	size:1;	signed:0;
+	field:__data_loc u8[] he_capa;	offset:120;	size:4;	signed:0;
+	field:u8 he_6ghz_capa[2];	offset:124;	size:2;	signed:0;
+	field:__data_loc u8[] eht_capa;	offset:128;	size:4;	signed:0;
+
+print fmt: "%s, netdev:%s(%d), station mac: %pM, link mac: %pM, link id: %u", REC->wiphy_name, REC->name, REC->ifindex, (REC->mld_mac), (REC->link_mac), REC->link_id

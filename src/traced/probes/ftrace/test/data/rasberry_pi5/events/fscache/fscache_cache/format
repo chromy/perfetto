@@ -1,0 +1,13 @@
+name: fscache_cache
+ID: 368
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int cache;	offset:8;	size:4;	signed:0;
+	field:int usage;	offset:12;	size:4;	signed:1;
+	field:enum fscache_cache_trace where;	offset:16;	size:4;	signed:0;
+
+print fmt: "C=%08x %s r=%d", REC->cache, __print_symbolic(REC->where, { 0, "*COLLIDE*" }, { 1, "GET acq  " }, { 2, "NEW acq  " }, { 3, "PUT alvol" }, { 4, "PUT cache" }, { 5, "PUT pfail" }, { 6, "PUT relnq" }, { 7, "PUT vol  " }), REC->usage

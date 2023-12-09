@@ -1,0 +1,16 @@
+name: xs_stream_read_request
+ID: 1199
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:__data_loc char[] addr;	offset:8;	size:4;	signed:0;
+	field:__data_loc char[] port;	offset:12;	size:4;	signed:0;
+	field:u32 xid;	offset:16;	size:4;	signed:0;
+	field:unsigned long copied;	offset:24;	size:8;	signed:0;
+	field:unsigned int reclen;	offset:32;	size:4;	signed:0;
+	field:unsigned int offset;	offset:36;	size:4;	signed:0;
+
+print fmt: "peer=[%s]:%s xid=0x%08x copied=%lu reclen=%u offset=%u", __get_str(addr), __get_str(port), REC->xid, REC->copied, REC->reclen, REC->offset

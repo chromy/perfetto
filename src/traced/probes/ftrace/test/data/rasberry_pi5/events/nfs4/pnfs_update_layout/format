@@ -1,0 +1,20 @@
+name: pnfs_update_layout
+ID: 617
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:dev_t dev;	offset:8;	size:4;	signed:0;
+	field:u64 fileid;	offset:16;	size:8;	signed:0;
+	field:u32 fhandle;	offset:24;	size:4;	signed:0;
+	field:loff_t pos;	offset:32;	size:8;	signed:1;
+	field:u64 count;	offset:40;	size:8;	signed:0;
+	field:enum pnfs_iomode iomode;	offset:48;	size:4;	signed:0;
+	field:int layoutstateid_seq;	offset:52;	size:4;	signed:1;
+	field:u32 layoutstateid_hash;	offset:56;	size:4;	signed:0;
+	field:long lseg;	offset:64;	size:8;	signed:1;
+	field:enum pnfs_update_layout_reason reason;	offset:72;	size:4;	signed:0;
+
+print fmt: "fileid=%02x:%02x:%llu fhandle=0x%08x iomode=%s pos=%llu count=%llu layoutstateid=%d:0x%08x lseg=0x%lx (%s)", ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), (unsigned long long)REC->fileid, REC->fhandle, __print_symbolic(REC->iomode, { 1, "READ" }, { 2, "RW" }, { 3, "ANY" }), (unsigned long long)REC->pos, (unsigned long long)REC->count, REC->layoutstateid_seq, REC->layoutstateid_hash, REC->lseg, __print_symbolic(REC->reason, { 0, "unknown" }, { 1, "no pnfs" }, { 2, "read+zerolen" }, { 3, "mdsthresh" }, { 4, "nomem" }, { 5, "bulk recall" }, { 6, "io test fail" }, { 7, "found cached" }, { 8, "layoutreturn" }, { 10, "layouts blocked" }, { 11, "invalid open" }, { 9, "retrying" }, { 12, "sent layoutget" }, { 13, "exit" })

@@ -1,0 +1,14 @@
+name: rpcb_setport
+ID: 1197
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int task_id;	offset:8;	size:4;	signed:0;
+	field:unsigned int client_id;	offset:12;	size:4;	signed:0;
+	field:int status;	offset:16;	size:4;	signed:1;
+	field:unsigned short port;	offset:20;	size:2;	signed:0;
+
+print fmt: "task:%08x@%08x status=%d port=%u", REC->task_id, REC->client_id, REC->status, REC->port

@@ -1,0 +1,14 @@
+name: rseq_ip_fixup
+ID: 217
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long regs_ip;	offset:8;	size:8;	signed:0;
+	field:unsigned long start_ip;	offset:16;	size:8;	signed:0;
+	field:unsigned long post_commit_offset;	offset:24;	size:8;	signed:0;
+	field:unsigned long abort_ip;	offset:32;	size:8;	signed:0;
+
+print fmt: "regs_ip=0x%lx start_ip=0x%lx post_commit_offset=%lu abort_ip=0x%lx", REC->regs_ip, REC->start_ip, REC->post_commit_offset, REC->abort_ip

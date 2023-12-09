@@ -1,0 +1,14 @@
+name: mm_vmscan_throttled
+ID: 233
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int nid;	offset:8;	size:4;	signed:1;
+	field:int usec_timeout;	offset:12;	size:4;	signed:1;
+	field:int usec_delayed;	offset:16;	size:4;	signed:1;
+	field:int reason;	offset:20;	size:4;	signed:1;
+
+print fmt: "nid=%d usec_timeout=%d usect_delayed=%d reason=%s", REC->nid, REC->usec_timeout, REC->usec_delayed, (REC->reason) ? __print_flags(REC->reason, "|", {(1 << VMSCAN_THROTTLE_WRITEBACK), "VMSCAN_THROTTLE_WRITEBACK"}, {(1 << VMSCAN_THROTTLE_ISOLATED), "VMSCAN_THROTTLE_ISOLATED"}, {(1 << VMSCAN_THROTTLE_NOPROGRESS), "VMSCAN_THROTTLE_NOPROGRESS"}, {(1 << VMSCAN_THROTTLE_CONGESTED), "VMSCAN_THROTTLE_CONGESTED"} ) : "VMSCAN_THROTTLE_NONE"

@@ -1,0 +1,13 @@
+name: cachefiles_vol_coherency
+ID: 715
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int vol;	offset:8;	size:4;	signed:0;
+	field:enum cachefiles_coherency_trace why;	offset:12;	size:4;	signed:0;
+	field:u64 ino;	offset:16;	size:8;	signed:0;
+
+print fmt: "V=%08x %s B=%llx", REC->vol, __print_symbolic(REC->why, { 0, "BAD aux " }, { 1, "BAD cont" }, { 2, "BAD dirt" }, { 3, "BAD len " }, { 4, "BAD osiz" }, { 5, "OK      " }, { 6, "BAD type" }, { 7, "BAD xatt" }, { 8, "SET fail" }, { 9, "SET ok  " }, { 10, "VOL BAD cmp " }, { 11, "VOL OK      " }, { 12, "VOL BAD resv" }, { 13, "VOL BAD xatt" }, { 14, "VOL SET fail" }, { 15, "VOL SET ok  " }), REC->ino

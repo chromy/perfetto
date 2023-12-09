@@ -8,7 +8,7 @@ package perfetto.protos;
 message MmVmscanDirectReclaimBeginFtraceEvent {
   optional int32 order = 1;
   optional int32 may_writepage = 2;
-  optional uint32 gfp_flags = 3;
+  optional uint64 gfp_flags = 3;
 }
 message MmVmscanDirectReclaimEndFtraceEvent {
   optional uint64 nr_reclaimed = 1;
@@ -24,7 +24,7 @@ message MmVmscanKswapdSleepFtraceEvent {
 message MmShrinkSlabStartFtraceEvent {
   optional uint64 cache_items = 1;
   optional uint64 delta = 2;
-  optional uint32 gfp_flags = 3;
+  optional uint64 gfp_flags = 3;
   optional uint64 lru_pgs = 4;
   optional int64 nr_objects_to_shrink = 5;
   optional uint64 pgs_scanned = 6;
@@ -42,4 +42,83 @@ message MmShrinkSlabEndFtraceEvent {
   optional int64 total_scan = 5;
   optional int64 unused_scan = 6;
   optional int32 nid = 7;
+}
+message MmVmscanLruIsolateFtraceEvent {
+  optional int32 order = 1;
+  optional uint64 nr_requested = 2;
+  optional uint64 nr_scanned = 3;
+  optional uint64 nr_taken = 4;
+  optional uint32 isolate_mode = 5;
+  optional int32 file = 6;
+  optional uint32 nr_lumpy_taken = 7;
+  optional uint32 nr_lumpy_dirty = 8;
+  optional uint32 nr_lumpy_failed = 9;
+  optional int32 highest_zoneidx = 10;
+  optional uint64 nr_skipped = 11;
+  optional int32 lru = 12;
+}
+message MmVmscanLruShrinkActiveFtraceEvent {
+  optional int32 nid = 1;
+  optional uint64 nr_taken = 2;
+  optional uint64 nr_active = 3;
+  optional uint64 nr_deactivated = 4;
+  optional uint64 nr_referenced = 5;
+  optional int32 priority = 6;
+  optional int32 reclaim_flags = 7;
+}
+message MmVmscanLruShrinkInactiveFtraceEvent {
+  optional int32 nid = 1;
+  optional int32 zid = 2;
+  optional uint64 nr_scanned = 3;
+  optional uint64 nr_reclaimed = 4;
+  optional int32 priority = 5;
+  optional int32 reclaim_flags = 6;
+  optional uint64 nr_dirty = 7;
+  optional uint64 nr_writeback = 8;
+  optional uint64 nr_congested = 9;
+  optional uint64 nr_immediate = 10;
+  optional uint32 nr_activate0 = 11;
+  optional uint32 nr_activate1 = 12;
+  optional uint64 nr_ref_keep = 13;
+  optional uint64 nr_unmap_fail = 14;
+}
+message MmVmscanMemcgReclaimBeginFtraceEvent {
+  optional int32 order = 1;
+  optional int32 may_writepage = 2;
+  optional uint64 gfp_flags = 3;
+}
+message MmVmscanMemcgReclaimEndFtraceEvent {
+  optional uint64 nr_reclaimed = 1;
+}
+message MmVmscanMemcgSoftlimitReclaimBeginFtraceEvent {
+  optional int32 order = 1;
+  optional int32 may_writepage = 2;
+  optional uint64 gfp_flags = 3;
+}
+message MmVmscanMemcgSoftlimitReclaimEndFtraceEvent {
+  optional uint64 nr_reclaimed = 1;
+}
+message MmVmscanNodeReclaimBeginFtraceEvent {
+  optional int32 nid = 1;
+  optional int32 order = 2;
+  optional uint64 gfp_flags = 3;
+}
+message MmVmscanNodeReclaimEndFtraceEvent {
+  optional uint64 nr_reclaimed = 1;
+}
+message MmVmscanThrottledFtraceEvent {
+  optional int32 nid = 1;
+  optional int32 usec_timeout = 2;
+  optional int32 usec_delayed = 3;
+  optional int32 reason = 4;
+}
+message MmVmscanWakeupKswapdFtraceEvent {
+  optional int32 nid = 1;
+  optional int32 zid = 2;
+  optional int32 order = 3;
+  optional uint64 gfp_flags = 4;
+}
+message MmVmscanWriteFolioFtraceEvent {
+  optional uint64 pfn = 1;
+  optional int32 reclaim_flags = 2;
 }

@@ -15,3 +15,64 @@ message ClkSetRateFtraceEvent {
   optional string name = 1;
   optional uint64 rate = 2;
 }
+message ClkDisableCompleteFtraceEvent {
+  optional string name = 1;
+}
+message ClkEnableCompleteFtraceEvent {
+  optional string name = 1;
+}
+message ClkPrepareFtraceEvent {
+  optional string name = 1;
+}
+message ClkPrepareCompleteFtraceEvent {
+  optional string name = 1;
+}
+message ClkSetDutyCycleFtraceEvent {
+  optional string name = 1;
+  optional uint32 num = 2;
+  optional uint32 den = 3;
+}
+message ClkSetDutyCycleCompleteFtraceEvent {
+  optional string name = 1;
+  optional uint32 num = 2;
+  optional uint32 den = 3;
+}
+message ClkSetMaxRateFtraceEvent {
+  optional string name = 1;
+  optional uint64 rate = 2;
+}
+message ClkSetMinRateFtraceEvent {
+  optional string name = 1;
+  optional uint64 rate = 2;
+}
+message ClkSetParentFtraceEvent {
+  optional string name = 1;
+  optional string pname = 2;
+}
+message ClkSetParentCompleteFtraceEvent {
+  optional string name = 1;
+  optional string pname = 2;
+}
+message ClkSetPhaseFtraceEvent {
+  optional string name = 1;
+  optional int32 phase = 2;
+}
+message ClkSetPhaseCompleteFtraceEvent {
+  optional string name = 1;
+  optional int32 phase = 2;
+}
+message ClkSetRateCompleteFtraceEvent {
+  optional string name = 1;
+  optional uint64 rate = 2;
+}
+message ClkSetRateRangeFtraceEvent {
+  optional string name = 1;
+  optional uint64 min = 2;
+  optional uint64 max = 3;
+}
+message ClkUnprepareFtraceEvent {
+  optional string name = 1;
+}
+message ClkUnprepareCompleteFtraceEvent {
+  optional string name = 1;
+}

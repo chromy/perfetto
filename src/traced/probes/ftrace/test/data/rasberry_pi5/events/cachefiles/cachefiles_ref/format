@@ -1,0 +1,14 @@
+name: cachefiles_ref
+ID: 723
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int obj;	offset:8;	size:4;	signed:0;
+	field:unsigned int cookie;	offset:12;	size:4;	signed:0;
+	field:enum cachefiles_obj_ref_trace why;	offset:16;	size:4;	signed:0;
+	field:int usage;	offset:20;	size:4;	signed:1;
+
+print fmt: "c=%08x o=%08x u=%d %s", REC->cookie, REC->obj, REC->usage, __print_symbolic(REC->why, { 0, "GET ioreq" }, { 1, "NEW obj" }, { 2, "PUT alloc_fail" }, { 3, "PUT detach" }, { 4, "PUT ioreq" }, { 5, "SEE clean_commit" }, { 6, "SEE clean_delete" }, { 7, "SEE clean_drop_tmp" }, { 8, "SEE lookup_cookie" }, { 9, "SEE lookup_failed" }, { 10, "SEE withdraw_cookie" }, { 11, "SEE withdrawal" })

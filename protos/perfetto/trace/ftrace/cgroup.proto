@@ -7,7 +7,7 @@ package perfetto.protos;
 
 message CgroupAttachTaskFtraceEvent {
   optional int32 dst_root = 1;
-  optional int32 dst_id = 2;
+  optional int64 dst_id = 2;
   optional int32 pid = 3;
   optional string comm = 4;
   optional string cname = 5;
@@ -16,7 +16,7 @@ message CgroupAttachTaskFtraceEvent {
 }
 message CgroupMkdirFtraceEvent {
   optional int32 root = 1;
-  optional int32 id = 2;
+  optional int64 id = 2;
   optional string cname = 3;
   optional int32 level = 4;
   optional string path = 5;
@@ -28,14 +28,14 @@ message CgroupRemountFtraceEvent {
 }
 message CgroupRmdirFtraceEvent {
   optional int32 root = 1;
-  optional int32 id = 2;
+  optional int64 id = 2;
   optional string cname = 3;
   optional int32 level = 4;
   optional string path = 5;
 }
 message CgroupTransferTasksFtraceEvent {
   optional int32 dst_root = 1;
-  optional int32 dst_id = 2;
+  optional int64 dst_id = 2;
   optional int32 pid = 3;
   optional string comm = 4;
   optional string cname = 5;
@@ -49,14 +49,14 @@ message CgroupDestroyRootFtraceEvent {
 }
 message CgroupReleaseFtraceEvent {
   optional int32 root = 1;
-  optional int32 id = 2;
+  optional int64 id = 2;
   optional string cname = 3;
   optional int32 level = 4;
   optional string path = 5;
 }
 message CgroupRenameFtraceEvent {
   optional int32 root = 1;
-  optional int32 id = 2;
+  optional int64 id = 2;
   optional string cname = 3;
   optional int32 level = 4;
   optional string path = 5;
@@ -65,4 +65,30 @@ message CgroupSetupRootFtraceEvent {
   optional int32 root = 1;
   optional uint32 ss_mask = 2;
   optional string name = 3;
+}
+message CgroupFreezeFtraceEvent {
+  optional int32 root = 1;
+  optional int64 id = 2;
+  optional int32 level = 3;
+  optional string path = 4;
+}
+message CgroupNotifyFrozenFtraceEvent {
+  optional int32 root = 1;
+  optional int64 id = 2;
+  optional int32 level = 3;
+  optional string path = 4;
+  optional int32 val = 5;
+}
+message CgroupNotifyPopulatedFtraceEvent {
+  optional int32 root = 1;
+  optional int64 id = 2;
+  optional int32 level = 3;
+  optional string path = 4;
+  optional int32 val = 5;
+}
+message CgroupUnfreezeFtraceEvent {
+  optional int32 root = 1;
+  optional int64 id = 2;
+  optional int32 level = 3;
+  optional string path = 4;
 }

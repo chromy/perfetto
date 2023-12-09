@@ -1,0 +1,13 @@
+name: fscache_cookie
+ID: 366
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int cookie;	offset:8;	size:4;	signed:0;
+	field:int ref;	offset:12;	size:4;	signed:1;
+	field:enum fscache_cookie_trace where;	offset:16;	size:4;	signed:0;
+
+print fmt: "c=%08x %s r=%d", REC->cookie, __print_symbolic(REC->where, { 0, "*COLLIDE*" }, { 1, "DISCARD  " }, { 2, "FAILED   " }, { 3, "GET attch" }, { 5, "GET hcoll" }, { 4, "GQ  endac" }, { 6, "GQ  inval" }, { 7, "GET lru  " }, { 8, "GQ  use  " }, { 9, "NEW acq  " }, { 10, "PUT hcoll" }, { 11, "PUT lru  " }, { 12, "PUT obj  " }, { 13, "PQ  overq" }, { 14, "PUT relnq" }, { 15, "PUT wthdn" }, { 16, "PQ  work " }, { 17, "-   activ" }, { 18, "-   x-lru" }, { 19, "-   lrudc" }, { 20, "-   lrudo" }, { 21, "-   x-rlq" }, { 22, "-   x-wth" }, { 23, "-   work " }), REC->ref

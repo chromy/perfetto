@@ -1,0 +1,13 @@
+name: rcu_segcb_stats
+ID: 122
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:const char * ctx;	offset:8;	size:8;	signed:0;
+	field:unsigned long gp_seq[4];	offset:16;	size:32;	signed:0;
+	field:long seglen[4];	offset:48;	size:32;	signed:1;
+
+print fmt: "%s seglen: (DONE=%ld, WAIT=%ld, NEXT_READY=%ld, NEXT=%ld) gp_seq: (DONE=%lu, WAIT=%lu, NEXT_READY=%lu, NEXT=%lu)", REC->ctx, REC->seglen[0], REC->seglen[1], REC->seglen[2], REC->seglen[3], REC->gp_seq[0], REC->gp_seq[1], REC->gp_seq[2], REC->gp_seq[3]

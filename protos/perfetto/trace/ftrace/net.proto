@@ -40,3 +40,133 @@ message NapiGroReceiveEntryFtraceEvent {
 message NapiGroReceiveExitFtraceEvent {
   optional int32 ret = 1;
 }
+message NapiGroFragsEntryFtraceEvent {
+  optional string name = 1;
+  optional uint32 napi_id = 2;
+  optional uint32 queue_mapping = 3;
+  optional uint64 skbaddr = 4;
+  optional uint32 vlan_tagged = 5;
+  optional uint32 vlan_proto = 6;
+  optional uint32 vlan_tci = 7;
+  optional uint32 protocol = 8;
+  optional uint32 ip_summed = 9;
+  optional uint32 hash = 10;
+  optional uint32 l4_hash = 11;
+  optional uint32 len = 12;
+  optional uint32 data_len = 13;
+  optional uint32 truesize = 14;
+  optional uint32 mac_header_valid = 15;
+  optional int32 mac_header = 16;
+  optional uint32 nr_frags = 17;
+  optional uint32 gso_size = 18;
+  optional uint32 gso_type = 19;
+}
+message NapiGroFragsExitFtraceEvent {
+  optional int32 ret = 1;
+}
+message NetDevQueueFtraceEvent {
+  optional uint64 skbaddr = 1;
+  optional uint32 len = 2;
+  optional string name = 3;
+}
+message NetDevStartXmitFtraceEvent {
+  optional string name = 1;
+  optional uint32 queue_mapping = 2;
+  optional uint64 skbaddr = 3;
+  optional uint32 vlan_tagged = 4;
+  optional uint32 vlan_proto = 5;
+  optional uint32 vlan_tci = 6;
+  optional uint32 protocol = 7;
+  optional uint32 ip_summed = 8;
+  optional uint32 len = 9;
+  optional uint32 data_len = 10;
+  optional int32 network_offset = 11;
+  optional uint32 transport_offset_valid = 12;
+  optional int32 transport_offset = 13;
+  optional uint32 tx_flags = 14;
+  optional uint32 gso_size = 15;
+  optional uint32 gso_segs = 16;
+  optional uint32 gso_type = 17;
+}
+message NetDevXmitTimeoutFtraceEvent {
+  optional string name = 1;
+  optional string driver = 2;
+  optional int32 queue_index = 3;
+}
+message NetifReceiveSkbEntryFtraceEvent {
+  optional string name = 1;
+  optional uint32 napi_id = 2;
+  optional uint32 queue_mapping = 3;
+  optional uint64 skbaddr = 4;
+  optional uint32 vlan_tagged = 5;
+  optional uint32 vlan_proto = 6;
+  optional uint32 vlan_tci = 7;
+  optional uint32 protocol = 8;
+  optional uint32 ip_summed = 9;
+  optional uint32 hash = 10;
+  optional uint32 l4_hash = 11;
+  optional uint32 len = 12;
+  optional uint32 data_len = 13;
+  optional uint32 truesize = 14;
+  optional uint32 mac_header_valid = 15;
+  optional int32 mac_header = 16;
+  optional uint32 nr_frags = 17;
+  optional uint32 gso_size = 18;
+  optional uint32 gso_type = 19;
+}
+message NetifReceiveSkbExitFtraceEvent {
+  optional int32 ret = 1;
+}
+message NetifReceiveSkbListEntryFtraceEvent {
+  optional string name = 1;
+  optional uint32 napi_id = 2;
+  optional uint32 queue_mapping = 3;
+  optional uint64 skbaddr = 4;
+  optional uint32 vlan_tagged = 5;
+  optional uint32 vlan_proto = 6;
+  optional uint32 vlan_tci = 7;
+  optional uint32 protocol = 8;
+  optional uint32 ip_summed = 9;
+  optional uint32 hash = 10;
+  optional uint32 l4_hash = 11;
+  optional uint32 len = 12;
+  optional uint32 data_len = 13;
+  optional uint32 truesize = 14;
+  optional uint32 mac_header_valid = 15;
+  optional int32 mac_header = 16;
+  optional uint32 nr_frags = 17;
+  optional uint32 gso_size = 18;
+  optional uint32 gso_type = 19;
+}
+message NetifReceiveSkbListExitFtraceEvent {
+  optional int32 ret = 1;
+}
+message NetifRxFtraceEvent {
+  optional uint64 skbaddr = 1;
+  optional uint32 len = 2;
+  optional string name = 3;
+}
+message NetifRxEntryFtraceEvent {
+  optional string name = 1;
+  optional uint32 napi_id = 2;
+  optional uint32 queue_mapping = 3;
+  optional uint64 skbaddr = 4;
+  optional uint32 vlan_tagged = 5;
+  optional uint32 vlan_proto = 6;
+  optional uint32 vlan_tci = 7;
+  optional uint32 protocol = 8;
+  optional uint32 ip_summed = 9;
+  optional uint32 hash = 10;
+  optional uint32 l4_hash = 11;
+  optional uint32 len = 12;
+  optional uint32 data_len = 13;
+  optional uint32 truesize = 14;
+  optional uint32 mac_header_valid = 15;
+  optional int32 mac_header = 16;
+  optional uint32 nr_frags = 17;
+  optional uint32 gso_size = 18;
+  optional uint32 gso_type = 19;
+}
+message NetifRxExitFtraceEvent {
+  optional int32 ret = 1;
+}

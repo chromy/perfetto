@@ -1,0 +1,14 @@
+name: netfs_sreq_ref
+ID: 352
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int rreq;	offset:8;	size:4;	signed:0;
+	field:unsigned int subreq;	offset:12;	size:4;	signed:0;
+	field:int ref;	offset:16;	size:4;	signed:1;
+	field:enum netfs_sreq_ref_trace what;	offset:20;	size:1;	signed:0;
+
+print fmt: "R=%08x[%x] %s r=%u", REC->rreq, REC->subreq, __print_symbolic(REC->what, { 0, "GET COPY2C " }, { 1, "GET RESUBMIT" }, { 2, "GET SHORTRD" }, { 3, "NEW        " }, { 4, "PUT CLEAR  " }, { 5, "PUT FAILED " }, { 6, "PUT MERGED " }, { 7, "PUT NO COPY" }, { 8, "PUT TERM   " }), REC->ref

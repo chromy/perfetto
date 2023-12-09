@@ -1,0 +1,12 @@
+name: rpcgss_createauth
+ID: 1278
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int flavor;	offset:8;	size:4;	signed:0;
+	field:int error;	offset:12;	size:4;	signed:1;
+
+print fmt: "flavor=%s error=%d", __print_symbolic(REC->flavor, { 390003, "RPC_AUTH_GSS_KRB5" }, { 390004, "RPC_AUTH_GSS_KRB5I" }, { 390005, "RPC_AUTH_GSS_KRB5P" }), REC->error

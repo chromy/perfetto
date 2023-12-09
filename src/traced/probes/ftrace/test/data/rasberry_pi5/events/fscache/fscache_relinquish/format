@@ -1,0 +1,16 @@
+name: fscache_relinquish
+ID: 360
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int cookie;	offset:8;	size:4;	signed:0;
+	field:unsigned int volume;	offset:12;	size:4;	signed:0;
+	field:int ref;	offset:16;	size:4;	signed:1;
+	field:int n_active;	offset:20;	size:4;	signed:1;
+	field:u8 flags;	offset:24;	size:1;	signed:0;
+	field:bool retire;	offset:25;	size:1;	signed:0;
+
+print fmt: "c=%08x V=%08x r=%d U=%d f=%02x rt=%u", REC->cookie, REC->volume, REC->ref, REC->n_active, REC->flags, REC->retire

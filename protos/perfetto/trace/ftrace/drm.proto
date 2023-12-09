@@ -16,3 +16,8 @@ message DrmVblankEventDeliveredFtraceEvent {
   optional uint64 file = 2;
   optional uint32 seq = 3;
 }
+message DrmVblankEventQueuedFtraceEvent {
+  optional uint64 file = 1;
+  optional int32 crtc = 2;
+  optional uint32 seq = 3;
+}

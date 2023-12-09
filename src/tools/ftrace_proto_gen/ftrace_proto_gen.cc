@@ -92,7 +92,7 @@ std::vector<Proto::Field> ToProtoFields(const FtraceEvent& format) {
     std::string name = GetNameFromTypeAndName(field.type_and_name);
     // Skip tracepoint fields whose names cannot be used as an identifier in the
     // generated C++ code due to stdlib header conflicts.
-    if (name == "" || name == "sa_handler" || name == "errno")
+    if (name == "" || name == "sa_handler" || name == "errno" || name == "new")
       continue;
     ProtoType type = InferProtoType(field);
     if (type.type == ProtoType::INVALID)

@@ -1,0 +1,14 @@
+name: rpcgss_svc_seqno_low
+ID: 1282
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u32 xid;	offset:8;	size:4;	signed:0;
+	field:u32 seqno;	offset:12;	size:4;	signed:0;
+	field:u32 min;	offset:16;	size:4;	signed:0;
+	field:u32 max;	offset:20;	size:4;	signed:0;
+
+print fmt: "xid=0x%08x seqno=%u window=[%u..%u]", REC->xid, REC->seqno, REC->min, REC->max

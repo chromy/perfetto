@@ -29,3 +29,15 @@ message RegulatorSetVoltageCompleteFtraceEvent {
   optional string name = 1;
   optional uint32 val = 2;
 }
+message RegulatorBypassDisableFtraceEvent {
+  optional string name = 1;
+}
+message RegulatorBypassDisableCompleteFtraceEvent {
+  optional string name = 1;
+}
+message RegulatorBypassEnableFtraceEvent {
+  optional string name = 1;
+}
+message RegulatorBypassEnableCompleteFtraceEvent {
+  optional string name = 1;
+}

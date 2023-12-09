@@ -1,0 +1,12 @@
+name: contention_begin
+ID: 112
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:void * lock_addr;	offset:8;	size:8;	signed:0;
+	field:unsigned int flags;	offset:16;	size:4;	signed:0;
+
+print fmt: "%p (flags=%s)", REC->lock_addr, __print_flags(REC->flags, "|", { (1U << 0), "SPIN" }, { (1U << 1), "READ" }, { (1U << 2), "WRITE" }, { (1U << 3), "RT" }, { (1U << 4), "PERCPU" }, { (1U << 5), "MUTEX" } )

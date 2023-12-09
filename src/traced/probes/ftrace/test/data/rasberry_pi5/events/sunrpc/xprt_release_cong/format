@@ -1,0 +1,16 @@
+name: xprt_release_cong
+ID: 1205
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int task_id;	offset:8;	size:4;	signed:0;
+	field:unsigned int client_id;	offset:12;	size:4;	signed:0;
+	field:unsigned int snd_task_id;	offset:16;	size:4;	signed:0;
+	field:unsigned long cong;	offset:24;	size:8;	signed:0;
+	field:unsigned long cwnd;	offset:32;	size:8;	signed:0;
+	field:bool wait;	offset:40;	size:1;	signed:0;
+
+print fmt: "task:%08x@%08x snd_task:%08x cong=%lu cwnd=%lu%s", REC->task_id, REC->client_id, REC->snd_task_id, REC->cong, REC->cwnd, REC->wait ? " (wait)" : ""

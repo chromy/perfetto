@@ -1,0 +1,14 @@
+name: svcsock_tcp_state
+ID: 1160
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long socket_state;	offset:8;	size:8;	signed:0;
+	field:unsigned long sock_state;	offset:16;	size:8;	signed:0;
+	field:unsigned long flags;	offset:24;	size:8;	signed:0;
+	field:__data_loc char[] addr;	offset:32;	size:4;	signed:0;
+
+print fmt: "addr=%s state=%s sk_state=%s flags=%s", __get_str(addr), __print_symbolic(REC->socket_state, {0, "FREE"}, {1, "UNCONNECTED"}, {2, "CONNECTING"}, {3, "CONNECTED"}, {4, "DISCONNECTING"}), __print_symbolic(REC->sock_state, {1, "ESTABLISHED"}, {2, "SYN_SENT"}, {3, "SYN_RECV"}, {4, "FIN_WAIT1"}, {5, "FIN_WAIT2"}, {6, "TIME_WAIT"}, {7, "CLOSE"}, {8, "CLOSE_WAIT"}, {9, "LAST_ACK"}, {10, "LISTEN"}, {11, "CLOSING"}), __print_flags(REC->flags, "|", { (1UL << 0), "XPT_BUSY"}, { (1UL << 1), "XPT_CONN"}, { (1UL << 2), "XPT_CLOSE"}, { (1UL << 3), "XPT_DATA"}, { (1UL << 4), "XPT_TEMP"}, { (1UL << 6), "XPT_DEAD"}, { (1UL << 7), "XPT_CHNGBUF"}, { (1UL << 8), "XPT_DEFERRED"}, { (1UL << 9), "XPT_OLD"}, { (1UL << 10), "XPT_LISTENER"}, { (1UL << 11), "XPT_CACHE_AUTH"}, { (1UL << 12), "XPT_LOCAL"}, { (1UL << 13), "XPT_KILL_TEMP"}, { (1UL << 14), "XPT_CONG_CTRL"})

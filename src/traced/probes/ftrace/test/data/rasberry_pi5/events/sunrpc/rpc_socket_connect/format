@@ -1,0 +1,16 @@
+name: rpc_socket_connect
+ID: 1225
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int error;	offset:8;	size:4;	signed:1;
+	field:unsigned int socket_state;	offset:12;	size:4;	signed:0;
+	field:unsigned int sock_state;	offset:16;	size:4;	signed:0;
+	field:unsigned long long ino;	offset:24;	size:8;	signed:0;
+	field:__u8 saddr[28];	offset:32;	size:28;	signed:0;
+	field:__u8 daddr[28];	offset:60;	size:28;	signed:0;
+
+print fmt: "error=%d socket:[%llu] srcaddr=%pISpc dstaddr=%pISpc state=%u (%s) sk_state=%u (%s)", REC->error, REC->ino, REC->saddr, REC->daddr, REC->socket_state, __print_symbolic(REC->socket_state, {0, "FREE"}, {1, "UNCONNECTED"}, {2, "CONNECTING"}, {3, "CONNECTED"}, {4, "DISCONNECTING"}), REC->sock_state, __print_symbolic(REC->sock_state, {1, "ESTABLISHED"}, {2, "SYN_SENT"}, {3, "SYN_RECV"}, {4, "FIN_WAIT1"}, {5, "FIN_WAIT2"}, {6, "TIME_WAIT"}, {7, "CLOSE"}, {8, "CLOSE_WAIT"}, {9, "LAST_ACK"}, {10, "LISTEN"}, {11, "CLOSING"})

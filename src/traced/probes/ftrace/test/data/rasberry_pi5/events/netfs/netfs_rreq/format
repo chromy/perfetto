@@ -1,0 +1,14 @@
+name: netfs_rreq
+ID: 356
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int rreq;	offset:8;	size:4;	signed:0;
+	field:unsigned int flags;	offset:12;	size:4;	signed:0;
+	field:enum netfs_io_origin origin;	offset:16;	size:1;	signed:0;
+	field:enum netfs_rreq_trace what;	offset:17;	size:1;	signed:0;
+
+print fmt: "R=%08x %s %s f=%02x", REC->rreq, __print_symbolic(REC->origin, { 0, "RA" }, { 1, "RP" }, { 2, "RW" }), __print_symbolic(REC->what, { 0, "ASSESS " }, { 1, "COPY   " }, { 2, "DONE   " }, { 3, "FREE   " }, { 4, "RESUBMT" }, { 5, "UNLOCK " }, { 6, "UNMARK " }), REC->flags

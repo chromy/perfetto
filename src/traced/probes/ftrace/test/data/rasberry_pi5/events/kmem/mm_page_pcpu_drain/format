@@ -1,0 +1,13 @@
+name: mm_page_pcpu_drain
+ID: 258
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long pfn;	offset:8;	size:8;	signed:0;
+	field:unsigned int order;	offset:16;	size:4;	signed:0;
+	field:int migratetype;	offset:20;	size:4;	signed:1;
+
+print fmt: "page=%p pfn=0x%lx order=%d migratetype=%d", (((struct page *)(-((((1UL))) << ((47) - (14 - (( __builtin_constant_p(sizeof(struct page)) ? ( ((sizeof(struct page)) == 0 || (sizeof(struct page)) == 1) ? 0 : ( __builtin_constant_p((sizeof(struct page)) - 1) ? (((sizeof(struct page)) - 1) < 2 ? 0 : 63 - __builtin_clzll((sizeof(struct page)) - 1)) : (sizeof((sizeof(struct page)) - 1) <= 4) ? __ilog2_u32((sizeof(struct page)) - 1) : __ilog2_u64((sizeof(struct page)) - 1) ) + 1) : __order_base_2(sizeof(struct page)) )))))) - (memstart_addr >> 14)) + (REC->pfn)), REC->pfn, REC->order, REC->migratetype

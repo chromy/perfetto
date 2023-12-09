@@ -1,0 +1,16 @@
+name: rpc_task_complete
+ID: 1254
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int task_id;	offset:8;	size:4;	signed:0;
+	field:unsigned int client_id;	offset:12;	size:4;	signed:0;
+	field:const void * action;	offset:16;	size:8;	signed:0;
+	field:unsigned long runstate;	offset:24;	size:8;	signed:0;
+	field:int status;	offset:32;	size:4;	signed:1;
+	field:unsigned short flags;	offset:36;	size:2;	signed:0;
+
+print fmt: "task:%08x@%08x flags=%s runstate=%s status=%d action=%ps", REC->task_id, REC->client_id, __print_flags(REC->flags, "|", { 0x0001, "ASYNC" }, { 0x0002, "SWAPPER" }, { 0x0004, "MOVEABLE" }, { 0x0010, "NULLCREDS" }, { 0x0020, "MAJORSEEN" }, { 0x0080, "DYNAMIC" }, { 0x0100, "NO_ROUND_ROBIN" }, { 0x0200, "SOFT" }, { 0x0400, "SOFTCONN" }, { 0x0800, "SENT" }, { 0x1000, "TIMEOUT" }, { 0x2000, "NOCONNECT" }, { 0x4000, "NORTO" }, { 0x8000, "CRED_NOREF" }), __print_flags(REC->runstate, "|", { (1UL << 0), "RUNNING" }, { (1UL << 1), "QUEUED" }, { (1UL << 2), "ACTIVE" }, { (1UL << 3), "NEED_XMIT" }, { (1UL << 4), "NEED_RECV" }, { (1UL << 5), "MSG_PIN_WAIT" }, { (1UL << 6), "SIGNALLED" }), REC->status, REC->action

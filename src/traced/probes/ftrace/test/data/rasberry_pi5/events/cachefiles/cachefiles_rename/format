@@ -1,0 +1,13 @@
+name: cachefiles_rename
+ID: 717
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int obj;	offset:8;	size:4;	signed:0;
+	field:unsigned int ino;	offset:12;	size:4;	signed:0;
+	field:enum fscache_why_object_killed why;	offset:16;	size:4;	signed:0;
+
+print fmt: "o=%08x B=%x w=%s", REC->obj, REC->ino, __print_symbolic(REC->why, { 0, "stale" }, { 1, "weird" }, { 2, "inval" }, { 3, "no_space" }, { 4, "was_retired" }, { 5, "was_culled" }, { 6, "volume_weird" })

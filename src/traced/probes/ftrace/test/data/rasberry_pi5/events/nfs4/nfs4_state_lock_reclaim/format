@@ -1,0 +1,17 @@
+name: nfs4_state_lock_reclaim
+ID: 667
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:dev_t dev;	offset:8;	size:4;	signed:0;
+	field:u32 fhandle;	offset:12;	size:4;	signed:0;
+	field:u64 fileid;	offset:16;	size:8;	signed:0;
+	field:unsigned long state_flags;	offset:24;	size:8;	signed:0;
+	field:unsigned long lock_flags;	offset:32;	size:8;	signed:0;
+	field:int stateid_seq;	offset:40;	size:4;	signed:1;
+	field:u32 stateid_hash;	offset:44;	size:4;	signed:0;
+
+print fmt: "fileid=%02x:%02x:%llu fhandle=0x%08x stateid=%d:0x%08x state_flags=%s lock_flags=%s", ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), (unsigned long long)REC->fileid, REC->fhandle, REC->stateid_seq, REC->stateid_hash, __print_flags(REC->state_flags, "|", { 0, "IN_USE" }, { 1, "DELEGATED" }, { 2, "OPEN" }, { 3, "O_RDONLY" }, { 4, "O_WRONLY" }, { 5, "O_RDWR" }, { 6, "RECLAIM_REBOOT" }, { 7, "RECLAIM_NOGRACE" }, { 8, "POSIX_LOCKS" }, { 9, "RECOVERY_FAILED" }, { 10, "MAY_NOTIFY_LOCK" }, { 11, "CHANGE_WAIT" }, { 12, "CLNT_DST_SSC_COPY" }, { 13, "CLNT_SRC_SSC_COPY" }, { 14, "SRV_SSC_COPY" }), __print_flags(REC->lock_flags, "|", { ((((1UL))) << (0)), "INITIALIZED" }, { ((((1UL))) << (1)), "LOST" })

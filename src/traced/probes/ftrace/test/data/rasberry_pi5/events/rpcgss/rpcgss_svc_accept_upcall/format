@@ -1,0 +1,14 @@
+name: rpcgss_svc_accept_upcall
+ID: 1291
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u32 minor_status;	offset:8;	size:4;	signed:0;
+	field:unsigned long major_status;	offset:16;	size:8;	signed:0;
+	field:u32 xid;	offset:24;	size:4;	signed:0;
+	field:__data_loc char[] addr;	offset:28;	size:4;	signed:0;
+
+print fmt: "addr=%s xid=0x%08x major_status=%s (0x%08lx) minor_status=%u", __get_str(addr), REC->xid, (REC->major_status == 0) ? "GSS_S_COMPLETE" : __print_flags(REC->major_status, "|", { (((OM_uint32) 1ul) << 16), "GSS_S_BAD_MECH" }, { (((OM_uint32) 2ul) << 16), "GSS_S_BAD_NAME" }, { (((OM_uint32) 3ul) << 16), "GSS_S_BAD_NAMETYPE" }, { (((OM_uint32) 4ul) << 16), "GSS_S_BAD_BINDINGS" }, { (((OM_uint32) 5ul) << 16), "GSS_S_BAD_STATUS" }, { (((OM_uint32) 6ul) << 16), "GSS_S_BAD_SIG" }, { (((OM_uint32) 7ul) << 16), "GSS_S_NO_CRED" }, { (((OM_uint32) 8ul) << 16), "GSS_S_NO_CONTEXT" }, { (((OM_uint32) 9ul) << 16), "GSS_S_DEFECTIVE_TOKEN" }, { (((OM_uint32) 10ul) << 16), "GSS_S_DEFECTIVE_CREDENTIAL" }, { (((OM_uint32) 11ul) << 16), "GSS_S_CREDENTIALS_EXPIRED" }, { (((OM_uint32) 12ul) << 16), "GSS_S_CONTEXT_EXPIRED" }, { (((OM_uint32) 13ul) << 16), "GSS_S_FAILURE" }, { (((OM_uint32) 14ul) << 16), "GSS_S_BAD_QOP" }, { (((OM_uint32) 15ul) << 16), "GSS_S_UNAUTHORIZED" }, { (((OM_uint32) 16ul) << 16), "GSS_S_UNAVAILABLE" }, { (((OM_uint32) 17ul) << 16), "GSS_S_DUPLICATE_ELEMENT" }, { (((OM_uint32) 18ul) << 16), "GSS_S_NAME_NOT_MN" }, { (1 << (0 + 0)), "GSS_S_CONTINUE_NEEDED" }, { (1 << (0 + 1)), "GSS_S_DUPLICATE_TOKEN" }, { (1 << (0 + 2)), "GSS_S_OLD_TOKEN" }, { (1 << (0 + 3)), "GSS_S_UNSEQ_TOKEN" }, { (1 << (0 + 4)), "GSS_S_GAP_TOKEN" }), REC->major_status, REC->minor_status

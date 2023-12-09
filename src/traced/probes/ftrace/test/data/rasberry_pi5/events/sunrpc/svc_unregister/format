@@ -1,0 +1,13 @@
+name: svc_unregister
+ID: 1150
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u32 version;	offset:8;	size:4;	signed:0;
+	field:int error;	offset:12;	size:4;	signed:1;
+	field:__data_loc char[] program;	offset:16;	size:4;	signed:0;
+
+print fmt: "program=%sv%u error=%d", __get_str(program), REC->version, REC->error

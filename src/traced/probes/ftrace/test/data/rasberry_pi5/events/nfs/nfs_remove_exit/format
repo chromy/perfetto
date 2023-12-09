@@ -1,0 +1,14 @@
+name: nfs_remove_exit
+ID: 544
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned long error;	offset:8;	size:8;	signed:0;
+	field:dev_t dev;	offset:16;	size:4;	signed:0;
+	field:u64 dir;	offset:24;	size:8;	signed:0;
+	field:__data_loc char[] name;	offset:32;	size:4;	signed:0;
+
+print fmt: "error=%ld (%s) name=%02x:%02x:%llu/%s", -REC->error, __print_symbolic(REC->error, { 0, "OK" }, { 1, "PERM" }, { 2, "NOENT" }, { 5, "IO" }, { 6, "NXIO" }, { 10, "CHILD" }, { 11, "AGAIN" }, { 13, "ACCES" }, { 17, "EXIST" }, { 18, "XDEV" }, { 19, "NODEV" }, { 20, "NOTDIR" }, { 21, "ISDIR" }, { 22, "INVAL" }, { 27, "FBIG" }, { 28, "NOSPC" }, { 30, "ROFS" }, { 31, "MLINK" }, { 45, "OPNOTSUPP" }, { 63, "NAMETOOLONG" }, { 66, "NOTEMPTY" }, { 69, "DQUOT" }, { 70, "STALE" }, { 71, "REMOTE" }, { 99, "WFLUSH" }, { 10001, "BADHANDLE" }, { 10002, "NOTSYNC" }, { 10003, "BADCOOKIE" }, { 10004, "NOTSUPP" }, { 10005, "TOOSMALL" }, { 10006, "REMOTEIO" }, { 10007, "BADTYPE" }, { 10008, "JUKEBOX" }), ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), (unsigned long long)REC->dir, __get_str(name)

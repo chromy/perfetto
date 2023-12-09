@@ -1,0 +1,27 @@
+name: io_uring_req_failed
+ID: 826
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:void * ctx;	offset:8;	size:8;	signed:0;
+	field:void * req;	offset:16;	size:8;	signed:0;
+	field:unsigned long long user_data;	offset:24;	size:8;	signed:0;
+	field:u8 opcode;	offset:32;	size:1;	signed:0;
+	field:u8 flags;	offset:33;	size:1;	signed:0;
+	field:u8 ioprio;	offset:34;	size:1;	signed:0;
+	field:u64 off;	offset:40;	size:8;	signed:0;
+	field:u64 addr;	offset:48;	size:8;	signed:0;
+	field:u32 len;	offset:56;	size:4;	signed:0;
+	field:u32 op_flags;	offset:60;	size:4;	signed:0;
+	field:u16 buf_index;	offset:64;	size:2;	signed:0;
+	field:u16 personality;	offset:66;	size:2;	signed:0;
+	field:u32 file_index;	offset:68;	size:4;	signed:0;
+	field:u64 pad1;	offset:72;	size:8;	signed:0;
+	field:u64 addr3;	offset:80;	size:8;	signed:0;
+	field:int error;	offset:88;	size:4;	signed:1;
+	field:__data_loc char[] op_str;	offset:92;	size:4;	signed:0;
+
+print fmt: "ring %p, req %p, user_data 0x%llx, opcode %s, flags 0x%x, prio=%d, off=%llu, addr=%llu, len=%u, rw_flags=0x%x, buf_index=%d, personality=%d, file_index=%d, pad=0x%llx, addr3=%llx, error=%d", REC->ctx, REC->req, REC->user_data, __get_str(op_str), REC->flags, REC->ioprio, (unsigned long long)REC->off, (unsigned long long) REC->addr, REC->len, REC->op_flags, REC->buf_index, REC->personality, REC->file_index, (unsigned long long) REC->pad1, (unsigned long long) REC->addr3, REC->error

@@ -1,0 +1,15 @@
+name: nvme_sq
+ID: 918
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int ctrl_id;	offset:8;	size:4;	signed:1;
+	field:char disk[32];	offset:12;	size:32;	signed:0;
+	field:int qid;	offset:44;	size:4;	signed:1;
+	field:u16 sq_head;	offset:48;	size:2;	signed:0;
+	field:u16 sq_tail;	offset:50;	size:2;	signed:0;
+
+print fmt: "nvme%d: %sqid=%d, head=%u, tail=%u", REC->ctrl_id, nvme_trace_disk_name(p, REC->disk), REC->qid, REC->sq_head, REC->sq_tail

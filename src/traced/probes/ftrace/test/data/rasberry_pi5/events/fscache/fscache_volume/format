@@ -1,0 +1,13 @@
+name: fscache_volume
+ID: 367
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int volume;	offset:8;	size:4;	signed:0;
+	field:int usage;	offset:12;	size:4;	signed:1;
+	field:enum fscache_volume_trace where;	offset:16;	size:4;	signed:0;
+
+print fmt: "V=%08x %s u=%d", REC->volume, __print_symbolic(REC->where, { 0, "*COLLIDE*" }, { 1, "GET cook " }, { 2, "GET creat" }, { 3, "GET hcoll" }, { 4, "FREE     " }, { 5, "NEW acq  " }, { 6, "PUT cook " }, { 7, "PUT creat" }, { 8, "PUT hcoll" }, { 9, "PUT relnq" }, { 10, "SEE creat" }, { 11, "SEE hwake" }, { 12, "WAIT crea" }), REC->usage

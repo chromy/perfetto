@@ -1,0 +1,13 @@
+name: timerlat
+ID: 17
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:unsigned int seqnum;	offset:8;	size:4;	signed:0;
+	field:int context;	offset:12;	size:4;	signed:1;
+	field:u64 timer_latency;	offset:16;	size:8;	signed:0;
+
+print fmt: "seq:%u\tcontext:%d\ttimer_latency:%llu\n", REC->seqnum, REC->context, REC->timer_latency

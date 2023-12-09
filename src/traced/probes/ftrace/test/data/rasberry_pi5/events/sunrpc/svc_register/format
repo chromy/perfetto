@@ -1,0 +1,16 @@
+name: svc_register
+ID: 1152
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:u32 version;	offset:8;	size:4;	signed:0;
+	field:unsigned long family;	offset:16;	size:8;	signed:0;
+	field:unsigned short protocol;	offset:24;	size:2;	signed:0;
+	field:unsigned short port;	offset:26;	size:2;	signed:0;
+	field:int error;	offset:28;	size:4;	signed:1;
+	field:__data_loc char[] program;	offset:32;	size:4;	signed:0;
+
+print fmt: "program=%sv%u proto=%s port=%u family=%s error=%d", __get_str(program), REC->version, REC->protocol == IPPROTO_UDP ? "udp" : "tcp", REC->port, __print_symbolic(REC->family, { 0, "AF_UNSPEC" }, { 1, "AF_UNIX" }, { 1, "AF_LOCAL" }, { 2, "AF_INET" }, { 10, "AF_INET6" }), REC->error

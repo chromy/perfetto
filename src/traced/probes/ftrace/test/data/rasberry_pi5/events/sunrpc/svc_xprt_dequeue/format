@@ -1,0 +1,15 @@
+name: svc_xprt_dequeue
+ID: 1183
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:__data_loc u8[] server;	offset:8;	size:4;	signed:0;
+	field:__data_loc u8[] client;	offset:12;	size:4;	signed:0;
+	field:unsigned long flags;	offset:16;	size:8;	signed:0;
+	field:unsigned int netns_ino;	offset:24;	size:4;	signed:0;
+	field:unsigned long wakeup;	offset:32;	size:8;	signed:0;
+
+print fmt: "server=%pISpc client=%pISpc flags=%s wakeup-us=%lu", __get_sockaddr(server), __get_sockaddr(client), __print_flags(REC->flags, "|", { (1UL << 0), "XPT_BUSY"}, { (1UL << 1), "XPT_CONN"}, { (1UL << 2), "XPT_CLOSE"}, { (1UL << 3), "XPT_DATA"}, { (1UL << 4), "XPT_TEMP"}, { (1UL << 6), "XPT_DEAD"}, { (1UL << 7), "XPT_CHNGBUF"}, { (1UL << 8), "XPT_DEFERRED"}, { (1UL << 9), "XPT_OLD"}, { (1UL << 10), "XPT_LISTENER"}, { (1UL << 11), "XPT_CACHE_AUTH"}, { (1UL << 12), "XPT_LOCAL"}, { (1UL << 13), "XPT_KILL_TEMP"}, { (1UL << 14), "XPT_CONG_CTRL"}), REC->wakeup

@@ -1,0 +1,16 @@
+name: svc_authenticate
+ID: 1191
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:__data_loc u8[] server;	offset:8;	size:4;	signed:0;
+	field:__data_loc u8[] client;	offset:12;	size:4;	signed:0;
+	field:unsigned int netns_ino;	offset:16;	size:4;	signed:0;
+	field:u32 xid;	offset:20;	size:4;	signed:0;
+	field:unsigned long svc_status;	offset:24;	size:8;	signed:0;
+	field:unsigned long auth_stat;	offset:32;	size:8;	signed:0;
+
+print fmt: "xid=0x%08x server=%pISpc client=%pISpc auth_res=%s auth_stat=%s", REC->xid, __get_sockaddr(server), __get_sockaddr(client), __print_symbolic(REC->svc_status, { 1, "SVC_GARBAGE" }, { 2, "SVC_SYSERR" }, { 3, "SVC_VALID" }, { 4, "SVC_NEGATIVE" }, { 5, "SVC_OK" }, { 6, "SVC_DROP" }, { 7, "SVC_CLOSE" }, { 8, "SVC_DENIED" }, { 9, "SVC_PENDING" }, { 10, "SVC_COMPLETE" }), __print_symbolic(REC->auth_stat, { 0, "AUTH_OK" }, { 1, "BADCRED" }, { 2, "REJECTEDCRED" }, { 3, "BADVERF" }, { 4, "REJECTEDVERF" }, { 5, "TOOWEAK" }, { 13, "GSS_CREDPROBLEM" }, { 14, "GSS_CTXPROBLEM" })

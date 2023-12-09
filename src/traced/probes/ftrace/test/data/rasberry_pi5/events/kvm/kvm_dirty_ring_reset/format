@@ -1,0 +1,13 @@
+name: kvm_dirty_ring_reset
+ID: 34
+format:
+	field:unsigned short common_type;	offset:0;	size:2;	signed:0;
+	field:unsigned char common_flags;	offset:2;	size:1;	signed:0;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;	signed:0;
+	field:int common_pid;	offset:4;	size:4;	signed:1;
+
+	field:int index;	offset:8;	size:4;	signed:1;
+	field:u32 dirty_index;	offset:12;	size:4;	signed:0;
+	field:u32 reset_index;	offset:16;	size:4;	signed:0;
+
+print fmt: "ring %d: dirty 0x%x reset 0x%x (used %u)", REC->index, REC->dirty_index, REC->reset_index, REC->dirty_index - REC->reset_index
